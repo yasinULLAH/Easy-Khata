@@ -720,7 +720,7 @@
                     <label for="transaction-method" data-en="Payment Method (Optional)" data-ur="ادائیگی کا طریقہ (اختیاری)">Payment Method (Optional)</label>
                     <select id="transaction-method" class="ledger-select">
                         <option value="" data-en="Select Method" data-ur="طریقہ منتخب کریں">Select Method</option>
-                        <option value="Cash" data-en="Cash" data-ur="نقد" Selected>Cash</option>
+                        <option value="Cash" data-en="Cash" data-ur="نقد">Cash</option>
                         <option value="JazzCash" data-en="JazzCash" data-ur="جاز کیش">JazzCash</option>
                         <option value="EasyPaisa" data-en="EasyPaisa" data-ur="ایزی پیسہ">EasyPaisa</option>
                         <option value="Bank Transfer" data-en="Bank Transfer" data-ur="بینک ٹرانسفر">Bank Transfer</option>
@@ -2418,102 +2418,6 @@ window.addEventListener('DOMContentLoaded', () => {
   wrapUrduTextNodes(document.body);
 });
 
-
-// Modified Urdu text wrapping to skip modal content
-function wrapUrduTextNodes(node) {
-    // Skip nodes inside modals to prevent DOM disruption
-    if (node.closest && node.closest('.modal')) {
-        return;
-    }
-    if (node.nodeType === Node.TEXT_NODE && hasUrdu(node.textContent)) {
-        const span = document.createElement('span');
-        span.className = 'urdu-font-force';
-        span.textContent = node.textContent;
-        if (node.parentNode) {
-            node.parentNode.replaceChild(span, node);
-        }
-    } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE') {
-        Array.from(node.childNodes).forEach(wrapUrduTextNodes);
-    }
-}
-
-// Ensure Urdu wrapping runs after full DOM load
-window.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => wrapUrduTextNodes(document.body), 100);
-});
-
-// Updated Add Transaction event listener
-document.getElementById('add-transaction-btn').addEventListener('click', async () => {
-    if (!currentCustomerId) {
-        customAlert(getLang("No customer selected."), getLang("Error"));
-        return;
-    }
-
-    try {
-        const transactionModal = document.getElementById('transaction-form-modal');
-        if (!transactionModal) {
-            console.error("Transaction modal not found.");
-            customAlert(getLang("Transaction modal not found."), getLang("Error"));
-            return;
-        }
-
-        const customer = await getCustomer(currentCustomerId);
-        if (!customer) {
-            customAlert(getLang("Customer not found."), getLang("Error"));
-            return;
-        }
-
-        // Check for customer name element; recreate if missing
-        let customerNameElement = document.getElementById('transaction-modal-customer-name');
-        if (!customerNameElement) {
-            console.warn("Customer name element missing. Attempting to recreate.");
-            const h3 = transactionModal.querySelector('h3');
-            if (h3) {
-                const newSpan = document.createElement('span');
-                newSpan.id = 'transaction-modal-customer-name';
-                h3.appendChild(newSpan);
-                customerNameElement = newSpan;
-            } else {
-                console.error("Modal h3 not found. Modal HTML:", transactionModal.innerHTML);
-                customAlert(getLang("Error loading transaction modal content."), getLang("Error"));
-                return;
-            }
-        }
-        customerNameElement.textContent = customer.name || 'Unnamed Customer';
-
-        // Reset form
-        const transactionForm = document.getElementById('transaction-form');
-        if (transactionForm) {
-            transactionForm.reset();
-        } else {
-            console.error("Transaction form not found.");
-            customAlert(getLang("Error loading transaction form."), getLang("Error"));
-            return;
-        }
-
-        // Set customer ID
-        const customerIdInput = document.getElementById('transaction-customer-id');
-        if (customerIdInput) {
-            customerIdInput.value = currentCustomerId;
-        } else {
-            console.error("Transaction customer ID input not found.");
-            customAlert(getLang("Error setting transaction data."), getLang("Error"));
-            return;
-        }
-
-        // Set default date
-        const dateInput = document.getElementById('transaction-date');
-        if (dateInput) {
-            const today = new Date();
-            dateInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-        }
-
-        openModal('transaction-form-modal');
-    } catch (error) {
-        console.error("Error in add transaction:", error);
-        customAlert(getLang("Error preparing transaction."), getLang("Error"));
-    }
-});
     </script>
 </body>
 </html>
