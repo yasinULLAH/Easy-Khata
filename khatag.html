@@ -1,0 +1,2423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Khata</title>
+    <style>
+        /* --- Base Styles & Fonts --- */
+        :root {
+            --primary-color: #006400; /* Dark Green */
+            --secondary-color: #f4f4f4; /* Light Gray */
+            --text-color: #333;
+            --border-color: #ccc;
+            --ledger-line-color: #e0e0e0;
+            --ledger-bg-color: #fdfdfd;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+            --font-handwritten: 'cursive', 'Segoe Script', 'Brush Script MT', sans-serif; /* Fallback fonts */
+            --font-sans: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 15px auto;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8em;
+        }
+
+        h2 {
+           font-size: 1.5em;
+        }
+
+        h3 {
+            font-size: 1.2em;
+        }
+
+        /* --- Ledger Paper Styling --- */
+        .ledger-input,
+        .ledger-textarea,
+        .ledger-select {
+            background-color: var(--ledger-bg-color);
+            border: none;
+            border-bottom: 1px solid var(--ledger-line-color);
+            padding: 10px 5px 5px 5px;
+            margin-bottom: 10px;
+            width: 100%;
+            font-family: var(--font-handwritten);
+            font-size: 1.1em;
+            line-height: 1.8; /* Simulate lines */
+            background-image: linear-gradient(to bottom, transparent 95%, var(--ledger-line-color) 95%);
+            background-size: 100% 1.8em; /* Match line-height */
+            background-repeat: repeat-y;
+            background-position: 0 5px; /* Adjust vertical position */
+            resize: vertical; /* Allow textarea resize */
+        }
+
+        .ledger-textarea {
+            min-height: 80px;
+        }
+
+        .ledger-input:focus,
+        .ledger-textarea:focus,
+        .ledger-select:focus {
+            outline: none;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        /* --- Buttons --- */
+        .btn {
+            display: inline-block;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            text-align: center;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            margin: 5px;
+            text-decoration: none; /* For <a> tags styled as buttons */
+            color: #fff; /* Default text color for buttons */
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background-color: #004d00; /* Darker Green */
+        }
+
+        .btn-secondary {
+            background-color: #6c757d; /* Gray */
+            color: #fff;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: #fff;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+
+        .btn-icon {
+            padding: 8px 10px;
+            font-size: 0.9em;
+        }
+
+        /* --- Forms & Modals --- */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-family: var(--font-sans); /* Use standard font for labels */
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 25px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal-close:hover,
+        .modal-close:focus {
+            color: #333;
+        }
+
+        /* --- Tables --- */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.95em;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .data-table thead {
+            background-color: var(--primary-color);
+            color: #fff;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: var(--ledger-bg-color);
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #e9e9e9;
+        }
+
+        .data-table td .btn {
+            padding: 5px 8px;
+            font-size: 0.85em;
+            margin: 2px;
+        }
+
+        .balance-positive {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        .balance-negative {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+
+        /* --- Layout & Sections --- */
+        .section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+        }
+
+        .section-header h2, .section-header h3 {
+            margin-bottom: 0; /* Remove default margin */
+        }
+
+        .dashboard-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            background-color: var(--ledger-bg-color);
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .summary-card h4 {
+            margin-bottom: 8px;
+            font-size: 1em;
+            color: var(--primary-color);
+        }
+
+        .summary-card p {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        #customer-details-view {
+            display: none; /* Hidden by default */
+        }
+
+        /* --- Filters & Search --- */
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            align-items: center; /* Align items vertically */
+        }
+
+        .filter-controls label {
+            margin-bottom: 0; /* Remove bottom margin for inline labels */
+            margin-right: 5px;
+            font-family: var(--font-sans);
+            font-weight: normal;
+        }
+
+        .filter-controls input[type="date"],
+        .filter-controls input[type="text"],
+        .filter-controls select {
+             padding: 8px;
+             border: 1px solid var(--border-color);
+             border-radius: 4px;
+             font-family: var(--font-sans);
+             font-size: 0.95em;
+             /* Remove ledger styles for filter inputs */
+             background-image: none;
+             background-color: #fff;
+             line-height: normal;
+        }
+
+        /* --- Urdu Toggle --- */
+        .language-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .language-toggle label {
+            margin: 0 5px 0 0;
+            font-size: 0.9em;
+            font-weight: normal;
+        }
+
+        /* --- Print Styles --- */
+        @media print {
+            body {
+                padding: 0;
+                background-color: #fff;
+                font-size: 10pt; /* Adjust base font size for print */
+            }
+
+            .container {
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+                border-radius: 0;
+            }
+
+            .no-print,
+            .modal,
+            .btn,
+            .filter-controls,
+            .language-toggle,
+            #add-customer-btn,
+            #backup-restore-section,
+            #customer-list-view h2 + div, /* Hide buttons in customer list header */
+            #customer-details-view .section-header div:last-child, /* Hide buttons in details header */
+            #transaction-form-modal,
+            #customer-form-modal,
+            #report-modal,
+            #reminder-modal,
+            #csv-export-btn,
+            #print-report-btn,
+            #send-reminder-btn,
+            #back-to-list-btn,
+            .modal-close,
+            .data-table td:last-child, /* Hide action buttons column */
+            .data-table th:last-child {
+                display: none !important;
+            }
+
+            h1, h2, h3 {
+                color: #000; /* Black for print */
+                margin-bottom: 10px;
+            }
+
+            .section {
+                border: none;
+                padding: 0;
+                margin-bottom: 15px;
+                page-break-inside: avoid;
+            }
+
+            .data-table {
+                box-shadow: none;
+                font-size: 9pt; /* Smaller font for tables in print */
+            }
+
+            .data-table th, .data-table td {
+                padding: 5px 8px;
+                border: 1px solid #ccc; /* Add borders for clarity */
+            }
+
+            .data-table thead {
+                background-color: #eee; /* Light gray header for print */
+                color: #000;
+            }
+
+            .ledger-input, .ledger-textarea, .ledger-select {
+                border-bottom: 1px solid #000;
+                background-image: none; /* Remove lines in print */
+                padding: 2px 0;
+                font-size: 10pt;
+            }
+
+            #customer-details-view {
+                display: block !important; /* Ensure details view is visible for printing report */
+            }
+            #customer-list-view {
+                display: none; /* Hide list view when printing report */
+            }
+
+            #printable-report-content {
+                display: block !important; /* Ensure report content is visible */
+            }
+             #printable-report-content h3 {
+                 text-align: center;
+             }
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+            .container {
+                padding: 10px;
+                margin: 10px auto;
+            }
+            h1 { font-size: 1.6em; }
+            h2 { font-size: 1.3em; }
+            h3 { font-size: 1.1em; }
+
+            .btn {
+                padding: 8px 12px;
+                font-size: 0.9em;
+                width: 100%; /* Make buttons full width */
+                margin: 5px 0; /* Adjust margin */
+            }
+            .btn-icon {
+                width: auto; /* Keep icon buttons smaller */
+                padding: 6px 8px;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .section-header div { /* Button container */
+                 margin-top: 10px;
+                 width: 100%;
+                 display: flex;
+                 flex-direction: column;
+            }
+
+            .filter-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filter-controls > * {
+                 margin-bottom: 8px;
+            }
+            .filter-controls label {
+                margin-bottom: 3px;
+            }
+
+            .data-table {
+                font-size: 0.85em;
+            }
+            .data-table th, .data-table td {
+                padding: 8px 6px;
+                word-break: break-word; /* Prevent long words from breaking layout */
+            }
+            /* Hide less critical columns on small screens */
+            .data-table .hide-mobile {
+                display: none;
+            }
+
+            .modal-content {
+                margin: 15% auto;
+                width: 95%;
+                padding: 20px;
+            }
+
+            .language-toggle {
+                position: static; /* Position normally */
+                margin: 10px 0;
+                justify-content: flex-end;
+            }
+        }
+
+         @media (max-width: 480px) {
+            h1 { font-size: 1.4em; }
+            .dashboard-summary {
+                 grid-template-columns: 1fr; /* Stack summary cards */
+            }
+            .data-table {
+                font-size: 0.8em;
+            }
+            .data-table th, .data-table td {
+                padding: 6px 4px;
+            }
+            /* Consider hiding more columns if needed */
+         }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="language-toggle no-print">
+            <label for="language-switch" data-en="Language" data-ur="زبان">Language:</label>
+            <select id="language-switch">
+                <option value="en">English</option>
+                <option value="ur">Urdu (اردو)</option>
+            </select>
+        </div>
+
+        <h1 data-en="Digital Khata" data-ur="ڈیجیٹل کھاتہ">Digital Khata</h1>
+
+        <div id="customer-list-view">
+            <div class="section">
+                <div class="section-header">
+                    <h2 data-en="Dashboard" data-ur="ڈیش بورڈ">Dashboard</h2>
+                </div>
+                <div class="dashboard-summary">
+                    <div class="summary-card">
+                        <h4 data-en="Total Customers" data-ur="کل صارفین">Total Customers</h4>
+                        <p id="total-customers">0</p>
+                    </div>
+                    <div class="summary-card">
+                        <h4 data-en="Total Balance (Lena Hai)" data-ur="کل بیلنس (لینا ہے)">Total Balance (Lena Hai)</h4>
+                        <p id="total-balance-positive" class="balance-positive">Rs 0.00</p>
+                    </div>
+                     <div class="summary-card">
+                        <h4 data-en="Total Advance (Dena Hai)" data-ur="کل ایڈوانس (دینا ہے)">Total Advance (Dena Hai)</h4>
+                        <p id="total-balance-negative" class="balance-negative">Rs 0.00</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2 data-en="Customers" data-ur="صارفین">Customers</h2>
+                    <div>
+                        <button id="add-customer-btn" class="btn btn-primary no-print" data-en="Add New Customer" data-ur="نیا صارف شامل کریں">Add New Customer</button>
+                    </div>
+                </div>
+                 <div class="filter-controls no-print">
+                     <input type="text" id="customer-search" placeholder="Search Customers..." data-en-placeholder="Search Customers..." data-ur-placeholder="صارفین تلاش کریں...">
+                 </div>
+                <div style="overflow-x: auto;"> <table class="data-table" id="customer-table">
+                        <thead>
+                            <tr>
+                                <th data-en="Name" data-ur="نام">Name</th>
+                                <th data-en="Phone" data-ur="فون" class="hide-mobile">Phone</th>
+                                <th data-en="Balance" data-ur="بیلنس">Balance</th>
+                                <th data-en="Actions" data-ur="کاروائیاں" class="no-print">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customer-table-body">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+             <div id="backup-restore-section" class="section no-print">
+                <h3 data-en="Backup & Restore" data-ur="بیک اپ اور بحال کریں">Backup & Restore</h3>
+                <button id="backup-btn" class="btn btn-secondary" data-en="Backup Data (JSON)" data-ur="ڈیٹا بیک اپ (JSON)">Backup Data (JSON)</button>
+                <label for="restore-file" class="btn btn-warning" data-en="Restore Data (JSON)" data-ur="ڈیٹا بحال کریں (JSON)">Restore Data (JSON)</label>
+                <input type="file" id="restore-file" accept=".json" style="display: none;">
+            </div>
+        </div>
+
+        <div id="customer-details-view">
+            <div class="section">
+                 <div class="section-header">
+                    <h2 id="details-customer-name">Customer Details</h2> <div>
+                        <button id="back-to-list-btn" class="btn btn-secondary no-print" data-en="Back to List" data-ur="فہرست پر واپس">Back to List</button>
+                    </div>
+                 </div>
+                 <div id="customer-info">
+                     </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h3 data-en="Transactions" data-ur="لین دین">Transactions</h3>
+                     <div>
+                        <button id="add-transaction-btn" class="btn btn-primary no-print" data-en="Add Transaction" data-ur="لین دین شامل کریں">Add Transaction</button>
+                        <button id="send-reminder-btn" class="btn btn-warning no-print" data-en="Send Reminder" data-ur="یاد دہانی بھیجیں">Send Reminder</button>
+                        <button id="print-report-btn" class="btn btn-success no-print" data-en="Print Report" data-ur="رپورٹ پرنٹ کریں">Print Report</button>
+                         <button id="csv-export-btn" class="btn btn-info no-print" data-en="Export CSV" data-ur="CSV ایکسپورٹ کریں">Export CSV</button>
+                    </div>
+                </div>
+
+                <div class="filter-controls no-print">
+                    <label for="filter-start-date" data-en="From:" data-ur="سے:">From:</label>
+                    <input type="date" id="filter-start-date">
+                    <label for="filter-end-date" data-en="To:" data-ur="تک:">To:</label>
+                    <input type="date" id="filter-end-date">
+                    <input type="text" id="transaction-search" placeholder="Search Description..." data-en-placeholder="Search Description..." data-ur-placeholder="تفصیل تلاش کریں...">
+                    <button id="apply-filters-btn" class="btn btn-primary btn-icon" data-en="Filter" data-ur="فلٹر کریں">Filter</button>
+                    <button id="clear-filters-btn" class="btn btn-secondary btn-icon" data-en="Clear" data-ur="صاف کریں">Clear</button>
+                </div>
+
+                <div style="overflow-x: auto;"> <table class="data-table" id="transaction-table">
+                        <thead>
+                            <tr>
+                                <th data-en="Date" data-ur="تاریخ">Date</th>
+                                <th data-en="Type" data-ur="قسم">Type</th>
+                                <th data-en="Description" data-ur="تفصیل" class="hide-mobile">Description</th>
+                                <th data-en="Amount" data-ur="رقم">Amount</th>
+                                <th data-en="Balance" data-ur="بیلنس">Balance</th>
+                                </tr>
+                        </thead>
+                        <tbody id="transaction-table-body">
+                            </tbody>
+                    </table>
+                </div>
+                <div id="customer-balance-summary" style="text-align: right; margin-top: 15px; font-size: 1.1em; font-weight: bold;">
+                    <span data-en="Current Balance:" data-ur="موجودہ بیلنس:">Current Balance:</span> <span id="details-current-balance">Rs 0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="printable-report-content" style="display: none;">
+            <h3 data-en="Monthly Statement" data-ur="ماہانہ گوشوارہ">Monthly Statement</h3>
+            <div id="report-customer-info"></div>
+            <div id="report-period"></div>
+            <table class="data-table" id="report-table">
+                <thead>
+                    <tr>
+                        <th data-en="Date" data-ur="تاریخ">Date</th>
+                        <th data-en="Type" data-ur="قسم">Type</th>
+                        <th data-en="Description" data-ur="تفصیل">Description</th>
+                        <th data-en="Udhaar (Debit)" data-ur="ادھار (لینا ہے)">Udhaar (Debit)</th>
+                        <th data-en="Payment (Credit)" data-ur="وصولی (جمع)">Payment (Credit)</th>
+                        <th data-en="Balance" data-ur="بیلنس">Balance</th>
+                    </tr>
+                </thead>
+                <tbody id="report-table-body">
+                    </tbody>
+            </table>
+            <div id="report-summary" style="margin-top: 15px; text-align: right; font-weight: bold;"></div>
+        </div>
+
+    </div> <div id="customer-form-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('customer-form-modal')">&times;</span>
+            <h3 id="customer-modal-title" data-en="Add New Customer" data-ur="نیا صارف شامل کریں">Add New Customer</h3>
+            <form id="customer-form">
+                <input type="hidden" id="customer-id">
+                <div class="form-group">
+                    <label for="customer-name" data-en="Name" data-ur="نام">Name</label>
+                    <input type="text" id="customer-name" class="ledger-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="customer-phone" data-en="Phone (Optional)" data-ur="فون (اختیاری)">Phone (Optional)</label>
+                    <input type="tel" id="customer-phone" class="ledger-input">
+                </div>
+                <div class="form-group">
+                    <label for="customer-address" data-en="Address (Optional)" data-ur="پتہ (اختیاری)">Address (Optional)</label>
+                    <textarea id="customer-address" class="ledger-textarea"></textarea>
+                </div>
+                 <div class="form-group">
+                    <label for="customer-notes" data-en="Notes (Optional)" data-ur="نوٹس (اختیاری)">Notes (Optional)</label>
+                    <textarea id="customer-notes" class="ledger-textarea"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" data-en="Save Customer" data-ur="صارف محفوظ کریں">Save Customer</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('customer-form-modal')" data-en="Cancel" data-ur="منسوخ کریں">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="transaction-form-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('transaction-form-modal')">&times;</span>
+            <h3 data-en="Add Transaction for" data-ur="کے لیے لین دین شامل کریں">Add Transaction for <span id="transaction-modal-customer-name"></span></h3>
+            <form id="transaction-form">
+                <input type="hidden" id="transaction-customer-id">
+                <div class="form-group">
+                    <label for="transaction-date" data-en="Date" data-ur="تاریخ">Date</label>
+                    <input type="date" id="transaction-date" class="ledger-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="transaction-type" data-en="Transaction Type" data-ur="لین دین کی قسم">Transaction Type</label>
+                    <select id="transaction-type" class="ledger-select" required>
+                        <option value="udhaar" data-en="Udhaar (You Gave / Lena Hai)" data-ur="ادھار (آپ نے دیا / لینا ہے)">Udhaar (You Gave / Lena Hai)</option>
+                        <option value="payment" data-en="Payment (You Received / Jama)" data-ur="وصولی (آپ نے وصول کیا / جمع)">Payment (You Received / Jama)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="transaction-amount" data-en="Amount (Rs)" data-ur="رقم (روپے)">Amount (Rs)</label>
+                    <input type="number" id="transaction-amount" class="ledger-input" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="transaction-method" data-en="Payment Method (Optional)" data-ur="ادائیگی کا طریقہ (اختیاری)">Payment Method (Optional)</label>
+                    <select id="transaction-method" class="ledger-select">
+                        <option value="" data-en="Select Method" data-ur="طریقہ منتخب کریں">Select Method</option>
+                        <option value="Cash" data-en="Cash" data-ur="نقد">Cash</option>
+                        <option value="JazzCash" data-en="JazzCash" data-ur="جاز کیش">JazzCash</option>
+                        <option value="EasyPaisa" data-en="EasyPaisa" data-ur="ایزی پیسہ">EasyPaisa</option>
+                        <option value="Bank Transfer" data-en="Bank Transfer" data-ur="بینک ٹرانسفر">Bank Transfer</option>
+                        <option value="Other" data-en="Other" data-ur="دیگر">Other</option>
+                    </select>
+                </div>
+                 <div class="form-group">
+                    <label for="transaction-description" data-en="Description (Optional)" data-ur="تفصیل (اختیاری)">Description (Optional)</label>
+                    <textarea id="transaction-description" class="ledger-textarea"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" data-en="Save Transaction" data-ur="لین دین محفوظ کریں">Save Transaction</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('transaction-form-modal')" data-en="Cancel" data-ur="منسوخ کریں">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+     <div id="reminder-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('reminder-modal')">&times;</span>
+            <h3 data-en="Send Payment Reminder" data-ur="ادائیگی کی یاد دہانی بھیجیں">Send Payment Reminder</h3>
+            <p id="reminder-text" style="margin-bottom: 15px; white-space: pre-wrap; word-wrap: break-word;"></p>
+            <a id="whatsapp-link" href="#" target="_blank" class="btn btn-success" data-en="Send via WhatsApp" data-ur="واٹس ایپ پر بھیجیں">Send via WhatsApp</a>
+            <a id="sms-link" href="#" class="btn btn-primary" data-en="Send via SMS" data-ur="ایس ایم ایس پر بھیجیں">Send via SMS</a>
+            <button type="button" class="btn btn-secondary" onclick="closeModal('reminder-modal')" data-en="Close" data-ur="بند کریں">Close</button>
+        </div>
+    </div>
+
+    <div id="alert-modal" class="modal">
+        <div class="modal-content">
+             <span class="modal-close" onclick="closeModal('alert-modal')">&times;</span>
+             <h4 id="alert-title">Alert</h4>
+             <p id="alert-message" style="margin: 15px 0;"></p>
+             <div id="alert-buttons" style="text-align: right;">
+                 <button id="alert-ok-btn" class="btn btn-primary" onclick="closeModal('alert-modal')">OK</button>
+                 <button id="alert-confirm-btn" class="btn btn-danger" style="display: none;">Confirm</button>
+                 <button id="alert-cancel-btn" class="btn btn-secondary" style="display: none;" onclick="closeModal('alert-modal')">Cancel</button>
+             </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- Constants and Globals ---
+        const DB_NAME = 'DigitalKhataDB';
+        const DB_VERSION = 1;
+        const CUSTOMERS_STORE_NAME = 'customers';
+        const TRANSACTIONS_STORE_NAME = 'transactions';
+        let db;
+        let currentCustomerId = null; // Track the customer being viewed in details
+        let currentLanguage = localStorage.getItem('khataLanguage') || 'en'; // Default to English
+
+        // --- IndexedDB Initialization and Helpers ---
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onerror = (event) => {
+                    console.error("Database error:", event.target.errorCode);
+                    customAlert("Error opening database. Please ensure IndexedDB is enabled and not in private browsing.", "Database Error");
+                    reject("Error opening database");
+                };
+
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    console.log("Database opened successfully");
+                    resolve(db);
+                };
+
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    console.log("Upgrading database...");
+
+                    // Create Customers Store
+                    if (!db.objectStoreNames.contains(CUSTOMERS_STORE_NAME)) {
+                        const customerStore = db.createObjectStore(CUSTOMERS_STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                        customerStore.createIndex('name', 'name', { unique: false });
+                        customerStore.createIndex('phone', 'phone', { unique: false }); // Phone might not be unique if optional
+                        console.log("Customers store created");
+                    }
+
+                    // Create Transactions Store
+                    if (!db.objectStoreNames.contains(TRANSACTIONS_STORE_NAME)) {
+                        const transactionStore = db.createObjectStore(TRANSACTIONS_STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                        transactionStore.createIndex('customerId', 'customerId', { unique: false });
+                        transactionStore.createIndex('date', 'date', { unique: false });
+                        transactionStore.createIndex('customerId_date', ['customerId', 'date'], { unique: false }); // For efficient filtering
+                        console.log("Transactions store created");
+                    }
+                    console.log("Database upgrade complete");
+                };
+            });
+        }
+
+        // --- Generic DB Operations ---
+        function addObject(storeName, object) {
+            return new Promise((resolve, reject) => {
+                if (!db) return reject("DB not initialized");
+                const transaction = db.transaction([storeName], 'readwrite');
+                const store = transaction.objectStore(storeName);
+                const request = store.add(object);
+
+                request.onsuccess = (event) => resolve(event.target.result); // Returns the new key/id
+                request.onerror = (event) => {
+                    console.error(`Error adding to ${storeName}:`, event.target.error);
+                    reject(event.target.error); // Pass the specific error back
+                };
+            });
+        }
+
+        function getObject(storeName, key) {
+            return new Promise((resolve, reject) => {
+                if (!db) return reject("DB not initialized");
+                const transaction = db.transaction([storeName], 'readonly');
+                const store = transaction.objectStore(storeName);
+                const request = store.get(key);
+
+                request.onsuccess = (event) => resolve(event.target.result);
+                request.onerror = (event) => {
+                     console.error(`Error getting from ${storeName}:`, event.target.error);
+                     reject(event.target.error);
+                }
+            });
+        }
+
+        function updateObject(storeName, object) {
+            return new Promise((resolve, reject) => {
+                if (!db) return reject("DB not initialized");
+                const transaction = db.transaction([storeName], 'readwrite');
+                const store = transaction.objectStore(storeName);
+                const request = store.put(object); // put handles both add and update
+
+                request.onsuccess = (event) => resolve(event.target.result);
+                request.onerror = (event) => {
+                     console.error(`Error updating ${storeName}:`, event.target.error);
+                     reject(event.target.error);
+                }
+            });
+        }
+
+        function deleteObject(storeName, key) {
+            return new Promise((resolve, reject) => {
+                if (!db) return reject("DB not initialized");
+                const transaction = db.transaction([storeName], 'readwrite');
+                const store = transaction.objectStore(storeName);
+                const request = store.delete(key);
+
+                request.onsuccess = (event) => resolve();
+                request.onerror = (event) => {
+                    console.error(`Error deleting from ${storeName}:`, event.target.error);
+                    reject(event.target.error);
+                }
+            });
+        }
+
+        function getAllObjects(storeName, indexName = null, query = null) {
+             return new Promise((resolve, reject) => {
+                if (!db) return reject("DB not initialized");
+                const transaction = db.transaction([storeName], 'readonly');
+                const store = transaction.objectStore(storeName);
+                let request;
+
+                if (indexName && query !== null) {
+                    const index = store.index(indexName);
+                    request = index.getAll(query);
+                } else {
+                    request = store.getAll();
+                }
+
+                request.onsuccess = (event) => resolve(event.target.result);
+                request.onerror = (event) => {
+                    console.error(`Error getting all from ${storeName}:`, event.target.error);
+                    reject(event.target.error);
+                }
+            });
+        }
+
+        // --- Customer Operations ---
+        async function addCustomer(customerData) {
+            // Ensure 'id' is not present for auto-increment to work correctly when adding
+            // Make a copy to avoid modifying the original object passed from the form if needed elsewhere
+            const customerToAdd = { ...customerData };
+            delete customerToAdd.id; // Remove id property before adding
+
+            customerToAdd.balance = 0; // Initialize balance
+
+            try {
+                 const id = await addObject(CUSTOMERS_STORE_NAME, customerToAdd);
+                 await loadCustomers(); // Refresh list
+                 await updateDashboard();
+                 return id;
+            } catch (error) {
+                 // Re-throw the error to be caught by the form handler
+                 console.error("Error in addCustomer -> addObject:", error);
+                 throw error; // Propagate the error
+            }
+        }
+
+
+        async function updateCustomer(customerData) {
+            // Ensure balance is preserved if not explicitly passed
+            const existingCustomer = await getObject(CUSTOMERS_STORE_NAME, customerData.id);
+            if (existingCustomer && !('balance' in customerData)) {
+                customerData.balance = existingCustomer.balance;
+            }
+            await updateObject(CUSTOMERS_STORE_NAME, customerData);
+            await loadCustomers(); // Refresh list
+            // If viewing this customer, refresh details too
+            if (currentCustomerId === customerData.id) {
+                 await loadCustomerDetails(customerData.id);
+            }
+            await updateDashboard();
+        }
+
+        async function deleteCustomer(customerId) {
+            // First, delete all transactions for this customer
+            const transactions = await getTransactionsForCustomer(customerId);
+            const deletePromises = transactions.map(tx => deleteObject(TRANSACTIONS_STORE_NAME, tx.id));
+            await Promise.all(deletePromises);
+
+            // Then, delete the customer
+            await deleteObject(CUSTOMERS_STORE_NAME, customerId);
+            await loadCustomers(); // Refresh list
+            await updateDashboard();
+            // If this customer was being viewed, go back to list
+            if (currentCustomerId === customerId) {
+                showCustomerListView();
+            }
+            customAlert(getLang("Customer and all related transactions deleted."), getLang("Deleted"));
+        }
+
+        async function getCustomer(customerId) {
+            return await getObject(CUSTOMERS_STORE_NAME, customerId);
+        }
+
+        async function getAllCustomers() {
+            return await getAllObjects(CUSTOMERS_STORE_NAME);
+        }
+
+        // --- Transaction Operations ---
+        async function addTransaction(transactionData) {
+            // Calculate running balance *before* adding the new transaction
+            const customerId = transactionData.customerId;
+            const customer = await getCustomer(customerId);
+            if (!customer) throw new Error("Customer not found for transaction");
+
+            // Get transactions up to the new transaction's date to calculate starting balance for this tx
+            const transactionsBefore = await getTransactionsForCustomer(
+                customerId,
+                null, // No start date filter
+                transactionData.date // End date is the new transaction's date (exclusive for balance calc)
+            );
+
+            let runningBalance = 0;
+            transactionsBefore.sort((a, b) => new Date(a.date) - new Date(b.date) || a.id - b.id); // Sort chronologically
+            transactionsBefore.forEach(tx => {
+                runningBalance += (tx.type === 'udhaar' ? parseFloat(tx.amount) : -parseFloat(tx.amount));
+            });
+
+            // Calculate the balance *after* this new transaction
+            const amount = parseFloat(transactionData.amount);
+            transactionData.balanceAfter = runningBalance + (transactionData.type === 'udhaar' ? amount : -amount);
+
+            // Add the transaction
+            const txId = await addObject(TRANSACTIONS_STORE_NAME, transactionData);
+
+            // Update customer's overall balance
+            await updateCustomerBalance(customerId);
+
+            // Refresh UI if viewing this customer
+            if (currentCustomerId === customerId) {
+                await loadCustomerDetails(customerId); // Reload details and transactions
+            }
+            await updateDashboard();
+            return txId;
+        }
+
+        // Function to recalculate and update a customer's total balance
+        async function updateCustomerBalance(customerId) {
+             const customer = await getCustomer(customerId);
+             if (!customer) return;
+
+             const transactions = await getTransactionsForCustomer(customerId);
+             let totalBalance = 0;
+             transactions.forEach(tx => {
+                 totalBalance += (tx.type === 'udhaar' ? parseFloat(tx.amount) : -parseFloat(tx.amount));
+             });
+
+             customer.balance = totalBalance;
+             await updateObject(CUSTOMERS_STORE_NAME, customer); // Save updated balance back to customer object
+             await updateDashboard(); // Update overall dashboard totals
+             return totalBalance; // Return the calculated balance
+        }
+
+
+        async function getTransactionsForCustomer(customerId, startDate = null, endDate = null, searchTerm = null) {
+            if (!db) return [];
+            return new Promise(async (resolve, reject) => {
+                const transaction = db.transaction([TRANSACTIONS_STORE_NAME], 'readonly');
+                const store = transaction.objectStore(TRANSACTIONS_STORE_NAME);
+                const index = store.index('customerId'); // Use customerId index
+
+                let results = [];
+                const request = index.openCursor(IDBKeyRange.only(customerId));
+
+                request.onsuccess = (event) => {
+                    const cursor = event.target.result;
+                    if (cursor) {
+                        const tx = cursor.value;
+                        let dateMatch = true;
+                        let searchMatch = true;
+
+                        // Date Filtering
+                        if (startDate && new Date(tx.date) < new Date(startDate)) {
+                            dateMatch = false;
+                        }
+                        // Adjust end date filter to be inclusive
+                        if (endDate) {
+                            // Set time to end of day for inclusive comparison
+                            const endOfDay = new Date(endDate);
+                            endOfDay.setHours(23, 59, 59, 999);
+                            if (new Date(tx.date) > endOfDay) {
+                                dateMatch = false;
+                            }
+                        }
+
+
+                        // Search Term Filtering (case-insensitive)
+                        if (searchTerm) {
+                           const term = searchTerm.toLowerCase();
+                           const description = (tx.description || '').toLowerCase();
+                           const method = (tx.paymentMethod || '').toLowerCase();
+                           searchMatch = description.includes(term) || method.includes(term);
+                        }
+
+                        if (dateMatch && searchMatch) {
+                            results.push(tx);
+                        }
+                        cursor.continue();
+                    } else {
+                        // Sort results chronologically after fetching all relevant ones
+                        results.sort((a, b) => new Date(a.date) - new Date(b.date) || a.id - b.id);
+
+                        // Recalculate running balance for the filtered & sorted results
+                        let runningBalance = 0;
+                         results.forEach(tx => {
+                             runningBalance += (tx.type === 'udhaar' ? parseFloat(tx.amount) : -parseFloat(tx.amount));
+                             tx.balanceAfter = runningBalance; // Add running balance to each transaction object
+                         });
+
+                        resolve(results);
+                    }
+                };
+                request.onerror = (event) => {
+                    console.error("Error fetching transactions:", event.target.error);
+                    reject(event.target.error);
+                }
+            });
+        }
+
+        // --- UI Rendering ---
+        function formatCurrency(amount) {
+            // Handle potential NaN or invalid inputs gracefully
+            const num = parseFloat(amount);
+            if (isNaN(num)) {
+                return 'Rs 0.00'; // Or some other indicator of invalid data
+            }
+            return `Rs ${num.toFixed(2)}`;
+        }
+
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            // Ensure the date string is treated correctly, potentially as UTC if no timezone specified
+             const date = new Date(dateString);
+             // Check if the date is valid
+             if (isNaN(date.getTime())) {
+                 return 'Invalid Date';
+             }
+
+            // Use PKT timezone if possible, otherwise default locale
+            try {
+                // Using en-CA locale often gives YYYY-MM-DD format which is less ambiguous
+                const options = { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Asia/Karachi' };
+                return date.toLocaleDateString('en-PK', options); // Use en-PK for Pakistan format
+            } catch (e) { // Fallback for environments without specific locale support
+                console.warn("Timezone formatting failed, using default locale.", e);
+                const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                 return date.toLocaleDateString(undefined, options); // Use browser's default locale
+            }
+        }
+
+        function renderBalance(balance) {
+            const amount = parseFloat(balance);
+             if (isNaN(amount)) {
+                 return `<span>Rs --- (${getLang('Error')})</span>`; // Indicate error
+             }
+            const formatted = formatCurrency(Math.abs(amount));
+            if (amount > 0.005) { // Use a small tolerance for floating point comparisons
+                return `<span class="balance-positive">${formatted} (${getLang('Lena Hai')})</span>`;
+            } else if (amount < -0.005) {
+                return `<span class="balance-negative">${formatted} (${getLang('Dena Hai')})</span>`;
+            } else {
+                return `<span>${formatCurrency(0)} (${getLang('Settled')})</span>`; // Show explicit 0.00
+            }
+        }
+
+        async function loadCustomers(searchTerm = '') {
+            const customers = await getAllCustomers();
+            const tableBody = document.getElementById('customer-table-body');
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            const filteredCustomers = customers.filter(c => {
+                const term = searchTerm.toLowerCase();
+                // Check if name exists before calling toLowerCase
+                const nameMatch = c.name ? c.name.toLowerCase().includes(term) : false;
+                const phoneMatch = c.phone ? c.phone.includes(term) : false; // Phone search usually exact or partial number
+                return nameMatch || phoneMatch;
+            });
+
+
+            if (filteredCustomers.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">${getLang('No customers found.')}</td></tr>`;
+                return;
+            }
+
+            filteredCustomers.sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically by name
+
+            filteredCustomers.forEach(customer => {
+                const row = tableBody.insertRow();
+                // Ensure customer name and phone are displayed safely
+                const displayName = customer.name || 'Unnamed Customer'; // Provide a default if name is missing
+                const displayPhone = customer.phone || '-';
+
+                row.innerHTML = `
+                    <td><a href="#" onclick="showCustomerDetailsView(${customer.id}); return false;">${displayName}</a></td>
+                    <td class="hide-mobile">${displayPhone}</td>
+                    <td>${renderBalance(customer.balance)}</td>
+                    <td class="no-print">
+                        <button class="btn btn-warning btn-icon" onclick="editCustomer(${customer.id})" title="${getLang('Edit')}">✏️</button>
+                        <button class="btn btn-danger btn-icon" onclick="confirmDeleteCustomer(${customer.id})" title="${getLang('Delete')}">🗑️</button>
+                    </td>
+                `;
+            });
+        }
+
+        async function loadCustomerDetails(customerId) {
+            currentCustomerId = customerId; // Set the currently viewed customer
+            const customer = await getCustomer(customerId);
+            if (!customer) {
+                customAlert(getLang("Customer not found."), getLang("Error"));
+                showCustomerListView();
+                return;
+            }
+
+             // Ensure customer name is displayed safely
+            const displayName = customer.name || 'Unnamed Customer';
+            document.getElementById('details-customer-name').textContent = displayName;
+
+            document.getElementById('customer-info').innerHTML = `
+                <p><strong>${getLang('Phone')}:</strong> ${customer.phone || '-'}</p>
+                <p><strong>${getLang('Address')}:</strong> ${customer.address || '-'}</p>
+                <p><strong>${getLang('Notes')}:</strong> ${customer.notes || '-'}</p>
+                <p><strong>${getLang('Current Balance')}:</strong> <span id="details-current-balance-header">${renderBalance(customer.balance)}</span></p>
+            `;
+
+            // Set filter dates (e.g., default to last 30 days or all time)
+            // For now, clear filters on load
+            document.getElementById('filter-start-date').value = '';
+            document.getElementById('filter-end-date').value = '';
+            document.getElementById('transaction-search').value = '';
+
+            await loadTransactions(customerId); // Load transactions for this customer
+        }
+
+        async function loadTransactions(customerId, startDate = null, endDate = null, searchTerm = null) {
+            const transactions = await getTransactionsForCustomer(customerId, startDate, endDate, searchTerm);
+            const tableBody = document.getElementById('transaction-table-body');
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            // Get the customer's current total balance separately for display consistency
+            const customer = await getCustomer(customerId);
+            const currentTotalBalance = customer ? customer.balance : 0;
+
+
+            if (transactions.length === 0) {
+                 tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">${getLang('No transactions found for the selected criteria.')}</td></tr>`;
+                 // Display the actual current balance even if no transactions match filters
+                 document.getElementById('details-current-balance').innerHTML = renderBalance(currentTotalBalance);
+                 document.getElementById('details-current-balance-header').innerHTML = renderBalance(currentTotalBalance);
+                 return;
+            }
+
+            // Transactions are already sorted and have balanceAfter calculated by getTransactionsForCustomer
+            transactions.forEach(tx => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${formatDate(tx.date)}</td>
+                    <td style="color: ${tx.type === 'udhaar' ? 'var(--danger-color)' : 'var(--success-color)'};">
+                        ${tx.type === 'udhaar' ? getLang('Udhaar') : getLang('Payment')}
+                        ${tx.paymentMethod ? ` (${tx.paymentMethod})` : ''}
+                    </td>
+                    <td class="hide-mobile">${tx.description || '-'}</td>
+                    <td>${formatCurrency(tx.amount)}</td>
+                    <td>${renderBalance(tx.balanceAfter)}</td>
+                    `;
+            });
+
+            // Update the summary balance at the bottom and top using the actual current balance
+            document.getElementById('details-current-balance').innerHTML = renderBalance(currentTotalBalance);
+            document.getElementById('details-current-balance-header').innerHTML = renderBalance(currentTotalBalance);
+        }
+
+
+        async function updateDashboard() {
+            const customers = await getAllCustomers();
+            const totalCustomers = customers.length;
+            let totalPositiveBalance = 0;
+            let totalNegativeBalance = 0;
+
+            customers.forEach(c => {
+                 // Ensure balance is a number before processing
+                 const balance = parseFloat(c.balance);
+                 if (!isNaN(balance)) {
+                     if (balance > 0.005) { // Use tolerance
+                         totalPositiveBalance += balance;
+                     } else if (balance < -0.005) { // Use tolerance
+                         totalNegativeBalance += balance; // Keep it negative
+                     }
+                 } else {
+                     console.warn(`Customer ID ${c.id} has invalid balance: ${c.balance}`);
+                 }
+            });
+
+            document.getElementById('total-customers').textContent = totalCustomers;
+            document.getElementById('total-balance-positive').textContent = formatCurrency(totalPositiveBalance);
+            document.getElementById('total-balance-negative').textContent = formatCurrency(Math.abs(totalNegativeBalance)); // Display as positive amount
+        }
+
+
+        // --- UI Navigation ---
+        function showCustomerListView() {
+            document.getElementById('customer-list-view').style.display = 'block';
+            document.getElementById('customer-details-view').style.display = 'none';
+            document.getElementById('printable-report-content').style.display = 'none'; // Hide report area
+            currentCustomerId = null; // Reset current customer ID
+            loadCustomers(); // Refresh list in case of updates
+            updateDashboard(); // Refresh dashboard
+        }
+
+        async function showCustomerDetailsView(customerId) {
+            await loadCustomerDetails(customerId); // Load data first
+            document.getElementById('customer-list-view').style.display = 'none';
+            document.getElementById('customer-details-view').style.display = 'block';
+            document.getElementById('printable-report-content').style.display = 'none'; // Hide report area
+        }
+
+        // --- Modals ---
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'block';
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Close modal if clicking outside the content
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            });
+        }
+
+        // --- Form Handling ---
+        function setupForms() {
+            // Customer Form
+            const customerForm = document.getElementById('customer-form');
+            customerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const customerData = {
+                    // Read ID, parse if exists, otherwise null
+                    id: document.getElementById('customer-id').value ? parseInt(document.getElementById('customer-id').value, 10) : null,
+                    name: document.getElementById('customer-name').value.trim(),
+                    phone: document.getElementById('customer-phone').value.trim(),
+                    address: document.getElementById('customer-address').value.trim(),
+                    notes: document.getElementById('customer-notes').value.trim()
+                };
+
+                if (!customerData.name) {
+                    customAlert(getLang("Customer name is required."), getLang("Validation Error"));
+                    return;
+                }
+
+                try {
+                    if (customerData.id) { // If ID exists, it's an update
+                        await updateCustomer(customerData);
+                        customAlert(getLang("Customer updated successfully."), getLang("Success"));
+                    } else { // No ID, it's an add
+                        await addCustomer(customerData); // addCustomer now handles removing the null/undefined ID
+                        customAlert(getLang("Customer added successfully."), getLang("Success"));
+                    }
+                    closeModal('customer-form-modal');
+                    customerForm.reset();
+                } catch (error) {
+                    console.error("Error saving customer:", error);
+                    // Provide a more specific error message if possible
+                    let errorMessage = getLang("Error saving customer:");
+                     if (error.name === 'ConstraintError') {
+                         errorMessage += ` ${getLang("A customer with this information might already exist.")}`;
+                     } else if (error.message) {
+                         errorMessage += ` ${error.message}`;
+                     } else {
+                         errorMessage += ` ${getLang("An unknown error occurred.")}`;
+                     }
+                     customAlert(errorMessage, getLang("Error"));
+                }
+            });
+
+            // Transaction Form
+            const transactionForm = document.getElementById('transaction-form');
+            transactionForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const transactionData = {
+                     // Ensure customerId is parsed correctly
+                    customerId: parseInt(document.getElementById('transaction-customer-id').value, 10),
+                    date: document.getElementById('transaction-date').value,
+                    type: document.getElementById('transaction-type').value,
+                     // Ensure amount is parsed correctly
+                    amount: parseFloat(document.getElementById('transaction-amount').value),
+                    paymentMethod: document.getElementById('transaction-method').value,
+                    description: document.getElementById('transaction-description').value.trim()
+                };
+
+                 // Validate required fields
+                if (!transactionData.customerId || isNaN(transactionData.customerId)) {
+                    customAlert(getLang("Invalid customer ID."), getLang("Validation Error"));
+                    return;
+                }
+                if (!transactionData.date) {
+                    customAlert(getLang("Please select a transaction date."), getLang("Validation Error"));
+                     return;
+                }
+                 if (isNaN(transactionData.amount) || transactionData.amount <= 0) {
+                    customAlert(getLang("Please enter a valid positive amount."), getLang("Validation Error"));
+                    return;
+                }
+
+
+                try {
+                    await addTransaction(transactionData);
+                    customAlert(getLang("Transaction added successfully."), getLang("Success"));
+                    closeModal('transaction-form-modal');
+                    transactionForm.reset();
+                    // No need to reload details here, addTransaction handles it if necessary
+                } catch (error) {
+                    console.error("Error saving transaction:", error);
+                     customAlert(`${getLang("Error saving transaction:")} ${error.message || getLang("An unknown error occurred.")}`, getLang("Error"));
+                }
+            });
+        }
+
+        // --- Event Listeners Setup ---
+        function setupEventListeners() {
+            // Add Customer Button
+            document.getElementById('add-customer-btn').addEventListener('click', () => {
+                document.getElementById('customer-form').reset();
+                document.getElementById('customer-id').value = ''; // Clear ID for add mode
+                document.getElementById('customer-modal-title').textContent = getLang('Add New Customer');
+                // Update modal title language attribute
+                document.getElementById('customer-modal-title').dataset.en = 'Add New Customer';
+                document.getElementById('customer-modal-title').dataset.ur = 'نیا صارف شامل کریں';
+                setLanguage(currentLanguage); // Apply language to the new title
+                openModal('customer-form-modal');
+            });
+
+            // Back to List Button
+            document.getElementById('back-to-list-btn').addEventListener('click', showCustomerListView);
+
+            // Add Transaction Button
+            document.getElementById('add-transaction-btn').addEventListener('click', async () => {
+                if (!currentCustomerId) return;
+                const customer = await getCustomer(currentCustomerId);
+                 if (!customer) return;
+
+                document.getElementById('transaction-form').reset();
+                document.getElementById('transaction-customer-id').value = currentCustomerId;
+                document.getElementById('transaction-modal-customer-name').textContent = customer.name || 'Unnamed Customer'; // Handle missing name
+                // Set default date to today
+                 try {
+                     // Set date in YYYY-MM-DD format required by input type="date"
+                     const today = new Date();
+                     const year = today.getFullYear();
+                     const month = String(today.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+                     const day = String(today.getDate()).padStart(2, '0');
+                     document.getElementById('transaction-date').value = `${year}-${month}-${day}`;
+                 } catch (e) {
+                     console.error("Error setting default date:", e);
+                     // Fallback: leave date empty or set manually if needed
+                     document.getElementById('transaction-date').value = '';
+                 }
+                openModal('transaction-form-modal');
+            });
+
+            // Filter Buttons
+            document.getElementById('apply-filters-btn').addEventListener('click', () => {
+                 if (!currentCustomerId) return;
+                 const startDate = document.getElementById('filter-start-date').value;
+                 const endDate = document.getElementById('filter-end-date').value;
+                 const searchTerm = document.getElementById('transaction-search').value.trim();
+                 loadTransactions(currentCustomerId, startDate || null, endDate || null, searchTerm || null);
+            });
+
+            document.getElementById('clear-filters-btn').addEventListener('click', () => {
+                 if (!currentCustomerId) return;
+                 document.getElementById('filter-start-date').value = '';
+                 document.getElementById('filter-end-date').value = '';
+                 document.getElementById('transaction-search').value = '';
+                 loadTransactions(currentCustomerId); // Load all transactions
+            });
+
+             // Transaction Search Input (live search can be intensive, using filter button is better for IndexedDB)
+             document.getElementById('transaction-search').addEventListener('keypress', (e) => {
+                 if (e.key === 'Enter') {
+                     document.getElementById('apply-filters-btn').click();
+                 }
+             });
+
+             // Customer Search Input
+             document.getElementById('customer-search').addEventListener('input', (e) => {
+                 loadCustomers(e.target.value.trim());
+             });
+
+             // Print Report Button
+             document.getElementById('print-report-btn').addEventListener('click', generateAndPrintReport);
+
+             // Send Reminder Button
+             document.getElementById('send-reminder-btn').addEventListener('click', generateReminder);
+
+             // Export CSV Button
+             document.getElementById('csv-export-btn').addEventListener('click', exportTransactionsToCSV);
+
+             // Backup Button
+             document.getElementById('backup-btn').addEventListener('click', backupData);
+
+             // Restore File Input Change
+             document.getElementById('restore-file').addEventListener('change', handleRestoreFile);
+
+             // Language Switch
+             document.getElementById('language-switch').addEventListener('change', (e) => {
+                 setLanguage(e.target.value);
+             });
+        }
+
+        // --- Feature Implementations ---
+
+        // Edit Customer
+        async function editCustomer(customerId) {
+            const customer = await getCustomer(customerId);
+            if (!customer) return;
+
+            document.getElementById('customer-id').value = customer.id;
+            document.getElementById('customer-name').value = customer.name || ''; // Handle potential null/undefined
+            document.getElementById('customer-phone').value = customer.phone || '';
+            document.getElementById('customer-address').value = customer.address || '';
+            document.getElementById('customer-notes').value = customer.notes || '';
+            document.getElementById('customer-modal-title').textContent = getLang('Edit Customer');
+             // Update modal title language attribute
+            document.getElementById('customer-modal-title').dataset.en = 'Edit Customer';
+            document.getElementById('customer-modal-title').dataset.ur = 'صارف میں ترمیم کریں';
+            setLanguage(currentLanguage); // Apply language to the new title
+            openModal('customer-form-modal');
+        }
+
+        // Confirm Delete Customer
+        function confirmDeleteCustomer(customerId) {
+             customConfirm(
+                 getLang("Are you sure you want to delete this customer and all their transactions? This action cannot be undone."),
+                 getLang("Confirm Deletion"),
+                 () => { // onConfirm
+                     deleteCustomer(customerId);
+                 }
+             );
+        }
+
+        // Generate Report Data
+        async function generateReportData() {
+            if (!currentCustomerId) return null;
+
+            const customer = await getCustomer(currentCustomerId);
+            if (!customer) return null;
+
+            const startDate = document.getElementById('filter-start-date').value || null;
+            const endDate = document.getElementById('filter-end-date').value || null;
+            const searchTerm = document.getElementById('transaction-search').value.trim() || null;
+
+            // Calculate opening balance for the period
+            let openingBalance = 0;
+            if (startDate) {
+                 // Get transactions *before* the start date
+                 // Subtract one day from startDate to get the end date for the opening balance calculation
+                 const dayBeforeStartDate = new Date(startDate);
+                 dayBeforeStartDate.setDate(dayBeforeStartDate.getDate() - 1);
+                 const endDateForOpening = dayBeforeStartDate.toISOString().split('T')[0];
+
+                const transactionsBefore = await getTransactionsForCustomer(currentCustomerId, null, endDateForOpening);
+                transactionsBefore.forEach(tx => {
+                     const amount = parseFloat(tx.amount);
+                     if (!isNaN(amount)) {
+                         openingBalance += (tx.type === 'udhaar' ? amount : -amount);
+                     }
+                 });
+            } else {
+                 // If no start date, opening balance is 0 relative to the beginning of records
+                 openingBalance = 0;
+            }
+
+
+            // Get transactions within the period
+            const transactionsInPeriod = await getTransactionsForCustomer(currentCustomerId, startDate, endDate, searchTerm);
+
+
+            let totalUdhaarInPeriod = 0;
+            let totalPaymentInPeriod = 0;
+            let currentRunningBalance = openingBalance; // Start running balance from opening balance
+
+            const reportRows = transactionsInPeriod.map(tx => {
+                const amount = parseFloat(tx.amount);
+                 if (isNaN(amount)) return null; // Skip invalid transactions
+
+                if (tx.type === 'udhaar') {
+                    totalUdhaarInPeriod += amount;
+                    currentRunningBalance += amount;
+                } else {
+                    totalPaymentInPeriod += amount;
+                    currentRunningBalance -= amount;
+                }
+                return {
+                    date: formatDate(tx.date),
+                    type: tx.type === 'udhaar' ? getLang('Udhaar') : getLang('Payment'),
+                    description: tx.description || '-',
+                    udhaar: tx.type === 'udhaar' ? formatCurrency(amount) : '-',
+                    payment: tx.type === 'payment' ? formatCurrency(amount) : '-',
+                    // Use the calculated running balance for the report row
+                    balance: renderBalance(currentRunningBalance)
+                };
+            }).filter(row => row !== null); // Remove any skipped invalid transactions
+
+            // Closing balance is the final running balance after processing all transactions in the period
+            const closingBalance = currentRunningBalance;
+
+
+            return {
+                customer,
+                startDate,
+                endDate,
+                transactions: reportRows, // Use the processed rows
+                openingBalance,
+                totalUdhaar: totalUdhaarInPeriod, // Use period totals
+                totalPayment: totalPaymentInPeriod, // Use period totals
+                closingBalance
+            };
+        }
+
+
+        // Generate and Print Report
+        async function generateAndPrintReport() {
+            const reportData = await generateReportData();
+            if (!reportData) {
+                customAlert(getLang("Could not generate report data."), getLang("Error"));
+                return;
+            }
+
+            const { customer, startDate, endDate, transactions, openingBalance, totalUdhaar, totalPayment, closingBalance } = reportData;
+
+            // Populate printable area
+            document.getElementById('report-customer-info').innerHTML = `
+                <p><strong>${getLang('Customer')}:</strong> ${customer.name || 'Unnamed Customer'}</p>
+                <p><strong>${getLang('Phone')}:</strong> ${customer.phone || '-'}</p>
+            `;
+            document.getElementById('report-period').innerHTML = `
+                <p><strong>${getLang('Period')}:</strong>
+                ${startDate ? formatDate(startDate) : getLang('Start')} ${getLang('to')} ${endDate ? formatDate(endDate) : getLang('End')}
+                </p>
+            `;
+
+            const reportTableBody = document.getElementById('report-table-body');
+            reportTableBody.innerHTML = ''; // Clear previous report
+
+            // Add Opening Balance Row
+             const openingRow = reportTableBody.insertRow();
+             openingRow.innerHTML = `
+                 <td colspan="3"><strong>${getLang('Opening Balance')}</strong></td>
+                 <td colspan="2"></td>
+                 <td><strong>${renderBalance(openingBalance)}</strong></td>
+             `;
+             openingRow.style.fontWeight = 'bold';
+             openingRow.style.backgroundColor = '#f0f0f0';
+
+
+            transactions.forEach(tx => { // 'transactions' here are the processed reportRows
+                const row = reportTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${tx.date}</td>
+                    <td>${tx.type}</td>
+                    <td>${tx.description}</td>
+                    <td>${tx.udhaar}</td>
+                    <td>${tx.payment}</td>
+                    <td>${tx.balance}</td> `;
+            });
+
+            // Add Summary Row for the period
+            const summaryRow = reportTableBody.insertRow();
+            summaryRow.innerHTML = `
+                <td colspan="3"><strong>${getLang('Period Totals')}</strong></td> <td><strong>${formatCurrency(totalUdhaar)}</strong></td>
+                <td><strong>${formatCurrency(totalPayment)}</strong></td>
+                <td><strong>${renderBalance(closingBalance)}</strong></td> `;
+            summaryRow.style.fontWeight = 'bold';
+            summaryRow.style.backgroundColor = '#f0f0f0';
+
+
+            document.getElementById('report-summary').innerHTML = `
+                 <p><strong>${getLang('Opening Balance')}:</strong> ${renderBalance(openingBalance)}</p>
+                 <p><strong>${getLang('Total Udhaar (Debit)')} (${getLang('Period')}):</strong> ${formatCurrency(totalUdhaar)}</p>
+                 <p><strong>${getLang('Total Payment (Credit)')} (${getLang('Period')}):</strong> ${formatCurrency(totalPayment)}</p>
+                 <p><strong>${getLang('Closing Balance')}:</strong> ${renderBalance(closingBalance)}</p>
+            `;
+
+            // Show the printable area (it's normally hidden, print CSS will handle layout)
+            document.getElementById('printable-report-content').style.display = 'block';
+
+            // Trigger browser print dialog
+            window.print();
+
+            // Hide the printable area again after print dialog (or cancellation)
+            // Use a small timeout to ensure print dialog is processed
+            setTimeout(() => {
+                 document.getElementById('printable-report-content').style.display = 'none';
+            }, 500);
+        }
+
+        // Generate Payment Reminder
+        async function generateReminder() {
+            if (!currentCustomerId) return;
+            const customer = await getCustomer(currentCustomerId);
+             // Ensure customer and balance are valid before proceeding
+             if (!customer || isNaN(parseFloat(customer.balance)) || parseFloat(customer.balance) <= 0.005) {
+                 customAlert(getLang("No reminder needed (balance is zero or negative) or customer not found."), getLang("Info"));
+                 return;
+             }
+
+
+            const balance = formatCurrency(customer.balance);
+            // Allow customization of shop name via localStorage or a settings modal in the future
+            const shopName = localStorage.getItem('khataShopName') || getLang('Your Shop Name');
+
+            const message = getLang('reminder_message_template')
+                                .replace('{customer_name}', customer.name || 'Customer') // Handle missing name
+                                .replace('{balance_amount}', balance)
+                                .replace('{shop_name}', shopName);
+
+            document.getElementById('reminder-text').textContent = message;
+
+            // Generate WhatsApp link only if phone number exists
+            if (customer.phone) {
+                 // Basic validation/cleaning for phone number (remove spaces, hyphens)
+                 const cleanPhone = customer.phone.replace(/[-\s]/g, '');
+                 // Prepend country code if missing (assuming Pakistan +92) - this is a basic assumption
+                 const whatsappNumber = cleanPhone.startsWith('+') ? cleanPhone : (cleanPhone.startsWith('92') ? cleanPhone : `92${cleanPhone.replace(/^0+/, '')}`); // Remove leading 0 if adding 92
+
+                const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+                document.getElementById('whatsapp-link').href = whatsappLink;
+                document.getElementById('whatsapp-link').style.display = 'inline-block';
+
+                 // Generate SMS link
+                 const smsLink = `sms:${cleanPhone}?body=${encodeURIComponent(message)}`;
+                 document.getElementById('sms-link').href = smsLink;
+                 document.getElementById('sms-link').style.display = 'inline-block';
+            } else {
+                 document.getElementById('whatsapp-link').style.display = 'none';
+                 document.getElementById('sms-link').style.display = 'none';
+                 document.getElementById('reminder-text').textContent += `\n\n(${getLang('No phone number available for this customer.')})`;
+            }
+
+
+            openModal('reminder-modal');
+        }
+
+        // Export Transactions to CSV
+        async function exportTransactionsToCSV() {
+             if (!currentCustomerId) return;
+
+            const customer = await getCustomer(currentCustomerId);
+            if (!customer) return;
+
+            const startDate = document.getElementById('filter-start-date').value || null;
+            const endDate = document.getElementById('filter-end-date').value || null;
+            const searchTerm = document.getElementById('transaction-search').value.trim() || null;
+
+             // Use the same logic as reporting to get opening balance and transactions
+             const reportData = await generateReportData(); // Reuse report generation logic
+             if (!reportData || reportData.transactions.length === 0) {
+                 customAlert(getLang("No transactions to export for the selected criteria."), getLang("Info"));
+                 return;
+             }
+
+             const { openingBalance, transactions } = reportData; // Get processed transactions
+
+
+            // CSV Header - Use language-specific headers
+            let csvContent = "data:text/csv;charset=utf-8,";
+            const headers = [
+                getLang("Date"),
+                getLang("Type"),
+                getLang("Description"),
+                // getLang("Payment Method"), // Method is included in Type column now
+                getLang("Udhaar (Debit)"),
+                getLang("Payment (Credit)"),
+                getLang("Balance") // Use the running balance from report data
+            ];
+            csvContent += headers.map(h => `"${h.replace(/"/g, '""')}"`).join(",") + "\r\n"; // Quote headers
+
+             // Add Opening Balance Row
+             const openingBalanceRow = [
+                 getLang("Opening Balance"), // Type/Description
+                 "", // Desc
+                 "", // Udhaar
+                 "", // Payment
+                 `"${renderBalance(openingBalance).replace(/<[^>]*>/g, '')}"` // Balance (remove HTML)
+             ];
+             csvContent += openingBalanceRow.join(",") + "\r\n";
+
+
+            // CSV Rows from report data
+             transactions.forEach(tx => {
+                 const row = [
+                     `"${tx.date}"`, // Date
+                     `"${tx.type.replace(/"/g, '""')}"`, // Type
+                     `"${tx.description.replace(/"/g, '""')}"`, // Description
+                     `"${tx.udhaar.replace(/Rs|\(|\)/g, '').trim()}"`, // Udhaar amount only
+                     `"${tx.payment.replace(/Rs|\(|\)/g, '').trim()}"`, // Payment amount only
+                     `"${tx.balance.replace(/<[^>]*>/g, '')}"` // Balance (remove HTML)
+                 ];
+                 csvContent += row.join(",") + "\r\n";
+             });
+
+
+            // Create and trigger download link
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            const filename = `Khata_${(customer.name || 'Customer').replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.csv`;
+            link.setAttribute("download", filename);
+            document.body.appendChild(link); // Required for Firefox
+            link.click();
+            document.body.removeChild(link);
+            customAlert(getLang("CSV file generated."), getLang("Export Successful"));
+        }
+
+
+        // Backup Data
+        async function backupData() {
+            try {
+                const customers = await getAllObjects(CUSTOMERS_STORE_NAME);
+                const transactions = await getAllObjects(TRANSACTIONS_STORE_NAME);
+                const backup = {
+                    version: 1, // Add a version number for future compatibility
+                    customers: customers,
+                    transactions: transactions,
+                    backupDate: new Date().toISOString(),
+                    language: currentLanguage, // Store current language
+                    shopName: localStorage.getItem('khataShopName') || '' // Store shop name if set
+                };
+
+                const jsonString = JSON.stringify(backup, null, 2); // Pretty print JSON
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+
+                const link = document.createElement('a');
+                link.href = url;
+                const filename = `DigitalKhata_Backup_${new Date().toISOString().split('T')[0]}.json`;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url); // Clean up blob URL
+
+                customAlert(getLang("Backup successful! Keep the downloaded file safe."), getLang("Backup Complete"));
+
+            } catch (error) {
+                console.error("Backup failed:", error);
+                customAlert(`${getLang("Backup failed:")} ${error.message}`, getLang("Error"));
+            }
+        }
+
+        // Handle Restore File Selection
+        function handleRestoreFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const backupData = JSON.parse(e.target.result);
+                    // Basic validation of backup structure
+                     if (typeof backupData !== 'object' || !Array.isArray(backupData.customers) || !Array.isArray(backupData.transactions)) {
+                         throw new Error(getLang("Invalid backup file structure."));
+                     }
+
+                    // Ask for confirmation before overwriting
+                    customConfirm(
+                        getLang("Restoring will overwrite all current data. Are you sure you want to proceed?"),
+                        getLang("Confirm Restore"),
+                        () => { // onConfirm
+                            restoreData(backupData);
+                        },
+                        () => { // onCancel
+                            document.getElementById('restore-file').value = ''; // Reset file input
+                        }
+                    );
+                } catch (error) {
+                    console.error("Error reading or parsing restore file:", error);
+                     customAlert(`${getLang("Error reading restore file:")} ${error.message}`, getLang("Error"));
+                    document.getElementById('restore-file').value = ''; // Reset file input
+                }
+            };
+            reader.onerror = () => {
+                 customAlert(getLang("Failed to read the selected file."), getLang("File Read Error"));
+                 document.getElementById('restore-file').value = ''; // Reset file input
+            };
+            reader.readAsText(file);
+        }
+
+        // Restore Data
+        async function restoreData(backupData) {
+             if (!db) {
+                 customAlert(getLang("Database not initialized. Cannot restore."), getLang("Error"));
+                 return;
+             }
+             customAlert(getLang("Restoring data... Please wait."), getLang("In Progress")); // Inform user
+
+             try {
+                 // --- Step 1: Clear existing data ---
+                 console.log("Clearing existing data...");
+                 const clearCustomersTx = db.transaction(CUSTOMERS_STORE_NAME, 'readwrite');
+                 const clearCustomersStore = clearCustomersTx.objectStore(CUSTOMERS_STORE_NAME);
+                 const clearCustomersRequest = clearCustomersStore.clear();
+                 await new Promise((resolve, reject) => {
+                     clearCustomersRequest.onsuccess = resolve;
+                     clearCustomersRequest.onerror = (e) => reject(`Failed to clear customers: ${e.target.error}`);
+                 });
+                 await new Promise(resolve => clearCustomersTx.oncomplete = resolve);
+
+                 const clearTransactionsTx = db.transaction(TRANSACTIONS_STORE_NAME, 'readwrite');
+                 const clearTransactionsStore = clearTransactionsTx.objectStore(TRANSACTIONS_STORE_NAME);
+                 const clearTransactionsRequest = clearTransactionsStore.clear();
+                  await new Promise((resolve, reject) => {
+                     clearTransactionsRequest.onsuccess = resolve;
+                     clearTransactionsRequest.onerror = (e) => reject(`Failed to clear transactions: ${e.target.error}`);
+                 });
+                 await new Promise(resolve => clearTransactionsTx.oncomplete = resolve);
+                 console.log("Old data cleared.");
+
+                 // --- Step 2: Restore Customers and map old IDs to new IDs ---
+                 console.log("Restoring customers...");
+                 const customerIdMap = new Map(); // Map<oldId, newId>
+                 const addCustomersTx = db.transaction(CUSTOMERS_STORE_NAME, 'readwrite');
+                 const addCustomersStore = addCustomersTx.objectStore(CUSTOMERS_STORE_NAME);
+                 for (const customer of backupData.customers) {
+                     const oldId = customer.id; // Store the old ID
+                     delete customer.id; // Remove old ID for auto-increment
+                     const addRequest = addCustomersStore.add(customer);
+                     // Wait for each add to complete to get the new ID
+                     const newId = await new Promise((resolve, reject) => {
+                         addRequest.onsuccess = (e) => resolve(e.target.result);
+                         addRequest.onerror = (e) => reject(`Failed to add customer ${customer.name}: ${e.target.error}`);
+                     });
+                     if (oldId !== undefined && newId !== undefined) {
+                         customerIdMap.set(oldId, newId); // Map old ID to the newly generated ID
+                     }
+                 }
+                 await new Promise(resolve => addCustomersTx.oncomplete = resolve);
+                 console.log("Customers restored. ID Map:", customerIdMap);
+
+                 // --- Step 3: Restore Transactions using the new Customer IDs ---
+                 console.log("Restoring transactions...");
+                 const addTransactionsTx = db.transaction(TRANSACTIONS_STORE_NAME, 'readwrite');
+                 const addTransactionsStore = addTransactionsTx.objectStore(TRANSACTIONS_STORE_NAME);
+                  let transactionsAdded = 0;
+                  let transactionsSkipped = 0;
+
+                 for (const transaction of backupData.transactions) {
+                     const oldCustomerId = transaction.customerId;
+                     const newCustomerId = customerIdMap.get(oldCustomerId); // Find the new customer ID
+
+                     if (newCustomerId !== undefined) {
+                         delete transaction.id; // Remove old transaction ID
+                         transaction.customerId = newCustomerId; // Update to the new customer ID
+                         const addTxRequest = addTransactionsStore.add(transaction);
+                         await new Promise((resolve, reject) => {
+                             addTxRequest.onsuccess = resolve;
+                             addTxRequest.onerror = (e) => {
+                                 console.error(`Failed to add transaction for new customer ID ${newCustomerId}: ${e.target.error}`);
+                                 reject(e.target.error); // Or just log and continue
+                             };
+                         });
+                         transactionsAdded++;
+                     } else {
+                         console.warn(`Skipping transaction ID ${transaction.id} because old customer ID ${oldCustomerId} was not found in the map.`);
+                         transactionsSkipped++;
+                     }
+                 }
+                 await new Promise(resolve => addTransactionsTx.oncomplete = resolve);
+                 console.log(`Transactions restored: ${transactionsAdded} added, ${transactionsSkipped} skipped.`);
+
+
+                 // --- Step 4: Recalculate all customer balances ---
+                 console.log("Recalculating all customer balances...");
+                 const allCustomers = await getAllObjects(CUSTOMERS_STORE_NAME);
+                 for (const customer of allCustomers) {
+                     await updateCustomerBalance(customer.id); // Recalculate and save balance
+                 }
+                 console.log("Balances recalculated.");
+
+                 // --- Step 5: Restore Settings ---
+                 if (backupData.language) {
+                     setLanguage(backupData.language); // Apply restored language
+                 }
+                 if (backupData.shopName) {
+                     localStorage.setItem('khataShopName', backupData.shopName);
+                 }
+
+
+                 customAlert(getLang("Data restored successfully. Balances recalculated."), getLang("Restore Complete"));
+                 await loadCustomers(); // Reload UI with correct data
+                 await updateDashboard();
+                 showCustomerListView(); // Go back to main view
+
+             } catch (error) {
+                 console.error("Restore failed:", error);
+                 customAlert(`${getLang("Restore failed:")} ${error.message || error}`, getLang("Error"));
+                 // Consider attempting to reload existing data if restore fails midway
+                 await loadCustomers();
+                 await updateDashboard();
+             } finally {
+                 document.getElementById('restore-file').value = ''; // Reset file input
+                 closeModal('alert-modal'); // Close the "In Progress" alert
+             }
+        }
+
+
+        // --- Language Switching ---
+        const translations = {
+            en: {
+                "Digital Khata": "Digital Khata",
+                "Dashboard": "Dashboard",
+                "Total Customers": "Total Customers",
+                "Total Balance (Lena Hai)": "Total Balance (Lena Hai)",
+                "Total Advance (Dena Hai)": "Total Advance (Dena Hai)",
+                "Customers": "Customers",
+                "Add New Customer": "Add New Customer",
+                "Search Customers...": "Search Customers...",
+                "Name": "Name",
+                "Phone": "Phone",
+                "Balance": "Balance",
+                "Actions": "Actions",
+                "No customers found.": "No customers found.",
+                "Edit": "Edit",
+                "Delete": "Delete",
+                "Backup & Restore": "Backup & Restore",
+                "Backup Data (JSON)": "Backup Data (JSON)",
+                "Restore Data (JSON)": "Restore Data (JSON)",
+                "Customer Details": "Customer Details", // Base text, name added dynamically
+                "Back to List": "Back to List",
+                "Address": "Address",
+                "Notes": "Notes",
+                "Current Balance:": "Current Balance:",
+                "Transactions": "Transactions",
+                "Add Transaction": "Add Transaction",
+                "Send Reminder": "Send Reminder",
+                "Print Report": "Print Report",
+                "Export CSV": "Export CSV",
+                "From:": "From:",
+                "To:": "To:",
+                "Search Description...": "Search Description...",
+                "Filter": "Filter",
+                "Clear": "Clear",
+                "Date": "Date",
+                "Type": "Type",
+                "Description": "Description",
+                "Amount": "Amount",
+                "No transactions found for the selected criteria.": "No transactions found for the selected criteria.",
+                "Monthly Statement": "Monthly Statement",
+                "Customer": "Customer",
+                "Period": "Period",
+                "Start": "Start",
+                "to": "to",
+                "End": "End",
+                "Udhaar (Debit)": "Udhaar (Debit)",
+                "Payment (Credit)": "Payment (Credit)",
+                "Opening Balance": "Opening Balance",
+                "Totals": "Totals",
+                "Period Totals": "Period Totals",
+                "Total Udhaar (Debit)": "Total Udhaar (Debit)",
+                "Total Payment (Credit)": "Total Payment (Credit)",
+                "Closing Balance": "Closing Balance",
+                "Edit Customer": "Edit Customer",
+                "Phone (Optional)": "Phone (Optional)",
+                "Address (Optional)": "Address (Optional)",
+                "Notes (Optional)": "Notes (Optional)",
+                "Save Customer": "Save Customer",
+                "Cancel": "Cancel",
+                "Add Transaction for": "Add Transaction for", // Name added dynamically
+                "Transaction Type": "Transaction Type",
+                "Udhaar (You Gave / Lena Hai)": "Udhaar (You Gave / Lena Hai)",
+                "Payment (You Received / Jama)": "Payment (You Received / Jama)",
+                "Amount (Rs)": "Amount (Rs)",
+                "Payment Method (Optional)": "Payment Method (Optional)",
+                "Select Method": "Select Method",
+                "Cash": "Cash",
+                "JazzCash": "JazzCash",
+                "EasyPaisa": "EasyPaisa",
+                "Bank Transfer": "Bank Transfer",
+                "Other": "Other",
+                "Description (Optional)": "Description (Optional)",
+                "Save Transaction": "Save Transaction",
+                "Send Payment Reminder": "Send Payment Reminder",
+                "Send via WhatsApp": "Send via WhatsApp",
+                "Send via SMS": "Send via SMS",
+                "Close": "Close",
+                "Alert": "Alert",
+                "OK": "OK",
+                "Confirm": "Confirm",
+                "Customer name is required.": "Customer name is required.",
+                "Validation Error": "Validation Error",
+                "Customer updated successfully.": "Customer updated successfully.",
+                "Success": "Success",
+                "Customer added successfully.": "Customer added successfully.",
+                "Error saving customer:": "Error saving customer:",
+                "Error": "Error",
+                "An unknown error occurred.": "An unknown error occurred.",
+                "A customer with this information might already exist.": "A customer with this information might already exist.",
+                "Please enter a valid date and positive amount.": "Please enter a valid date and positive amount.",
+                "Please select a transaction date.": "Please select a transaction date.",
+                "Please enter a valid positive amount.": "Please enter a valid positive amount.",
+                "Invalid customer ID.": "Invalid customer ID.",
+                "Transaction added successfully.": "Transaction added successfully.",
+                "Error saving transaction:": "Error saving transaction:",
+                "Are you sure you want to delete this customer and all their transactions? This action cannot be undone.": "Are you sure you want to delete this customer and all their transactions? This action cannot be undone.",
+                "Confirm Deletion": "Confirm Deletion",
+                "Customer and all related transactions deleted.": "Customer and all related transactions deleted.",
+                "Deleted": "Deleted",
+                "Customer not found.": "Customer not found.",
+                "Could not generate report data.": "Could not generate report data.",
+                "No reminder needed or customer not found.": "No reminder needed or customer not found.",
+                "No reminder needed (balance is zero or negative) or customer not found.": "No reminder needed (balance is zero or negative) or customer not found.",
+                "No phone number available for this customer.": "No phone number available for this customer.",
+                "Info": "Info",
+                "reminder_message_template": "Dear {customer_name},\n\nThis is a friendly reminder regarding your outstanding balance of {balance_amount} with {shop_name}.\n\nPlease clear it at your earliest convenience.\n\nThank you.",
+                "Your Shop Name": "Your Shop Name", // Placeholder
+                "No transactions to export for the selected criteria.": "No transactions to export for the selected criteria.",
+                "CSV file generated.": "CSV file generated.",
+                "Export Successful": "Export Successful",
+                "Backup successful! Keep the downloaded file safe.": "Backup successful! Keep the downloaded file safe.",
+                "Backup Complete": "Backup Complete",
+                "Backup failed:": "Backup failed:",
+                "Invalid backup file format.": "Invalid backup file format.",
+                "Invalid backup file structure.": "Invalid backup file structure.",
+                "Restoring will overwrite all current data. Are you sure you want to proceed?": "Restoring will overwrite all current data. Are you sure you want to proceed?",
+                "Confirm Restore": "Confirm Restore",
+                "Error reading or parsing restore file:": "Error reading or parsing restore file:",
+                "Error reading restore file:": "Error reading restore file:",
+                "Failed to read the selected file.": "Failed to read the selected file.",
+                "File Read Error": "File Read Error",
+                "Database not initialized. Cannot restore.": "Database not initialized. Cannot restore.",
+                "Restoring data... Please wait.": "Restoring data... Please wait.",
+                "In Progress": "In Progress",
+                "Data restored successfully. Balances recalculated.": "Data restored successfully. Balances recalculated.",
+                "Data restored successfully. Please refresh the page if needed.": "Data restored successfully. Please refresh the page if needed.", // Kept for reference, replaced by above
+                "Restore Complete": "Restore Complete",
+                "Restore failed:": "Restore failed:",
+                "Language": "Language",
+                "Udhaar": "Udhaar",
+                "Payment": "Payment",
+                "Lena Hai": "Lena Hai",
+                "Dena Hai": "Dena Hai",
+                "Settled": "Settled",
+                "Error opening database. Please ensure IndexedDB is enabled and not in private browsing.": "Error opening database. Please ensure IndexedDB is enabled and not in private browsing.",
+                "Database Error": "Database Error",
+                "Initialization Failed": "Initialization Failed",
+                "Could not initialize the application database.": "Could not initialize the application database.",
+                "Please ensure you are not in private browsing mode and that your browser supports IndexedDB.": "Please ensure you are not in private browsing mode and that your browser supports IndexedDB.",
+                "Error details:": "Error details:",
+            },
+            ur: {
+                "Digital Khata": "ڈیجیٹل کھاتہ",
+                "Dashboard": "ڈیش بورڈ",
+                "Total Customers": "کل صارفین",
+                "Total Balance (Lena Hai)": "کل بیلنس (لینا ہے)",
+                "Total Advance (Dena Hai)": "کل ایڈوانس (دینا ہے)",
+                "Customers": "صارفین",
+                "Add New Customer": "نیا صارف شامل کریں",
+                "Search Customers...": "صارفین تلاش کریں...",
+                "Name": "نام",
+                "Phone": "فون",
+                "Balance": "بیلنس",
+                "Actions": "کاروائیاں",
+                "No customers found.": "کوئی صارف نہیں ملا۔",
+                "Edit": "ترمیم",
+                "Delete": "حذف کریں",
+                "Backup & Restore": "بیک اپ اور بحال کریں",
+                "Backup Data (JSON)": "ڈیٹا بیک اپ (JSON)",
+                "Restore Data (JSON)": "ڈیٹا بحال کریں (JSON)",
+                "Customer Details": "صارف کی تفصیلات",
+                "Back to List": "فہرست پر واپس",
+                "Address": "پتہ",
+                "Notes": "نوٹس",
+                "Current Balance:": "موجودہ بیلنس:",
+                "Transactions": "لین دین",
+                "Add Transaction": "لین دین شامل کریں",
+                "Send Reminder": "یاد دہانی بھیجیں",
+                "Print Report": "رپورٹ پرنٹ کریں",
+                "Export CSV": "CSV ایکسپورٹ کریں",
+                "From:": "سے:",
+                "To:": "تک:",
+                "Search Description...": "تفصیل تلاش کریں...",
+                "Filter": "فلٹر کریں",
+                "Clear": "صاف کریں",
+                "Date": "تاریخ",
+                "Type": "قسم",
+                "Description": "تفصیل",
+                "Amount": "رقم",
+                "No transactions found for the selected criteria.": "منتخب کردہ معیار کے لئے کوئی لین دین نہیں ملا۔",
+                "Monthly Statement": "ماہانہ گوشوارہ",
+                "Customer": "صارف",
+                "Period": "مدت",
+                "Start": "شروع",
+                "to": "تک",
+                "End": "اختتام",
+                "Udhaar (Debit)": "ادھار (لینا ہے)",
+                "Payment (Credit)": "وصولی (جمع)",
+                "Opening Balance": "ابتدائی بیلنس",
+                "Totals": "کل میزان",
+                "Period Totals": "مدت کا میزان",
+                "Total Udhaar (Debit)": "کل ادھار (لینا ہے)",
+                "Total Payment (Credit)": "کل وصولی (جمع)",
+                "Closing Balance": "اختتامی بیلنس",
+                "Edit Customer": "صارف میں ترمیم کریں",
+                "Phone (Optional)": "فون (اختیاری)",
+                "Address (Optional)": "پتہ (اختیاری)",
+                "Notes (Optional)": "نوٹس (اختیاری)",
+                "Save Customer": "صارف محفوظ کریں",
+                "Cancel": "منسوخ کریں",
+                "Add Transaction for": "کے لیے لین دین شامل کریں",
+                "Transaction Type": "لین دین کی قسم",
+                "Udhaar (You Gave / Lena Hai)": "ادھار (آپ نے دیا / لینا ہے)",
+                "Payment (You Received / Jama)": "وصولی (آپ نے وصول کیا / جمع)",
+                "Amount (Rs)": "رقم (روپے)",
+                "Payment Method (Optional)": "ادائیگی کا طریقہ (اختیاری)",
+                "Select Method": "طریقہ منتخب کریں",
+                "Cash": "نقد",
+                "JazzCash": "جاز کیش",
+                "EasyPaisa": "ایزی پیسہ",
+                "Bank Transfer": "بینک ٹرانسفر",
+                "Other": "دیگر",
+                "Description (Optional)": "تفصیل (اختیاری)",
+                "Save Transaction": "لین دین محفوظ کریں",
+                "Send Payment Reminder": "ادائیگی کی یاد دہانی بھیجیں",
+                "Send via WhatsApp": "واٹس ایپ پر بھیجیں",
+                "Send via SMS": "ایس ایم ایس پر بھیجیں",
+                "Close": "بند کریں",
+                "Alert": "انتباہ",
+                "OK": "ٹھیک ہے",
+                "Confirm": "تصدیق کریں",
+                "Customer name is required.": "صارف کا نام درکار ہے۔",
+                "Validation Error": "توثیق کی خرابی",
+                "Customer updated successfully.": "صارف کامیابی سے اپ ڈیٹ ہو گیا۔",
+                "Success": "کامیابی",
+                "Customer added successfully.": "صارف کامیابی سے شامل ہو گیا۔",
+                "Error saving customer:": "صارف کو محفوظ کرنے میں خرابی:",
+                "Error": "خرابی",
+                "An unknown error occurred.": "ایک نامعلوم خرابی پیش آگئی۔",
+                 "A customer with this information might already exist.": "اس معلومات کے ساتھ صارف پہلے سے موجود ہو سکتا ہے۔",
+                "Please enter a valid date and positive amount.": "براہ کرم ایک درست تاریخ اور مثبت رقم درج کریں۔",
+                "Please select a transaction date.": "براہ کرم لین دین کی تاریخ منتخب کریں۔",
+                "Please enter a valid positive amount.": "براہ کرم ایک درست مثبت رقم درج کریں۔",
+                "Invalid customer ID.": "غلط صارف ID۔",
+                "Transaction added successfully.": "لین دین کامیابی سے شامل ہو گیا۔",
+                "Error saving transaction:": "لین دین کو محفوظ کرنے میں خرابی:",
+                "Are you sure you want to delete this customer and all their transactions? This action cannot be undone.": "کیا آپ واقعی اس صارف اور ان کے تمام لین دین کو حذف کرنا چاہتے ہیں؟ یہ عمل واپس نہیں لیا جا سکتا۔",
+                "Confirm Deletion": "حذف کرنے کی تصدیق کریں",
+                "Customer and all related transactions deleted.": "صارف اور تمام متعلقہ لین دین حذف کر دیے گئے۔",
+                "Deleted": "حذف کر دیا گیا۔",
+                "Customer not found.": "صارف نہیں ملا۔",
+                "Could not generate report data.": "رپورٹ کا ڈیٹا تیار نہیں کیا جا سکا۔",
+                "No reminder needed or customer not found.": "یاد دہانی کی ضرورت نہیں یا صارف نہیں ملا۔",
+                "No reminder needed (balance is zero or negative) or customer not found.": "یاد دہانی کی ضرورت نہیں (بیلنس صفر یا منفی ہے) یا صارف نہیں ملا۔",
+                "No phone number available for this customer.": "اس صارف کے لیے کوئی فون نمبر دستیاب نہیں ہے۔",
+                "Info": "معلومات",
+                "reminder_message_template": "محترم {customer_name}،\n\nیہ {shop_name} کے ساتھ آپ کے بقایا بیلنس {balance_amount} کے بارے میں ایک دوستانہ یاد دہانی ہے۔\n\nبراہ کرم جلد از جلد اسے ادا کریں۔\n\nشکریہ۔",
+                "Your Shop Name": "آپکی دکان کا نام", // Placeholder
+                "No transactions to export for the selected criteria.": "منتخب کردہ معیار کے لیے برآمد کرنے کے لیے کوئی لین دین نہیں ہے۔",
+                "CSV file generated.": "CSV فائل تیار ہو گئی۔",
+                "Export Successful": "برآمد کامیاب",
+                "Backup successful! Keep the downloaded file safe.": "بیک اپ کامیاب! ڈاؤن لوڈ کی گئی فائل کو محفوظ رکھیں۔",
+                "Backup Complete": "بیک اپ مکمل",
+                "Backup failed:": "بیک اپ ناکام:",
+                "Invalid backup file format.": "بیک اپ فائل کی شکل غلط ہے۔",
+                "Invalid backup file structure.": "بیک اپ فائل کا ڈھانچہ غلط ہے۔",
+                "Restoring will overwrite all current data. Are you sure you want to proceed?": "بحال کرنے سے موجودہ تمام ڈیٹا اوور رائٹ ہو جائے گا۔ کیا آپ واقعی آگے بڑھنا چاہتے ہیں؟",
+                "Confirm Restore": "بحالی کی تصدیق کریں",
+                "Error reading or parsing restore file:": "بحالی فائل کو پڑھنے یا پارس کرنے میں خرابی:",
+                "Error reading restore file:": "بحالی فائل کو پڑھنے میں خرابی:",
+                "Failed to read the selected file.": "منتخب فائل کو پڑھنے میں ناکامی۔",
+                "File Read Error": "فائل پڑھنے میں خرابی",
+                "Database not initialized. Cannot restore.": "ڈیٹا بیس شروع نہیں ہوا۔ بحال نہیں کیا جا سکتا۔",
+                "Restoring data... Please wait.": "ڈیٹا بحال کیا جا رہا ہے۔۔۔ براہ کرم انتظار کریں۔",
+                "In Progress": "جاری ہے",
+                "Data restored successfully. Balances recalculated.": "ڈیٹا کامیابی سے بحال ہو گیا۔ بیلنس دوبارہ کیلکولیٹ کر دیے گئے ہیں۔",
+                "Data restored successfully. Please refresh the page if needed.": "ڈیٹا کامیابی سے بحال ہو گیا۔ اگر ضرورت ہو تو براہ کرم صفحہ تازہ کریں۔", // Kept for reference
+                "Restore Complete": "بحالی مکمل",
+                "Restore failed:": "بحالی ناکام:",
+                "Language": "زبان",
+                "Udhaar": "ادھار",
+                "Payment": "وصولی",
+                "Lena Hai": "لینا ہے",
+                "Dena Hai": "دینا ہے",
+                "Settled": "حساب برابر",
+                "Error opening database. Please ensure IndexedDB is enabled and not in private browsing.": "ڈیٹا بیس کھولنے میں خرابی۔ براہ کرم یقینی بنائیں کہ IndexedDB فعال ہے اور نجی براؤزنگ میں نہیں ہے۔",
+                "Database Error": "ڈیٹا بیس کی خرابی",
+                "Initialization Failed": "شروع کرنے میں ناکامی",
+                "Could not initialize the application database.": "ایپلیکیشن ڈیٹا بیس کو شروع نہیں کیا جا سکا۔",
+                "Please ensure you are not in private browsing mode and that your browser supports IndexedDB.": "براہ کرم یقینی بنائیں کہ آپ نجی براؤزنگ موڈ میں نہیں ہیں اور آپ کا براؤزر IndexedDB کو سپورٹ کرتا ہے۔",
+                "Error details:": "خرابی کی تفصیلات:",
+            }
+        };
+
+        function getLang(key) {
+            return translations[currentLanguage]?.[key] || translations['en']?.[key] || key; // Fallback chain: current -> en -> key
+        }
+
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('khataLanguage', lang); // Save preference
+            document.documentElement.lang = lang; // Set html lang attribute
+            document.documentElement.dir = lang === 'ur' ? 'rtl' : 'ltr'; // Set text direction
+
+            // Apply translations to all elements with data attributes
+            const elements = document.querySelectorAll('[data-en], [data-ur]');
+            elements.forEach(el => {
+                // Use getLang for consistent fallback logic
+                const text = getLang(el.dataset.en); // Use data-en as the key
+
+                // Check if it's an input placeholder
+                 if (el.tagName === 'INPUT' && el.type !== 'button' && el.type !== 'submit' && el.type !== 'file' && el.type !== 'hidden') {
+                     const placeholderKey = el.getAttribute('data-en-placeholder') || el.dataset.en; // Use data-en-placeholder or data-en as key
+                     const placeholderText = getLang(placeholderKey);
+                     if (placeholderText !== placeholderKey) { // Only set if translation exists
+                         el.placeholder = placeholderText;
+                     }
+                 } else if (el.tagName === 'OPTION') {
+                     const optionKey = el.dataset.en;
+                     const optionText = getLang(optionKey);
+                     el.textContent = optionText;
+                 } else {
+                     // For buttons, labels, headings, etc.
+                     el.textContent = text;
+                 }
+            });
+
+
+             // Update dynamically generated text like balances and dates by reloading relevant UI parts
+             if (currentCustomerId) {
+                 loadCustomerDetails(currentCustomerId); // Reload details to update balance text & customer info
+             } else {
+                 loadCustomers(); // Reload customer list to update balances
+                 updateDashboard(); // Update dashboard totals
+             }
+
+             // Ensure the language dropdown reflects the current language
+             document.getElementById('language-switch').value = lang;
+        }
+
+
+        // --- Custom Alert/Confirm ---
+        function customAlert(message, title = "Alert") {
+            document.getElementById('alert-title').textContent = getLang(title);
+            document.getElementById('alert-message').textContent = message; // Message might already be translated
+            document.getElementById('alert-confirm-btn').style.display = 'none';
+            document.getElementById('alert-cancel-btn').style.display = 'none';
+            document.getElementById('alert-ok-btn').style.display = 'inline-block';
+            document.getElementById('alert-ok-btn').textContent = getLang("OK"); // Translate OK button
+            openModal('alert-modal');
+        }
+
+        function customConfirm(message, title = "Confirm", onConfirm, onCancel = null) {
+            document.getElementById('alert-title').textContent = getLang(title);
+            document.getElementById('alert-message').textContent = message; // Message might already be translated
+            document.getElementById('alert-ok-btn').style.display = 'none';
+            document.getElementById('alert-confirm-btn').style.display = 'inline-block';
+            document.getElementById('alert-cancel-btn').style.display = 'inline-block';
+            document.getElementById('alert-confirm-btn').textContent = getLang("Confirm"); // Translate Confirm
+            document.getElementById('alert-cancel-btn').textContent = getLang("Cancel"); // Translate Cancel
+
+            const confirmBtn = document.getElementById('alert-confirm-btn');
+            const cancelBtn = document.getElementById('alert-cancel-btn');
+
+            // Remove previous listeners before adding new ones to prevent multiple executions
+            const newConfirmBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+            const newCancelBtn = cancelBtn.cloneNode(true);
+            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+            newConfirmBtn.onclick = () => {
+                closeModal('alert-modal');
+                if (onConfirm) onConfirm();
+            };
+            newCancelBtn.onclick = () => {
+                closeModal('alert-modal');
+                if (onCancel) onCancel();
+            };
+
+            openModal('alert-modal');
+        }
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await initDB();
+                setupForms();
+                setupEventListeners();
+                setLanguage(currentLanguage); // Apply initial language setting
+                await loadCustomers();
+                await updateDashboard();
+                showCustomerListView(); // Start on the customer list view
+            } catch (error) {
+                console.error("Initialization failed:", error);
+                // Display a user-friendly error message on the page itself
+                document.body.innerHTML = `<div style="padding: 20px; text-align: center; color: red;">
+                    <h1>${getLang("Initialization Failed")}</h1>
+                    <p>${getLang("Could not initialize the application database.")}</p>
+                    <p>${getLang("Please ensure you are not in private browsing mode and that your browser supports IndexedDB.")}</p>
+                    <p><i>${getLang("Error details:")} ${error.message || error}</i></p>
+                    </div>`;
+            }
+        });
+// Inject Urdu font and force it on all Urdu text with !important
+const fontUrl = 'https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu&display=swap';
+const fontLink = document.createElement('link');
+fontLink.rel = 'stylesheet';
+fontLink.href = fontUrl;
+document.head.appendChild(fontLink);
+
+// Create style element with !important rule for Urdu characters
+const style = document.createElement('style');
+style.textContent = `
+@import url('${fontUrl}');
+* {
+  font-family: system-ui, sans-serif;
+}
+.urdu-font-force {
+  font-family: 'Noto Nastaliq Urdu', serif !important;
+}
+`;
+document.head.appendChild(style);
+
+// Function to check if string has Urdu letters
+function hasUrdu(text) {
+  return /[\u0600-\u06FF]/.test(text);
+}
+
+// Walk through all text nodes and wrap Urdu ones in span
+function wrapUrduTextNodes(node) {
+  if (node.nodeType === Node.TEXT_NODE && hasUrdu(node.textContent)) {
+    const span = document.createElement('span');
+    span.className = 'urdu-font-force';
+    span.textContent = node.textContent;
+    node.parentNode.replaceChild(span, node);
+  } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE') {
+    Array.from(node.childNodes).forEach(wrapUrduTextNodes);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  wrapUrduTextNodes(document.body);
+});
+
+    </script>
+</body>
+</html>

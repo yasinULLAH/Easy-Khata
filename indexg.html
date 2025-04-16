@@ -1,0 +1,2344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dukaan Manager - Offline Inventory (آف لائن انوینٹری)</title>
+    <style>
+        /* --- Base Styles & Typography --- */
+        :root {
+            --paper-bg: #fdfdfa; /* Slightly off-white */
+            --ink-color: #333;
+            --line-color: #ccc;
+            --accent-color: #007bff;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --success-color: #28a745;
+            --info-color: #17a2b8;
+            --input-border-color: #888;
+            --button-bg: #f0f0f0;
+            --button-hover-bg: #e0e0e0;
+            --header-bg: #e9ecef;
+        }
+
+        body {
+            /* Added common Urdu fonts in the stack */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Noto Nastaliq Urdu', 'Urdu Typesetting', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: var(--ink-color);
+            line-height: 1.6;
+            font-size: 16px; /* Base font size for mobile */
+        }
+
+        /* --- Layout --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--line-color);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8em;
+            color: var(--ink-color);
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0 0 0;
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            justify-content: center;
+            gap: 10px;
+        }
+
+        nav ul li button {
+            padding: 8px 15px;
+            cursor: pointer;
+            border: 1px solid var(--line-color);
+            background-color: var(--button-bg);
+            border-radius: 5px;
+            font-size: 0.95em;
+            transition: background-color 0.2s ease;
+            white-space: nowrap; /* Prevent wrapping inside button */
+        }
+
+        nav ul li button.active,
+        nav ul li button:hover {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+        nav ul li button:active {
+             background-color: #0056b3; /* Darker shade on click */
+        }
+
+
+        main section {
+            display: none; /* Hide sections by default */
+            background-color: var(--paper-bg);
+            padding: 20px;
+            border: 1px solid var(--line-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            /* Subtle paper texture (optional) */
+            /* background-image: url('data:image/svg+xml,%3Csvg width="6" height="6" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="%23cccccc" fill-opacity="0.1" fill-rule="evenodd"%3E%3Cpath d="M5 0h1L0 6V5zM6 5v1H5z"/%3E%3C/g%3E%3C/svg%3E'); */
+        }
+
+        main section.active {
+            display: block; /* Show active section */
+        }
+
+        /* --- Paper Form Style --- */
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column; /* Stack label and input vertically */
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="date"],
+        .form-group input[type="datetime-local"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 8px;
+            border: none;
+            border-bottom: 1px dotted var(--input-border-color); /* Dotted line like forms */
+            background-color: transparent; /* Make background transparent */
+            font-size: 1em;
+            box-sizing: border-box; /* Include padding in width */
+            transition: border-color 0.2s ease;
+            border-radius: 0; /* Sharp corners */
+            font-family: inherit; /* Inherit body font */
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-bottom: 2px solid var(--accent-color); /* Highlight on focus */
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+            border: 1px dotted var(--input-border-color); /* Textarea might need full border */
+        }
+
+        /* --- Buttons --- */
+        .btn {
+            padding: 10px 20px;
+            border: 1px solid var(--line-color);
+            background-color: var(--button-bg);
+            color: var(--ink-color);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            margin-right: 10px; /* Spacing between buttons */
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            white-space: nowrap;
+        }
+        .btn:hover {
+            background-color: var(--button-hover-bg);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+        .btn-primary {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3; /* Darker blue */
+        }
+        .btn-danger {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c82333; /* Darker red */
+        }
+        .btn-secondary {
+             background-color: #6c757d;
+             border-color: #6c757d;
+             color: white;
+        }
+        .btn-secondary:hover {
+             background-color: #5a6268;
+        }
+         .btn-success {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        .btn-warning {
+            background-color: var(--warning-color);
+            border-color: var(--warning-color);
+            color: #333; /* Dark text for yellow */
+        }
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+         .btn-info {
+            background-color: var(--info-color);
+            border-color: var(--info-color);
+            color: white;
+        }
+        .btn-info:hover {
+            background-color: #138496;
+        }
+        .btn-sm { /* Smaller buttons for table actions */
+             padding: 5px 10px;
+             font-size: 0.85em;
+             margin: 2px; /* Add small margin */
+        }
+
+
+        /* --- Tables --- */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9em; /* Slightly smaller font for tables */
+        }
+
+        .data-table th,
+        .data-table td {
+            border: 1px solid var(--line-color);
+            padding: 10px;
+            text-align: left;
+            vertical-align: top; /* Align content to top */
+        }
+
+        .data-table th {
+            background-color: var(--header-bg);
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .data-table tr:nth-child(even) {
+            background-color: #f8f9fa; /* Subtle striping */
+        }
+
+        .data-table .actions {
+            white-space: normal; /* Allow action buttons to wrap if needed */
+            text-align: center;
+            min-width: 150px; /* Ensure enough space for buttons */
+        }
+        /* Removed specific button styling here, using .btn-sm now */
+
+        /* --- Search/Filter Bar --- */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap; /* Wrap on smaller screens */
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid var(--line-color);
+            align-items: center; /* Align items vertically */
+        }
+        .toolbar input[type="search"],
+        .toolbar input[type="date"],
+        .toolbar select {
+            padding: 8px 10px;
+            border: 1px solid var(--line-color);
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+         .toolbar input[type="search"] {
+             flex-grow: 1; /* Allow search input to grow */
+         }
+        .toolbar label {
+            margin-right: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+            white-space: nowrap;
+        }
+
+        /* --- Low Stock Alert --- */
+        .low-stock-alert {
+            color: var(--danger-color);
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-left: 5px;
+        }
+        .stock-in { color: var(--success-color); font-weight: bold; }
+        .stock-out { color: var(--danger-color); font-weight: bold; }
+        .stock-adjust { color: var(--info-color); font-weight: bold; }
+
+
+        /* --- Modals (Simple Implementation) --- */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
+        }
+
+        .modal-content {
+            background-color: var(--paper-bg);
+            margin: 5% auto; /* Adjusted margin for potentially taller modals */
+            padding: 25px;
+            border: 1px solid #888;
+            width: 85%; /* Slightly wider */
+            max-width: 700px; /* Increased max width */
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .modal-close {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1; /* Ensure close button aligns well */
+        }
+
+        .modal-close:hover,
+        .modal-close:focus {
+            color: black;
+            text-decoration: none;
+        }
+
+        /* --- Dashboard Widgets --- */
+        .dashboard-widget {
+            background-color: #f8f9fa;
+            border: 1px solid var(--line-color);
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .dashboard-widget h3 {
+            margin-top: 0;
+            border-bottom: 1px solid var(--line-color);
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+         .dashboard-widget ul {
+             list-style: none;
+             padding: 0;
+             margin: 0;
+             max-height: 200px; /* Limit height for lists */
+             overflow-y: auto; /* Add scroll if list is long */
+         }
+         .dashboard-widget li {
+             padding: 5px 0;
+             border-bottom: 1px dotted var(--line-color);
+             font-size: 0.95em;
+         }
+         .dashboard-widget li:last-child {
+             border-bottom: none;
+         }
+         .dashboard-metric {
+             font-size: 1.5em;
+             font-weight: bold;
+             color: var(--accent-color);
+             text-align: center;
+         }
+
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px; /* Adjust base font size */
+            }
+            header h1 {
+                font-size: 1.5em;
+            }
+            nav ul {
+                 justify-content: space-around; /* Better spacing on mobile */
+                 gap: 5px; /* Reduce gap */
+            }
+            nav ul li button {
+                 padding: 6px 8px; /* Adjust padding */
+                 font-size: 0.85em;
+            }
+            .container {
+                padding: 10px;
+            }
+            main section {
+                padding: 15px;
+            }
+            .form-group label {
+                font-size: 0.85em;
+            }
+            .form-group input, .form-group select, .form-group textarea {
+                 padding: 8px 5px;
+                 font-size: 0.95em;
+            }
+            .btn {
+                padding: 8px 15px;
+                font-size: 0.95em;
+            }
+            .data-table {
+                font-size: 0.85em; /* Smaller font in tables */
+                display: block; /* Allow horizontal scrolling */
+                overflow-x: auto;
+                white-space: nowrap; /* Prevent wrapping within cells */
+            }
+             .data-table th, .data-table td {
+                 padding: 8px;
+             }
+             .data-table .actions {
+                 min-width: 120px; /* Adjust min-width */
+             }
+            .toolbar {
+                flex-direction: column; /* Stack toolbar items vertically */
+                gap: 10px;
+                align-items: stretch; /* Make items full width */
+            }
+            .toolbar input[type="search"],
+            .toolbar input[type="date"],
+            .toolbar select {
+                 width: 100%; /* Full width on mobile */
+                 box-sizing: border-box;
+            }
+            .modal-content {
+                 width: 95%; /* Wider modal on mobile */
+                 margin: 5% auto;
+                 padding: 20px;
+            }
+            .dashboard-widget li {
+                 font-size: 0.9em;
+            }
+            .dashboard-metric {
+                 font-size: 1.3em;
+            }
+        }
+
+        /* --- Print Styles --- */
+        @media print {
+            body {
+                background-color: white;
+                color: black;
+                font-size: 10pt; /* Standard print size */
+                font-family: 'Times New Roman', serif; /* Common print font */
+            }
+            header, nav, .toolbar, .actions button:not(.print-only), .modal, .no-print, .modal-close, #add-product-btn, #add-stock-log-btn, #save-settings-btn, #backup-data-btn, label[for="restore-data-input"] {
+                display: none !important; /* Hide non-essential elements */
+            }
+            .container {
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            main section {
+                display: block !important; /* Ensure the section to print is visible */
+                border: none;
+                box-shadow: none;
+                padding: 0;
+                margin: 0 0 20pt 0; /* Add space between printed sections */
+                background-color: white;
+            }
+            .data-table {
+                font-size: 9pt;
+                width: 100%;
+                border: 1px solid #000;
+                page-break-inside: auto; /* Allow tables to break across pages */
+            }
+            .data-table th, .data-table td {
+                border: 1px solid #000;
+                padding: 5pt;
+                white-space: normal; /* Allow wrapping in print */
+            }
+            .data-table th {
+                 background-color: #eee; /* Light grey for header */
+            }
+            .data-table tr {
+                 page-break-inside: avoid; /* Try to keep rows together */
+            }
+            a {
+                 text-decoration: none;
+                 color: black;
+            }
+            /* Specific styles for printable reports */
+            #printable-report h2, #printable-report h3 {
+                 text-align: center;
+                 margin-bottom: 15pt;
+                 font-size: 12pt;
+            }
+             #printable-report p {
+                 text-align: center;
+                 font-size: 9pt;
+                 margin-bottom: 10pt;
+             }
+             /* Ensure paper styles are less pronounced or removed for print */
+            .form-group input, .form-group select, .form-group textarea {
+                border-bottom: 1px solid #000; /* Solid line for print */
+            }
+            .dashboard-widget {
+                 border: 1px solid #000;
+                 padding: 10pt;
+                 margin-bottom: 15pt;
+                 background-color: white;
+            }
+            .dashboard-widget h3 {
+                 font-size: 11pt;
+            }
+            .dashboard-metric {
+                 font-size: 12pt;
+            }
+            .low-stock-alert, .stock-in, .stock-out, .stock-adjust {
+                 font-weight: normal; /* Remove bolding for print */
+                 color: black; /* Print in black */
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Dukaan Manager (دکان مینیجر)</h1>
+            <nav>
+                <ul>
+                    <li><button id="nav-dashboard" class="nav-btn active">Dashboard (خلاصہ)</button></li>
+                    <li><button id="nav-products" class="nav-btn">Products (اشیاء)</button></li>
+                    <li><button id="nav-stock" class="nav-btn">Stock Log (اسٹاک کا اندراج)</button></li>
+                    <li><button id="nav-reports" class="nav-btn">Reports (رپورٹیں)</button></li>
+                    <li><button id="nav-settings" class="nav-btn">Settings (ترتیبات)</button></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <section id="dashboard-section" class="active">
+                <h2>Dashboard (خلاصہ)</h2>
+                 <div class="dashboard-widget">
+                     <h3>Total Inventory Value (کل مالیت) <small>(Based on Purchase Price)</small></h3>
+                     <p id="total-inventory-value" class="dashboard-metric">Loading... (لوڈ ہو رہا ہے...)</p>
+                 </div>
+                 <div id="low-stock-summary" class="dashboard-widget">
+                    <h3>Low Stock Items (کم اسٹاک والی اشیاء)</h3>
+                    <ul id="low-stock-list">
+                        <li>Loading... (لوڈ ہو رہا ہے...)</li>
+                    </ul>
+                </div>
+                 <div class="dashboard-widget">
+                     <h3>Recent Stock Movements (حالیہ اسٹاک کی نقل و حرکت)</h3>
+                     <ul id="recent-stock-logs">
+                         <li>Loading... (لوڈ ہو رہا ہے...)</li>
+                     </ul>
+                 </div>
+            </section>
+
+            <section id="products-section">
+                <h2>Manage Products (اشیاء کا انتظام)</h2>
+                <div class="toolbar">
+                     <button id="add-product-btn" class="btn btn-primary">Add New Product (نئی چیز شامل کریں)</button>
+                     <label for="product-search">Search (تلاش کریں):</label>
+                     <input type="search" id="product-search" placeholder="Search by Name, Barcode, Category... (نام، بارکوڈ، زمرہ سے تلاش کریں...)">
+                     <label for="product-category-filter">Category (زمرہ):</label>
+                     <select id="product-category-filter">
+                         <option value="">All Categories (تمام زمرے)</option>
+                         </select>
+                     <label for="product-sort">Sort By (ترتیب دیں):</label>
+                     <select id="product-sort">
+                         <option value="name_asc">Name (A-Z) (نام)</option>
+                         <option value="name_desc">Name (Z-A) (نام)</option>
+                         <option value="quantity_asc">Quantity (Low-High) (مقدار)</option>
+                         <option value="quantity_desc">Quantity (High-Low) (مقدار)</option>
+                         <option value="salePrice_asc">Sale Price (Low-High) (فروخت قیمت)</option>
+                         <option value="salePrice_desc">Sale Price (High-Low) (فروخت قیمت)</option>
+                     </select>
+                </div>
+
+                <table class="data-table" id="products-table">
+                    <thead>
+                        <tr>
+                            <th>Name (نام)</th>
+                            <th>Category (زمرہ)</th>
+                            <th>Barcode (بارکوڈ)</th>
+                            <th>Purchase Price (خرید قیمت)</th>
+                            <th>Sale Price (فروخت قیمت)</th>
+                            <th>Quantity (مقدار)</th>
+                            <th>Unit (اکائی)</th>
+                            <th>Low Stock (کم اسٹاک حد)</th>
+                            <th>Actions (اعمال)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="products-table-body">
+                        <tr><td colspan="9" style="text-align:center;">Loading products... (اشیاء لوڈ ہو رہی ہیں...)</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="stock-section">
+                <h2>Stock Log (اسٹاک کا اندراج)</h2>
+                 <div class="toolbar">
+                     <button id="add-stock-log-btn" class="btn btn-primary">Add Stock Entry (نیا اندراج شامل کریں)</button>
+                     <label for="stock-log-product-filter">Product (چیز):</label>
+                     <select id="stock-log-product-filter">
+                         <option value="">All Products (تمام اشیاء)</option>
+                         </select>
+                     <label for="stock-log-type-filter">Type (قسم):</label>
+                     <select id="stock-log-type-filter">
+                         <option value="">All Types (تمام اقسام)</option>
+                         <option value="in">Stock In (اسٹاک اندر)</option>
+                         <option value="out">Stock Out (اسٹاک باہر)</option>
+                         <option value="sale">Sale (فروخت)</option>
+                         <option value="adjustment">Adjustment (ایڈجسٹمنٹ)</option>
+                     </select>
+                     <label for="stock-log-date-filter">Date (تاریخ):</label>
+                     <input type="date" id="stock-log-date-filter">
+                     <button id="clear-stock-filters-btn" class="btn btn-secondary btn-sm">Clear Filters (فلٹر صاف کریں)</button>
+                 </div>
+
+                 <table class="data-table" id="stock-log-table">
+                     <thead>
+                         <tr>
+                             <th>Date (تاریخ)</th>
+                             <th>Product (چیز)</th>
+                             <th>Type (قسم)</th>
+                             <th>Quantity Change (مقدار میں تبدیلی)</th>
+                             <th>New Quantity (نئی مقدار)</th>
+                             <th>Note (نوٹ)</th>
+                             <th>Actions (اعمال)</th>
+                         </tr>
+                     </thead>
+                     <tbody id="stock-log-table-body">
+                         <tr><td colspan="7" style="text-align:center;">Loading logs... (اندراجات لوڈ ہو رہے ہیں...)</td></tr>
+                     </tbody>
+                 </table>
+            </section>
+
+            <section id="reports-section">
+                <h2>Reports (رپورٹیں)</h2>
+                <div class="toolbar">
+                    <label for="report-type">Report Type (رپورٹ کی قسم):</label>
+                    <select id="report-type">
+                        <option value="inventory">Inventory Summary (انوینٹری کا خلاصہ)</option>
+                        <option value="sales">Sales Report (فروخت کی رپورٹ)</option>
+                        <option value="purchases">Purchase Report (خریداری کی رپورٹ)</option>
+                        <option value="stock-log">Full Stock Log (مکمل اسٹاک لاگ)</option>
+                    </select>
+                    <label for="report-date-start">Start Date (شروع کی تاریخ):</label>
+                    <input type="date" id="report-date-start">
+                    <label for="report-date-end">End Date (اختتام کی تاریخ):</label>
+                    <input type="date" id="report-date-end">
+                    <button id="generate-report-btn" class="btn btn-primary">Generate Report (رپورٹ بنائیں)</button>
+                    <button id="print-report-btn" class="btn btn-secondary no-print" disabled>Print Report (رپورٹ پرنٹ کریں)</button>
+                     <button id="export-report-csv-btn" class="btn btn-secondary no-print" disabled>Export CSV (CSV برآمد کریں)</button>
+                </div>
+
+                <div id="report-output">
+                    <p style="text-align: center;">Select report type and date range, then click "Generate Report". (رپورٹ کی قسم اور تاریخ کی حد منتخب کریں، پھر "رپورٹ بنائیں" پر کلک کریں۔)</p>
+                </div>
+
+                <div id="printable-report" style="display: none;">
+                    </div>
+            </section>
+
+            <section id="settings-section">
+                <h2>Settings (ترتیبات)</h2>
+                 <div class="form-group">
+                     <label for="setting-currency">Currency Symbol (کرنسی کی علامت) (e.g., Rs. PKR)</label>
+                     <input type="text" id="setting-currency" value="Rs.">
+                 </div>
+                 <button id="save-settings-btn" class="btn btn-primary">Save Settings (ترتیبات محفوظ کریں)</button>
+                 <hr style="margin: 20px 0;">
+                 <h3>Data Management (ڈیٹا کا انتظام)</h3>
+                 <button id="backup-data-btn" class="btn btn-secondary">Backup Data (ڈیٹا بیک اپ) (JSON)</button>
+                 <label for="restore-data-input" class="btn btn-secondary no-print" style="cursor: pointer; display: inline-block; margin-top: 10px;">
+                     Restore Data (ڈیٹا بحال کریں) (JSON)
+                 </label>
+                 <input type="file" id="restore-data-input" accept=".json" style="display: none;">
+                 <p class="no-print" style="font-size: 0.9em; color: var(--danger-color); margin-top: 10px;">Warning (انتباہ): Restoring data will overwrite all current data. (ڈیٹا بحال کرنے سے موجودہ تمام ڈیٹا مٹ جائے گا۔)</p>
+
+            </section>
+        </main>
+
+    </div> <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('product-modal')">&times;</span>
+            <h3 id="modal-title">Add New Product (نئی چیز شامل کریں)</h3>
+            <form id="product-form">
+                <input type="hidden" id="product-id"> <div class="form-group">
+                    <label for="product-name">Product Name (چیز کا نام) *</label>
+                    <input type="text" id="product-name" required>
+                </div>
+                 <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                     <div class="form-group" style="flex: 2;">
+                        <label for="product-category">Category (زمرہ)</label>
+                        <input type="text" id="product-category" list="category-suggestions" placeholder="e.g., Grocery, Electronics, Kapra (مثلاً، کریانہ، الیکٹرانکس، کپڑا)">
+                        <datalist id="category-suggestions">
+                            </datalist>
+                    </div>
+                     <div class="form-group" style="flex: 1;">
+                        <label for="product-unit">Unit (اکائی) *</label>
+                        <input type="text" id="product-unit" required placeholder="e.g., piece, kg, dozen, meter (مثلاً، عدد، کلو، درجن، میٹر)">
+                    </div>
+                 </div>
+                <div class="form-group">
+                    <label for="product-barcode">Barcode (بارکوڈ) (Optional)</label>
+                    <input type="text" id="product-barcode">
+                </div>
+                 <div style="display: flex; gap: 15px; flex-wrap: wrap;"> <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label for="product-purchase-price">Purchase Price (خرید قیمت)</label>
+                        <input type="number" id="product-purchase-price" step="0.01" min="0" value="0">
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label for="product-sale-price">Sale Price (فروخت قیمت) *</label>
+                        <input type="number" id="product-sale-price" step="0.01" min="0" required>
+                    </div>
+                 </div>
+                 <div style="display: flex; gap: 15px; flex-wrap: wrap;"> <div class="form-group" style="flex: 1; min-width: 120px;">
+                        <label for="product-quantity">Initial Quantity (ابتدائی مقدار) *</label>
+                        <input type="number" id="product-quantity" step="any" min="0" value="0" required>
+                        <small>Use Stock Log for changes after creation. (بنانے کے بعد تبدیلیوں کے لیے اسٹاک لاگ استعمال کریں۔)</small>
+                    </div>
+                     <div class="form-group" style="flex: 1; min-width: 120px;">
+                        <label for="product-low-stock">Low Stock Alert At (کم اسٹاک کی حد)</label>
+                        <input type="number" id="product-low-stock" step="any" min="0" value="5">
+                    </div>
+                 </div>
+                <div class="form-group">
+                    <label for="product-supplier">Supplier (سپلائر) (Optional)</label>
+                    <input type="text" id="product-supplier">
+                </div>
+                <div class="form-group">
+                    <label for="product-notes">Notes (نوٹ) (Optional)</label>
+                    <textarea id="product-notes"></textarea>
+                </div>
+                <div style="text-align: right;">
+                     <button type="button" class="btn btn-secondary" onclick="closeModal('product-modal')">Cancel (منسوخ کریں)</button>
+                     <button type="submit" class="btn btn-primary">Save Product (چیز محفوظ کریں)</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+     <div id="stock-log-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('stock-log-modal')">&times;</span>
+            <h3 id="stock-log-modal-title">Add Stock Entry (نیا اسٹاک اندراج)</h3>
+            <form id="stock-log-form">
+                <input type="hidden" id="stock-log-id"> <div class="form-group">
+                    <label for="stock-log-product">Product (چیز) *</label>
+                    <select id="stock-log-product" required>
+                        <option value="" disabled selected>-- Select Product (چیز منتخب کریں) --</option>
+                        </select>
+                </div>
+                 <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                     <div class="form-group" style="flex: 1;">
+                        <label for="stock-log-type">Type (قسم) *</label>
+                        <select id="stock-log-type" required>
+                            <option value="in">Stock In / Purchase (اسٹاک اندر / خریداری)</option>
+                            <option value="out">Stock Out / Wastage (اسٹاک باہر / ضیاع)</option>
+                            <option value="sale">Sale (فروخت)</option>
+                            <option value="adjustment">Adjustment (ایڈجسٹمنٹ)</option>
+                        </select>
+                    </div>
+                     <div class="form-group" style="flex: 1;">
+                        <label for="stock-log-quantity">Quantity Change (مقدار میں تبدیلی) *</label>
+                        <input type="number" id="stock-log-quantity" step="any" required placeholder="e.g., 10 or -5 (مثلاً، 10 یا -5)">
+                        <small>Use positive for IN/Adjustment, negative for OUT/Sale/Adjustment. (مثبت IN/ایڈجسٹمنٹ، منفی OUT/Sale/ایڈجسٹمنٹ)</small>
+                    </div>
+                 </div>
+                 <div class="form-group">
+                     <label for="stock-log-date">Date & Time (تاریخ اور وقت) *</label>
+                     <input type="datetime-local" id="stock-log-date" required>
+                 </div>
+                <div class="form-group">
+                    <label for="stock-log-note">Note (نوٹ) (Optional)</label>
+                    <textarea id="stock-log-note" placeholder="e.g., Invoice #123, Damaged goods (مثلاً، انوائس نمبر 123، خراب مال)"></textarea>
+                </div>
+                 <p>Current Quantity (موجودہ مقدار): <strong id="stock-log-current-qty">--</strong></p>
+                 <p>New Quantity After Change (تبدیلی کے بعد نئی مقدار): <strong id="stock-log-new-qty">--</strong></p>
+                <div style="text-align: right;">
+                     <button type="button" class="btn btn-secondary" onclick="closeModal('stock-log-modal')">Cancel (منسوخ کریں)</button>
+                     <button type="submit" class="btn btn-primary">Save Entry (اندراج محفوظ کریں)</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        // --- Constants and Globals ---
+        const DB_NAME = 'dukaanManagerDB';
+        const DB_VERSION = 2; // <<<<<<<< Incremented DB Version
+        const PRODUCT_STORE = 'products';
+        const STOCK_LOG_STORE = 'stockLogs'; // Added
+        const SETTINGS_STORE = 'settings';
+        let db; // Global database instance
+        let currentProductCache = []; // Cache for product names/IDs/units
+
+        // --- IndexedDB Initialization ---
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                console.log(`Opening database ${DB_NAME} version ${DB_VERSION}`);
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onerror = (event) => {
+                    console.error("Database error:", event.target.error);
+                    reject("Database error: " + event.target.error);
+                };
+
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    console.log("Database initialized successfully.");
+                    // Add error handler for unexpected errors after opening
+                    db.onerror = (event) => {
+                        console.error(`Database error: ${event.target.error}`);
+                    };
+                    resolve(db);
+                };
+
+                // This event is only fired when the version changes
+                request.onupgradeneeded = (event) => {
+                    let db = event.target.result;
+                    const transaction = event.target.transaction; // Get transaction from event
+                    console.log(`Upgrading database from version ${event.oldVersion} to ${event.newVersion}`);
+
+                    // Create/Update Products object store
+                    let productStore;
+                    if (!db.objectStoreNames.contains(PRODUCT_STORE)) {
+                        productStore = db.createObjectStore(PRODUCT_STORE, { keyPath: 'id', autoIncrement: true });
+                        productStore.createIndex('name', 'name', { unique: false });
+                        productStore.createIndex('category', 'category', { unique: false });
+                        productStore.createIndex('barcode', 'barcode', { unique: false });
+                        productStore.createIndex('quantity', 'quantity', { unique: false });
+                        productStore.createIndex('salePrice', 'salePrice', { unique: false });
+                        console.log(`Object store '${PRODUCT_STORE}' created.`);
+                    } else {
+                        productStore = transaction.objectStore(PRODUCT_STORE);
+                        console.log(`Object store '${PRODUCT_STORE}' already exists.`);
+                    }
+                    // Add 'unit' index if it doesn't exist (for upgrades from v1)
+                     if (!productStore.indexNames.contains('unit')) {
+                         productStore.createIndex('unit', 'unit', { unique: false });
+                         console.log(`Index 'unit' created on store '${PRODUCT_STORE}'.`);
+                     }
+
+
+                    // Create Stock Log object store
+                    if (!db.objectStoreNames.contains(STOCK_LOG_STORE)) {
+                        const logStore = db.createObjectStore(STOCK_LOG_STORE, { keyPath: 'id', autoIncrement: true });
+                        logStore.createIndex('productId', 'productId', { unique: false });
+                        logStore.createIndex('date', 'date', { unique: false });
+                        logStore.createIndex('type', 'type', { unique: false }); // 'in', 'out', 'sale', 'adjustment'
+                         logStore.createIndex('productName', 'productName', { unique: false }); // Denormalized for easier display
+                        console.log(`Object store '${STOCK_LOG_STORE}' created.`);
+                    } else {
+                         console.log(`Object store '${STOCK_LOG_STORE}' already exists.`);
+                         // If upgrading, you might want to add new indexes here too
+                         const logStore = transaction.objectStore(STOCK_LOG_STORE);
+                         if (!logStore.indexNames.contains('productName')) {
+                             logStore.createIndex('productName', 'productName', { unique: false });
+                              console.log(`Index 'productName' created on store '${STOCK_LOG_STORE}'.`);
+                         }
+                    }
+
+                     // Create/Update Settings object store
+                    if (!db.objectStoreNames.contains(SETTINGS_STORE)) {
+                        const settingsStore = db.createObjectStore(SETTINGS_STORE, { keyPath: 'key' });
+                        settingsStore.put({ key: 'currencySymbol', value: 'Rs.' }); // Default setting
+                        console.log(`Object store '${SETTINGS_STORE}' created.`);
+                    } else {
+                         console.log(`Object store '${SETTINGS_STORE}' already exists.`);
+                    }
+
+                    console.log("Database upgrade complete.");
+                };
+            });
+        }
+
+        // --- CRUD Operations for Products ---
+
+        // Add or Update Product
+        function saveProduct(product) {
+            return new Promise(async (resolve, reject) => { // Make async for getProduct call
+                if (!db) return reject("Database not initialized.");
+
+                // Convert prices and quantities to numbers/string
+                product.purchasePrice = parseFloat(product.purchasePrice) || 0;
+                product.salePrice = parseFloat(product.salePrice) || 0;
+                let initialQuantity = parseFloat(product.quantity) || 0; // Capture initial quantity separately
+                product.lowStock = parseFloat(product.lowStock) || 0;
+                product.unit = product.unit || 'piece'; // Default unit
+
+                const transaction = db.transaction([PRODUCT_STORE, STOCK_LOG_STORE], 'readwrite');
+                const productStore = transaction.objectStore(PRODUCT_STORE);
+                const stockLogStore = transaction.objectStore(STOCK_LOG_STORE);
+                let isNewProduct = !product.id;
+
+                // If it's a new product, set quantity directly.
+                // If editing, quantity is managed by stock logs, but we keep the field for display.
+                // We will fetch the *current* quantity from DB for edits if needed, but the form only sets initial qty.
+                let currentDbQuantity = 0;
+                if (!isNewProduct) {
+                    try {
+                        const existingProduct = await getProduct(product.id, transaction); // Use existing transaction
+                        if (existingProduct) {
+                            currentDbQuantity = existingProduct.quantity;
+                        } else {
+                            // Should not happen if editing, but handle defensively
+                             return reject(`Product with ID ${product.id} not found for update.`);
+                        }
+                        product.quantity = currentDbQuantity; // Ensure we save the actual current quantity when editing other fields
+                    } catch (err) {
+                         return reject(`Failed to get existing product during save: ${err}`);
+                    }
+                } else {
+                     product.quantity = initialQuantity; // Set initial quantity for new product
+                }
+
+
+                const request = productStore.put(product); // Use put for both add and update
+
+                request.onerror = (event) => {
+                    console.error("Error saving product:", event.target.error);
+                    reject("Error saving product: " + event.target.error);
+                };
+
+                request.onsuccess = (event) => {
+                    const savedProductId = event.target.result;
+                    // If it was a new product AND had an initial quantity > 0, add an initial stock log entry
+                    if (isNewProduct && initialQuantity !== 0) {
+                        const initialLog = {
+                            productId: savedProductId,
+                            productName: product.name, // Denormalize name
+                            type: 'adjustment', // Or 'in' - 'adjustment' might be clearer for initial setup
+                            quantityChange: initialQuantity,
+                            newQuantity: initialQuantity, // Initial quantity is the new quantity
+                            date: new Date().toISOString(), // Use current time
+                            note: 'Initial stock quantity (ابتدائی اسٹاک کی مقدار)'
+                        };
+                        const logRequest = stockLogStore.add(initialLog);
+                        logRequest.onerror = (logEvent) => {
+                            // Log the error but don't necessarily reject the whole save,
+                            // as the product itself was saved. Maybe alert the user?
+                            console.error("Error adding initial stock log:", logEvent.target.error);
+                            // reject("Product saved, but failed to add initial stock log: " + logEvent.target.error); // Option to reject
+                        };
+                        logRequest.onsuccess = () => {
+                             console.log(`Initial stock log added for product ID ${savedProductId}`);
+                        }
+                    }
+                     // Resolve with the product ID once the product put operation is successful
+                     // The log operation continues within the transaction
+                     resolve(savedProductId);
+                };
+
+                 // Transaction completion handling (optional but good practice)
+                 transaction.oncomplete = () => {
+                     console.log(`Product save transaction completed for ID: ${product.id || request.result}`);
+                     // Don't resolve here if you resolved on request.onsuccess
+                 };
+                 transaction.onerror = (event) => {
+                     console.error("Product save transaction error:", event.target.error);
+                     // Don't reject here if you rejected on request.onerror
+                 };
+
+            });
+        }
+
+        // Get a single product by ID (can accept an existing transaction)
+        function getProduct(id, transaction = null) {
+             return new Promise((resolve, reject) => {
+                if (!db) return reject("Database not initialized.");
+                const store = (transaction ? transaction.objectStore(PRODUCT_STORE) : db.transaction([PRODUCT_STORE], 'readonly').objectStore(PRODUCT_STORE));
+                const request = store.get(parseInt(id)); // Ensure ID is integer
+
+                request.onsuccess = (event) => {
+                    resolve(event.target.result); // Returns the product object or undefined
+                };
+                request.onerror = (event) => {
+                    console.error("Error getting product:", event.target.error);
+                    reject("Error getting product: " + event.target.error);
+                };
+            });
+        }
+
+        // Get all products (with optional sorting)
+        function getAllProducts(sortKey = 'name', sortOrder = 'asc') {
+            // This function remains largely the same as v1, just reads products
+             return new Promise((resolve, reject) => {
+                if (!db) { console.error("getAllProducts: DB not initialized."); return reject("Database not initialized."); }
+                const transaction = db.transaction([PRODUCT_STORE], 'readonly');
+                const store = transaction.objectStore(PRODUCT_STORE);
+                const products = [];
+                let request;
+                const direction = sortOrder === 'desc' ? 'prev' : 'next';
+
+                try {
+                    const indexNames = store.indexNames;
+                    if (indexNames.contains(sortKey)) {
+                         const index = store.index(sortKey);
+                         request = index.openCursor(null, direction);
+                    } else {
+                        request = store.openCursor(null, direction); // Fallback to primary key sort
+                    }
+                } catch (e) {
+                     console.error(`Error opening cursor for sortKey "${sortKey}":`, e);
+                     // Fallback to primary key sort if index access fails
+                     request = store.openCursor(null, direction);
+                }
+
+
+                request.onsuccess = (event) => {
+                    const cursor = event.target.result;
+                    if (cursor) {
+                        products.push(cursor.value);
+                        cursor.continue();
+                    } else {
+                        // Post-fetch sort if needed (e.g., non-indexed field or complex logic)
+                        if (!store.indexNames.contains(sortKey)) {
+                             products.sort((a, b) => {
+                                let valA = a[sortKey] || ''; // Handle potential undefined
+                                let valB = b[sortKey] || '';
+                                if (typeof valA === 'string') valA = valA.toLowerCase();
+                                if (typeof valB === 'string') valB = valB.toLowerCase();
+                                // Basic comparison, adjust if numeric sort needed for non-indexed numbers
+                                if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+                                if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+                                return 0;
+                             });
+                        }
+                         // Update cache
+                         currentProductCache = products.map(p => ({ id: p.id, name: p.name, unit: p.unit, quantity: p.quantity }));
+                        resolve(products);
+                    }
+                };
+                request.onerror = (event) => {
+                    console.error("Error getting all products:", event.target.error);
+                    reject("Error getting all products: " + event.target.error);
+                };
+            });
+        }
+
+        // Delete Product (Now also needs to delete related stock logs)
+        function deleteProduct(id) {
+             return new Promise(async (resolve, reject) => {
+                if (!db) return reject("Database not initialized.");
+                const transaction = db.transaction([PRODUCT_STORE, STOCK_LOG_STORE], 'readwrite');
+                const productStore = transaction.objectStore(PRODUCT_STORE);
+                const stockLogStore = transaction.objectStore(STOCK_LOG_STORE);
+                const logIndex = stockLogStore.index('productId');
+
+                // 1. Delete Stock Logs for this product
+                const logCursorRequest = logIndex.openCursor(IDBKeyRange.only(parseInt(id)));
+                logCursorRequest.onsuccess = (event) => {
+                    const cursor = event.target.result;
+                    if (cursor) {
+                        cursor.delete(); // Delete the log entry
+                        cursor.continue();
+                    } else {
+                        // All logs deleted, now delete the product
+                        const productDeleteRequest = productStore.delete(parseInt(id));
+                        productDeleteRequest.onsuccess = () => {
+                             console.log(`Product ${id} and its logs deleted.`);
+                            // resolve(); // Don't resolve yet, wait for transaction completion
+                        };
+                        productDeleteRequest.onerror = (event) => {
+                            console.error("Error deleting product:", event.target.error);
+                            // reject("Error deleting product: " + event.target.error); // Let transaction handle error
+                        };
+                    }
+                };
+                 logCursorRequest.onerror = (event) => {
+                     console.error("Error finding stock logs to delete:", event.target.error);
+                     // reject("Error finding stock logs for deletion: " + event.target.error); // Let transaction handle error
+                 };
+
+
+                 // Handle transaction completion/error
+                 transaction.oncomplete = () => {
+                     resolve(); // Resolve only when transaction completes successfully
+                 };
+                 transaction.onerror = (event) => {
+                     console.error("Error during product deletion transaction:", event.target.error);
+                     reject("Error deleting product and logs: " + event.target.error);
+                 };
+            });
+        }
+
+        // --- Stock Log Operations ---
+
+        // Add Stock Log and Update Product Quantity Atomically
+        function addStockLog(logData) {
+            return new Promise(async (resolve, reject) => {
+                if (!db) return reject("Database not initialized.");
+                const transaction = db.transaction([PRODUCT_STORE, STOCK_LOG_STORE], 'readwrite');
+                const productStore = transaction.objectStore(PRODUCT_STORE);
+                const stockLogStore = transaction.objectStore(STOCK_LOG_STORE);
+
+                const productId = parseInt(logData.productId);
+                const quantityChange = parseFloat(logData.quantityChange);
+
+                if (isNaN(productId) || isNaN(quantityChange)) {
+                    return reject("Invalid Product ID or Quantity Change.");
+                }
+
+                // 1. Get the current product
+                const getRequest = productStore.get(productId);
+
+                getRequest.onerror = (event) => reject("Failed to get product for stock update: " + event.target.error);
+
+                getRequest.onsuccess = (event) => {
+                    const product = event.target.result;
+                    if (!product) {
+                        return reject(`Product with ID ${productId} not found.`);
+                    }
+
+                    // 2. Calculate new quantity
+                    const currentQuantity = parseFloat(product.quantity) || 0;
+                    const newQuantity = currentQuantity + quantityChange;
+
+                    // Optional: Prevent stock going negative unless it's an adjustment?
+                    // if (newQuantity < 0 && logData.type !== 'adjustment') {
+                    //     return reject(`Operation failed: Not enough stock for product "${product.name}". Required: ${Math.abs(quantityChange)}, Available: ${currentQuantity}`);
+                    // }
+
+                    // 3. Update product quantity
+                    product.quantity = newQuantity;
+                    const updateRequest = productStore.put(product);
+
+                    updateRequest.onerror = (event) => reject("Failed to update product quantity: " + event.target.error);
+
+                    updateRequest.onsuccess = () => {
+                        // 4. Add the stock log entry
+                        const logEntry = {
+                            productId: productId,
+                            productName: product.name, // Denormalize name
+                            type: logData.type,
+                            quantityChange: quantityChange,
+                            newQuantity: newQuantity, // Record the quantity *after* the change
+                            date: logData.date || new Date().toISOString(),
+                            note: logData.note || ''
+                        };
+                        const addLogRequest = stockLogStore.add(logEntry);
+
+                        addLogRequest.onerror = (event) => reject("Failed to add stock log entry: " + event.target.error);
+                        addLogRequest.onsuccess = (event) => {
+                            // Don't resolve yet, wait for transaction to complete
+                            console.log("Stock log added, ID:", event.target.result);
+                        };
+                    };
+                };
+
+                 // Transaction completion determines success/failure of the whole operation
+                 transaction.oncomplete = () => {
+                     console.log(`Stock log and product update transaction completed for product ID: ${productId}`);
+                     resolve(); // Resolve the promise when transaction completes
+                 };
+                 transaction.onerror = (event) => {
+                     console.error("Stock log transaction error:", event.target.error);
+                     reject("Stock log operation failed: " + event.target.error);
+                 };
+            });
+        }
+
+        // Get Stock Logs (with filtering)
+        function getAllStockLogs(filters = {}) {
+            return new Promise((resolve, reject) => {
+                if (!db) return reject("Database not initialized.");
+                const transaction = db.transaction([STOCK_LOG_STORE], 'readonly');
+                const store = transaction.objectStore(STOCK_LOG_STORE);
+                const index = store.index('date'); // Use date index for primary sorting/filtering
+                const logs = [];
+
+                // Define range based on date filters
+                let range = null;
+                if (filters.startDate && filters.endDate) {
+                    range = IDBKeyRange.bound(filters.startDate, filters.endDate + "T23:59:59.999Z"); // Inclusive range
+                } else if (filters.startDate) {
+                    range = IDBKeyRange.lowerBound(filters.startDate);
+                } else if (filters.endDate) {
+                    range = IDBKeyRange.upperBound(filters.endDate + "T23:59:59.999Z");
+                }
+
+                // Open cursor on the date index, sort descending (newest first)
+                const request = index.openCursor(range, 'prev');
+
+                request.onsuccess = (event) => {
+                    const cursor = event.target.result;
+                    if (cursor) {
+                        const log = cursor.value;
+                        // Apply additional filters (product, type)
+                        const matchesProduct = !filters.productId || log.productId === parseInt(filters.productId);
+                        const matchesType = !filters.type || log.type === filters.type;
+
+                        if (matchesProduct && matchesType) {
+                            logs.push(log);
+                        }
+                        cursor.continue();
+                    } else {
+                        resolve(logs); // All logs processed
+                    }
+                };
+                request.onerror = (event) => {
+                    console.error("Error getting stock logs:", event.target.error);
+                    reject("Error getting stock logs: " + event.target.error);
+                };
+            });
+        }
+
+         // Delete a single stock log entry (potentially add an 'undo' adjustment later?)
+        function deleteStockLog(logId) {
+             return new Promise((resolve, reject) => {
+                 // !! Important !! Deleting logs can break inventory accuracy if not handled carefully.
+                 // Consider disabling direct deletion or automatically creating a counter-adjustment.
+                 // For now, we just delete the record as requested, but warn the user.
+                 if (!confirm("Warning (انتباہ): Deleting a stock log entry can affect inventory accuracy and cannot be easily undone. Are you sure you want to delete this entry? (اسٹاک لاگ اندراج کو حذف کرنے سے انوینٹری کی درستگی متاثر ہو سکتی ہے اور اسے آسانی سے واپس نہیں لایا جا سکتا۔ کیا آپ واقعی اس اندراج کو حذف کرنا چاہتے ہیں؟)")) {
+                     return reject("Deletion cancelled by user.");
+                 }
+
+                if (!db) return reject("Database not initialized.");
+                const transaction = db.transaction([STOCK_LOG_STORE], 'readwrite');
+                const store = transaction.objectStore(STOCK_LOG_STORE);
+                const request = store.delete(parseInt(logId));
+
+                request.onsuccess = () => {
+                    // Don't resolve yet, wait for transaction
+                };
+                request.onerror = (event) => {
+                     // Reject handled by transaction.onerror
+                };
+
+                 transaction.oncomplete = () => {
+                     console.log(`Stock log entry ${logId} deleted.`);
+                     resolve();
+                 };
+                 transaction.onerror = (event) => {
+                     console.error(`Error deleting stock log ${logId}:`, event.target.error);
+                     reject(`Error deleting stock log: ${event.target.error}`);
+                 };
+            });
+        }
+
+
+        // --- Settings Operations (remain same as v1) ---
+        function getSetting(key) { /* ... same as v1 ... */
+            return new Promise((resolve, reject) => {
+                if (!db) return reject("Database not initialized.");
+                const transaction = db.transaction([SETTINGS_STORE], 'readonly');
+                const store = transaction.objectStore(SETTINGS_STORE);
+                const request = store.get(key);
+
+                request.onsuccess = (event) => {
+                    resolve(event.target.result ? event.target.result.value : undefined);
+                };
+                request.onerror = (event) => {
+                    console.error(`Error getting setting '${key}':`, event.target.error);
+                    reject(`Error getting setting '${key}': ` + event.target.error);
+                };
+            });
+        }
+        function saveSetting(key, value) { /* ... same as v1 ... */
+             return new Promise((resolve, reject) => {
+                if (!db) return reject("Database not initialized.");
+                const transaction = db.transaction([SETTINGS_STORE], 'readwrite');
+                const store = transaction.objectStore(SETTINGS_STORE);
+                const request = store.put({ key: key, value: value });
+
+                request.onsuccess = () => {
+                    resolve();
+                };
+                request.onerror = (event) => {
+                    console.error(`Error saving setting '${key}':`, event.target.error);
+                    reject(`Error saving setting '${key}': ` + event.target.error);
+                };
+            });
+        }
+
+
+        // --- UI Functions ---
+
+        // Navigate between sections
+        function navigateTo(sectionId) {
+            document.querySelectorAll('main section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('nav .nav-btn').forEach(btn => btn.classList.remove('active'));
+
+            const targetSection = document.getElementById(sectionId + '-section');
+            const targetButton = document.getElementById('nav-' + sectionId);
+
+            if (targetSection) targetSection.classList.add('active');
+            if (targetButton) targetButton.classList.add('active');
+
+            // Refresh data for the activated section
+            switch (sectionId) {
+                case 'products':
+                    refreshProductList();
+                    updateCategoryFilter();
+                    updateCategoryDatalist();
+                    break;
+                case 'stock':
+                    refreshStockLogList();
+                    populateProductFilter('stock-log-product-filter'); // Populate product filter dropdown
+                    break;
+                case 'dashboard':
+                    refreshDashboard();
+                    break;
+                case 'settings':
+                    loadSettings();
+                    break;
+                 case 'reports':
+                     // Reset report area on navigation
+                     document.getElementById('report-output').innerHTML = '<p style="text-align: center;">Select report type and date range, then click "Generate Report". (رپورٹ کی قسم اور تاریخ کی حد منتخب کریں، پھر "رپورٹ بنائیں" پر کلک کریں۔)</p>';
+                     document.getElementById('print-report-btn').disabled = true;
+                     document.getElementById('export-report-csv-btn').disabled = true;
+                     // Set default dates (e.g., start of month to today)
+                     const today = new Date();
+                     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                     document.getElementById('report-date-start').value = startOfMonth.toISOString().split('T')[0];
+                     document.getElementById('report-date-end').value = today.toISOString().split('T')[0];
+
+                     break;
+            }
+        }
+
+        // Open Modal
+        function openModal(modalId, context = null) { // context can be productId or { productId, type: 'in'/'out' }
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+
+            // Reset form fields
+            const form = modal.querySelector('form');
+            if (form) form.reset();
+
+
+            if (modalId === 'product-modal') {
+                 document.getElementById('product-id').value = ''; // Clear hidden ID
+                 // Enable quantity field only for new products
+                 document.getElementById('product-quantity').disabled = false;
+
+                if (context && typeof context === 'number') { // context is productId for editing
+                    const productId = context;
+                    // Edit mode
+                    document.getElementById('modal-title').textContent = 'Edit Product (چیز میں ترمیم کریں)';
+                    document.getElementById('product-quantity').disabled = true; // Disable initial quantity on edit
+                    getProduct(productId).then(product => {
+                        if (product) {
+                            document.getElementById('product-id').value = product.id;
+                            document.getElementById('product-name').value = product.name;
+                            document.getElementById('product-category').value = product.category || '';
+                            document.getElementById('product-unit').value = product.unit || 'piece';
+                            document.getElementById('product-barcode').value = product.barcode || '';
+                            document.getElementById('product-purchase-price').value = product.purchasePrice || 0;
+                            document.getElementById('product-sale-price').value = product.salePrice || 0;
+                            document.getElementById('product-quantity').value = product.quantity || 0; // Show current quantity, but disabled
+                            document.getElementById('product-low-stock').value = product.lowStock || 5;
+                            document.getElementById('product-supplier').value = product.supplier || '';
+                            document.getElementById('product-notes').value = product.notes || '';
+                             modal.style.display = 'block';
+                        } else {
+                             alert("Error: Product not found! (خرابی: چیز نہیں ملی!)");
+                        }
+                    }).catch(err => {
+                        alert("Error fetching product details: (چیز کی تفصیلات حاصل کرنے میں خرابی:) " + err);
+                        console.error(err);
+                    });
+                } else {
+                    // Add mode
+                    document.getElementById('modal-title').textContent = 'Add New Product (نئی چیز شامل کریں)';
+                     document.getElementById('product-quantity').value = 0;
+                     document.getElementById('product-low-stock').value = 5;
+                     document.getElementById('product-unit').value = 'piece'; // Default unit
+                     modal.style.display = 'block';
+                }
+                 updateCategoryDatalist(); // Update suggestions when opening
+            }
+            else if (modalId === 'stock-log-modal') {
+                 document.getElementById('stock-log-id').value = ''; // Clear hidden ID (for future edit)
+                 document.getElementById('stock-log-modal-title').textContent = 'Add Stock Entry (نیا اسٹاک اندراج)';
+                 document.getElementById('stock-log-current-qty').textContent = '--';
+                 document.getElementById('stock-log-new-qty').textContent = '--';
+
+                 // Set default date/time to now
+                 const now = new Date();
+                 now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // Adjust for local timezone for datetime-local input
+                 document.getElementById('stock-log-date').value = now.toISOString().slice(0, 16);
+
+                 populateProductFilter('stock-log-product'); // Populate dropdown
+
+                 // Pre-fill if context is provided (from product table buttons)
+                 if (context && context.productId) {
+                     document.getElementById('stock-log-product').value = context.productId;
+                     if (context.type) {
+                         document.getElementById('stock-log-type').value = context.type; // Pre-select type (in/out)
+                     }
+                     // Trigger change event to update current/new quantity display
+                     document.getElementById('stock-log-product').dispatchEvent(new Event('change'));
+                 }
+
+                 modal.style.display = 'block';
+            }
+            else {
+                 modal.style.display = 'block'; // For other potential modals
+            }
+        }
+
+        // Close Modal
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.style.display = 'none';
+        }
+
+        // Refresh the product list table
+        async function refreshProductList() {
+            const tableBody = document.getElementById('products-table-body');
+            const searchInput = document.getElementById('product-search').value.toLowerCase();
+            const categoryFilter = document.getElementById('product-category-filter').value;
+            const sortValue = document.getElementById('product-sort').value.split('_');
+            const sortKey = sortValue[0];
+            const sortOrder = sortValue[1];
+
+            tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Loading... (لوڈ ہو رہا ہے...)</td></tr>';
+
+            try {
+                let products = await getAllProducts(sortKey, sortOrder);
+                const currencySymbol = await getSetting('currencySymbol') || 'Rs.';
+
+                // Apply filtering
+                products = products.filter(p => {
+                    const nameLower = p.name.toLowerCase();
+                    const categoryLower = (p.category || '').toLowerCase();
+                    const barcodeLower = (p.barcode || '').toLowerCase();
+                    const matchesSearch = !searchInput ||
+                                          nameLower.includes(searchInput) ||
+                                          barcodeLower.includes(searchInput) ||
+                                          categoryLower.includes(searchInput);
+                    const matchesCategory = !categoryFilter || p.category === categoryFilter;
+                    return matchesSearch && matchesCategory;
+                });
+
+                tableBody.innerHTML = ''; // Clear loading/previous rows
+
+                if (products.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center;">No products found. Add one! (کوئی چیز نہیں ملی۔ ایک شامل کریں!)</td></tr>';
+                    return;
+                }
+
+                products.forEach(product => {
+                    const row = tableBody.insertRow();
+                    const isLowStock = product.quantity <= product.lowStock;
+                    const displayQuantity = formatNumber(product.quantity); // Format number potentially
+
+                    row.innerHTML = `
+                        <td>${product.name} ${isLowStock ? '<span class="low-stock-alert">(کم!)</span>' : ''}</td>
+                        <td>${product.category || '-'}</td>
+                        <td>${product.barcode || '-'}</td>
+                        <td>${currencySymbol} ${product.purchasePrice.toFixed(2)}</td>
+                        <td>${currencySymbol} ${product.salePrice.toFixed(2)}</td>
+                        <td style="${isLowStock ? 'color: var(--danger-color); font-weight: bold;' : ''}">${displayQuantity}</td>
+                        <td>${product.unit || 'piece'}</td>
+                        <td>${formatNumber(product.lowStock)}</td>
+                        <td class="actions">
+                            <button class="btn btn-success btn-sm" title="Stock In (اسٹاک اندر)" onclick="openModal('stock-log-modal', { productId: ${product.id}, type: 'in' })">+</button>
+                            <button class="btn btn-warning btn-sm" title="Stock Out (اسٹاک باہر)" onclick="openModal('stock-log-modal', { productId: ${product.id}, type: 'out' })">-</button>
+                            <button class="btn btn-secondary btn-sm" title="Edit Product (چیز میں ترمیم کریں)" onclick="openModal('product-modal', ${product.id})">Edit (ترمیم)</button>
+                            <button class="btn btn-danger btn-sm" title="Delete Product (چیز حذف کریں)" onclick="handleDeleteProduct(${product.id}, '${product.name}')">Delete (حذف)</button>
+                            <button class="btn btn-info btn-sm" title="View Stock Log (اسٹاک لاگ دیکھیں)" onclick="navigateToStockLogForProduct(${product.id})">Log (لاگ)</button>
+                        </td>
+                    `;
+                });
+            } catch (error) {
+                console.error("Failed to refresh product list:", error);
+                tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center; color: red;">Error loading products. (اشیاء لوڈ کرنے میں خرابی۔)</td></tr>';
+            }
+        }
+
+        // Update category dropdown based on existing products
+        async function updateCategoryFilter() { /* ... same logic as v1 ... */
+             const categoryFilter = document.getElementById('product-category-filter');
+            const currentCategory = categoryFilter.value; // Preserve selection if possible
+            try {
+                // Use cached products if available, otherwise fetch
+                const products = currentProductCache.length > 0 ? currentProductCache : await getAllProducts();
+                const categories = [...new Set(products.map(p => p.category).filter(Boolean))].sort(); // Get unique, non-empty categories
+
+                // Clear existing options except the "All" option
+                while (categoryFilter.options.length > 1) {
+                    categoryFilter.remove(1);
+                }
+
+                categories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat;
+                    option.textContent = cat;
+                    categoryFilter.appendChild(option);
+                });
+                 categoryFilter.value = currentCategory; // Restore selection
+            } catch (error) {
+                console.error("Failed to update category filter:", error);
+            }
+        }
+
+         // Update category datalist for suggestions in product form
+        async function updateCategoryDatalist() {
+            const datalist = document.getElementById('category-suggestions');
+            try {
+                const products = currentProductCache.length > 0 ? currentProductCache : await getAllProducts();
+                const categories = [...new Set(products.map(p => p.category).filter(Boolean))].sort();
+                datalist.innerHTML = ''; // Clear existing
+                categories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat;
+                    datalist.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Failed to update category datalist:", error);
+            }
+        }
+
+
+        // Refresh Dashboard Data
+        async function refreshDashboard() {
+            const lowStockList = document.getElementById('low-stock-list');
+            const totalValueElem = document.getElementById('total-inventory-value');
+            const recentLogsList = document.getElementById('recent-stock-logs');
+            lowStockList.innerHTML = '<li>Loading... (لوڈ ہو رہا ہے...)</li>';
+            totalValueElem.textContent = 'Loading... (لوڈ ہو رہا ہے...)';
+            recentLogsList.innerHTML = '<li>Loading... (لوڈ ہو رہا ہے...)</li>';
+
+
+            try {
+                const products = await getAllProducts(); // Fetches and updates cache
+                const currencySymbol = await getSetting('currencySymbol') || 'Rs.';
+
+                // 1. Low Stock Items
+                const lowStockItems = products.filter(p => p.quantity <= p.lowStock);
+                if (lowStockItems.length === 0) {
+                    lowStockList.innerHTML = '<li>No items currently low on stock. (فی الحال کوئی چیز کم اسٹاک میں نہیں ہے۔)</li>';
+                } else {
+                    lowStockList.innerHTML = ''; // Clear loading/default
+                    lowStockItems.forEach(p => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `${p.name} (${formatNumber(p.quantity)} ${p.unit || 'pcs'}, حد: ${formatNumber(p.lowStock)}) <button class="btn btn-sm btn-secondary no-print" onclick="navigateToProductAndEdit(${p.id})">View/Edit (دیکھیں/ترمیم)</button>`;
+                        lowStockList.appendChild(li);
+                    });
+                }
+
+                 // 2. Total Inventory Value (based on purchase price)
+                 const totalValue = products.reduce((sum, p) => sum + (p.quantity * p.purchasePrice), 0);
+                 totalValueElem.textContent = `${currencySymbol} ${totalValue.toFixed(2)}`;
+
+                 // 3. Recent Stock Logs (e.g., last 5)
+                 const recentLogs = await getAllStockLogs({ /* no filters, rely on default sort */ });
+                 if (recentLogs.length === 0) {
+                     recentLogsList.innerHTML = '<li>No recent stock movements found. (کوئی حالیہ اسٹاک نقل و حرکت نہیں ملی۔)</li>';
+                 } else {
+                     recentLogsList.innerHTML = '';
+                     recentLogs.slice(0, 5).forEach(log => { // Show top 5
+                         const li = document.createElement('li');
+                         const dateStr = new Date(log.date).toLocaleString();
+                         const change = formatNumber(log.quantityChange);
+                         const typeClass = log.type === 'in' ? 'stock-in' : (log.type === 'out' || log.type === 'sale') ? 'stock-out' : 'stock-adjust';
+                         const typeText = getStockLogTypeText(log.type);
+                         li.innerHTML = `(${dateStr}) ${log.productName}: <span class="${typeClass}">${typeText} (${change})</span>. Note (نوٹ): ${log.note || '-'}`;
+                         recentLogsList.appendChild(li);
+                     });
+                 }
+
+            } catch (error) {
+                console.error("Failed to refresh dashboard:", error);
+                 lowStockList.innerHTML = '<li style="color: red;">Error loading low stock data. (کم اسٹاک ڈیٹا لوڈ کرنے میں خرابی۔)</li>';
+                 totalValueElem.textContent = 'Error (خرابی)';
+                 recentLogsList.innerHTML = '<li style="color: red;">Error loading recent logs. (حالیہ لاگز لوڈ کرنے میں خرابی۔)</li>';
+            }
+        }
+        // Helper to navigate directly to product edit from dashboard
+        function navigateToProductAndEdit(productId) { /* ... same as v1 ... */
+             navigateTo('products');
+             setTimeout(() => openModal('product-modal', productId), 100);
+        }
+         // Helper to navigate to stock log filtered for a specific product
+        function navigateToStockLogForProduct(productId) {
+             navigateTo('stock');
+             // Set filter value and trigger refresh after navigation
+             setTimeout(() => {
+                 document.getElementById('stock-log-product-filter').value = productId;
+                 refreshStockLogList();
+             }, 100);
+        }
+
+
+        // Handle Product Form Submission (Add/Edit)
+        async function handleProductFormSubmit(event) {
+            event.preventDefault();
+            const productId = document.getElementById('product-id').value;
+            const product = {
+                name: document.getElementById('product-name').value.trim(),
+                category: document.getElementById('product-category').value.trim(),
+                unit: document.getElementById('product-unit').value.trim() || 'piece', // Ensure unit has a value
+                barcode: document.getElementById('product-barcode').value.trim(),
+                purchasePrice: document.getElementById('product-purchase-price').value,
+                salePrice: document.getElementById('product-sale-price').value,
+                // Quantity is handled differently for add vs edit in saveProduct
+                quantity: document.getElementById('product-quantity').value,
+                lowStock: document.getElementById('product-low-stock').value,
+                supplier: document.getElementById('product-supplier').value.trim(),
+                notes: document.getElementById('product-notes').value.trim(),
+            };
+
+            // Basic Validation
+            if (!product.name || !product.salePrice || product.quantity === '' || !product.unit) {
+                alert("Please fill in all required fields: Name, Unit, Sale Price, Initial Quantity. (براہ کرم تمام مطلوبہ خانے پُر کریں: نام، اکائی، فروخت قیمت، ابتدائی مقدار۔)");
+                return;
+            }
+
+            if (productId) {
+                product.id = parseInt(productId); // Add id for update
+            }
+
+            try {
+                await saveProduct(product);
+                closeModal('product-modal');
+                await refreshProductList(); // Update the table (await ensures cache is updated)
+                updateCategoryFilter(); // Update categories filter
+                updateCategoryDatalist(); // Update category suggestions
+                refreshDashboard(); // Update dashboard
+            } catch (error) {
+                alert("Error saving product: (چیز محفوظ کرنے میں خرابی:) " + error);
+                console.error("Error saving product:", error);
+            }
+        }
+
+        // Handle Product Deletion
+        async function handleDeleteProduct(id, name) {
+            if (confirm(`Are you sure you want to delete the product "${name}" and all its stock history? This action cannot be undone. (کیا آپ واقعی "${name}" نامی چیز اور اس کی تمام اسٹاک ہسٹری کو حذف کرنا چاہتے ہیں؟ یہ عمل واپس نہیں کیا جا سکتا۔)`)) {
+                try {
+                    await deleteProduct(id);
+                    await refreshProductList(); // Update the table (await ensures cache is updated)
+                    updateCategoryFilter();
+                    updateCategoryDatalist();
+                    refreshDashboard();
+                    // Also refresh stock log filters in case the deleted product was selected
+                    populateProductFilter('stock-log-product-filter');
+                    populateProductFilter('stock-log-product');
+                } catch (error) {
+                    alert("Error deleting product: (چیز حذف کرنے میں خرابی:) " + error);
+                    console.error("Error deleting product:", error);
+                }
+            }
+        }
+
+        // --- Stock Log UI ---
+
+        // Populate product dropdowns/filters
+        async function populateProductFilter(selectElementId) {
+            const selectElement = document.getElementById(selectElementId);
+            const currentValue = selectElement.value; // Preserve selection
+            try {
+                // Use cache if available
+                const products = currentProductCache.length > 0 ? currentProductCache : await getAllProducts();
+                // Clear existing options (keep the first "All" or "Select" option if it exists)
+                 const firstOption = selectElement.options[0];
+                 selectElement.innerHTML = ''; // Clear all
+                 if (firstOption && (firstOption.value === "" || firstOption.disabled)) {
+                     selectElement.appendChild(firstOption); // Add back the placeholder
+                 }
+
+                products.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p.id;
+                    option.textContent = `${p.name} (${p.unit || 'pcs'})`;
+                    selectElement.appendChild(option);
+                });
+                selectElement.value = currentValue; // Restore selection
+            } catch (error) {
+                console.error(`Failed to populate product filter ${selectElementId}:`, error);
+            }
+        }
+
+        // Refresh the stock log list table
+        async function refreshStockLogList() {
+            const tableBody = document.getElementById('stock-log-table-body');
+            tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading... (لوڈ ہو رہا ہے...)</td></tr>';
+
+            const filters = {
+                productId: document.getElementById('stock-log-product-filter').value,
+                type: document.getElementById('stock-log-type-filter').value,
+                // Date filter needs careful handling - use ISO dates from input
+                startDate: document.getElementById('stock-log-date-filter').value ? document.getElementById('stock-log-date-filter').value : null,
+                 // For single date filter, we might want logs *on* that day
+                 endDate: document.getElementById('stock-log-date-filter').value ? document.getElementById('stock-log-date-filter').value : null,
+            };
+
+            try {
+                const logs = await getAllStockLogs(filters);
+
+                tableBody.innerHTML = ''; // Clear loading/previous rows
+
+                if (logs.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No matching stock log entries found. (کوئی مماثل اسٹاک لاگ اندراج نہیں ملا۔)</td></tr>';
+                    return;
+                }
+
+                logs.forEach(log => {
+                    const row = tableBody.insertRow();
+                    const dateStr = new Date(log.date).toLocaleString(); // Format date nicely
+                    const typeClass = log.type === 'in' ? 'stock-in' : (log.type === 'out' || log.type === 'sale') ? 'stock-out' : 'stock-adjust';
+                    const typeText = getStockLogTypeText(log.type);
+                    const quantityChangeFormatted = formatNumber(log.quantityChange);
+                    const newQuantityFormatted = formatNumber(log.newQuantity);
+
+                    row.innerHTML = `
+                        <td>${dateStr}</td>
+                        <td>${log.productName || `Product ID: ${log.productId}`}</td>
+                        <td><span class="${typeClass}">${typeText}</span></td>
+                        <td>${quantityChangeFormatted}</td>
+                        <td>${newQuantityFormatted}</td>
+                        <td>${log.note || '-'}</td>
+                        <td class="actions">
+                            <button class="btn btn-danger btn-sm" title="Delete Log Entry (لاگ اندراج حذف کریں)" onclick="handleDeleteStockLog(${log.id})">Delete (حذف)</button>
+                            </td>
+                    `;
+                });
+            } catch (error) {
+                console.error("Failed to refresh stock log list:", error);
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: red;">Error loading stock logs. (اسٹاک لاگز لوڈ کرنے میں خرابی۔)</td></tr>';
+            }
+        }
+
+         // Handle Stock Log Form Submission
+        async function handleStockLogFormSubmit(event) {
+            event.preventDefault();
+            const logData = {
+                productId: document.getElementById('stock-log-product').value,
+                type: document.getElementById('stock-log-type').value,
+                quantityChange: document.getElementById('stock-log-quantity').value,
+                date: document.getElementById('stock-log-date').value ? new Date(document.getElementById('stock-log-date').value).toISOString() : new Date().toISOString(), // Ensure ISO format
+                note: document.getElementById('stock-log-note').value.trim()
+            };
+
+             // Basic Validation
+            if (!logData.productId || !logData.type || logData.quantityChange === '') {
+                alert("Please select a Product, Type, and enter Quantity Change. (براہ کرم چیز، قسم منتخب کریں اور مقدار میں تبدیلی درج کریں۔)");
+                return;
+            }
+
+            // Validate quantity sign based on type (optional but helpful)
+            const qty = parseFloat(logData.quantityChange);
+            if ((logData.type === 'out' || logData.type === 'sale') && qty > 0) {
+                 if (!confirm(`Quantity for '${getStockLogTypeText(logData.type)}' is positive (${qty}). Should it be negative? Click OK to proceed with positive, Cancel to correct. ('${getStockLogTypeText(logData.type)}' کے لیے مقدار مثبت (${qty}) ہے۔ کیا یہ منفی ہونی چاہیے؟ مثبت کے ساتھ آگے بڑھنے کے لیے OK پر کلک کریں، درست کرنے کے لیے Cancel کریں۔)`)) {
+                     return;
+                 }
+            }
+             if (logData.type === 'in' && qty < 0) {
+                 if (!confirm(`Quantity for '${getStockLogTypeText(logData.type)}' is negative (${qty}). Should it be positive? Click OK to proceed with negative, Cancel to correct. ('${getStockLogTypeText(logData.type)}' کے لیے مقدار منفی (${qty}) ہے۔ کیا یہ مثبت ہونی چاہیے؟ منفی کے ساتھ آگے بڑھنے کے لیے OK پر کلک کریں، درست کرنے کے لیے Cancel کریں۔)`)) {
+                     return;
+                 }
+            }
+
+
+            try {
+                await addStockLog(logData);
+                closeModal('stock-log-modal');
+                refreshStockLogList(); // Update the log table
+                refreshProductList(); // Update product quantities in product table
+                refreshDashboard(); // Update dashboard metrics
+            } catch (error) {
+                 alert(`Error saving stock entry: (اسٹاک اندراج محفوظ کرنے میں خرابی:) ${error}`);
+                 console.error("Error saving stock entry:", error);
+            }
+        }
+
+         // Handle Stock Log Deletion
+        async function handleDeleteStockLog(logId) {
+             try {
+                 await deleteStockLog(logId);
+                 refreshStockLogList(); // Update the log table
+                 // IMPORTANT: Deleting a log DOES NOT automatically revert product quantity here.
+                 // This requires a more complex adjustment logic or should be discouraged.
+                 // We should at least refresh products and dashboard to show potentially inaccurate data.
+                 alert("Log entry deleted. Note: Product quantity was NOT automatically adjusted. Use 'Adjustment' entry if needed. (لاگ اندراج حذف کر دیا گیا۔ نوٹ: چیز کی مقدار خود بخود ایڈجسٹ نہیں ہوئی۔ اگر ضرورت ہو تو 'ایڈجسٹمنٹ' اندراج استعمال کریں۔)");
+                 refreshProductList();
+                 refreshDashboard();
+             } catch (error) {
+                 // Check if error is user cancellation
+                 if (error !== "Deletion cancelled by user.") {
+                     alert(`Error deleting stock log: (اسٹاک لاگ حذف کرنے میں خرابی:) ${error}`);
+                     console.error("Error deleting stock log:", error);
+                 }
+             }
+        }
+
+         // Update quantity display in stock log modal when product/quantity changes
+        async function updateStockLogModalQuantities() {
+             const productId = document.getElementById('stock-log-product').value;
+             const quantityChangeInput = document.getElementById('stock-log-quantity');
+             const quantityChange = parseFloat(quantityChangeInput.value) || 0;
+             const currentQtyElem = document.getElementById('stock-log-current-qty');
+             const newQtyElem = document.getElementById('stock-log-new-qty');
+
+             currentQtyElem.textContent = '--';
+             newQtyElem.textContent = '--';
+
+             if (productId) {
+                 try {
+                     // Find product in cache for speed
+                     const product = currentProductCache.find(p => p.id === parseInt(productId));
+                     if (product) {
+                         const currentQuantity = parseFloat(product.quantity) || 0;
+                         const newQuantity = currentQuantity + quantityChange;
+                         currentQtyElem.textContent = `${formatNumber(currentQuantity)} ${product.unit || 'pcs'}`;
+                         newQtyElem.textContent = `${formatNumber(newQuantity)} ${product.unit || 'pcs'}`;
+                     } else {
+                         // Fallback to DB fetch if not in cache (should be rare)
+                         const dbProduct = await getProduct(productId);
+                         if (dbProduct) {
+                             const currentQuantity = parseFloat(dbProduct.quantity) || 0;
+                             const newQuantity = currentQuantity + quantityChange;
+                             currentQtyElem.textContent = `${formatNumber(currentQuantity)} ${dbProduct.unit || 'pcs'}`;
+                             newQtyElem.textContent = `${formatNumber(newQuantity)} ${dbProduct.unit || 'pcs'}`;
+                         }
+                     }
+                 } catch (error) {
+                     console.error("Error fetching product for quantity display:", error);
+                     currentQtyElem.textContent = 'Error (خرابی)';
+                 }
+             }
+        }
+
+         // Helper to get display text for stock log type
+        function getStockLogTypeText(type) {
+            switch (type) {
+                case 'in': return 'Stock In (اسٹاک اندر)';
+                case 'out': return 'Stock Out (اسٹاک باہر)';
+                case 'sale': return 'Sale (فروخت)';
+                case 'adjustment': return 'Adjustment (ایڈجسٹمنٹ)';
+                default: return type;
+            }
+        }
+
+        // --- Reporting Functions ---
+
+        async function generateReport() {
+            const reportType = document.getElementById('report-type').value;
+            const startDate = document.getElementById('report-date-start').value;
+            const endDate = document.getElementById('report-date-end').value;
+            const outputDiv = document.getElementById('report-output');
+            const printButton = document.getElementById('print-report-btn');
+            const exportButton = document.getElementById('export-report-csv-btn');
+
+            outputDiv.innerHTML = `<p style="text-align: center;">Generating report... (رپورٹ تیار کی جا رہی ہے...)</p>`;
+            printButton.disabled = true;
+            exportButton.disabled = true;
+
+
+            try {
+                const currencySymbol = await getSetting('currencySymbol') || 'Rs.';
+                let reportHtml = '';
+                let reportData = []; // For CSV export
+                let reportHeaders = []; // For CSV export
+
+                const dateFilterText = startDate || endDate ? ` (${startDate || 'Start'} to ${endDate || 'End'})` : '';
+                let reportTitle = '';
+
+                switch (reportType) {
+                    case 'inventory':
+                        reportTitle = `Inventory Summary (انوینٹری کا خلاصہ) ${dateFilterText}`;
+                        const products = await getAllProducts('name', 'asc');
+                        reportHeaders = ["ID", "Name (نام)", "Category (زمرہ)", "Unit (اکائی)", "Purchase Price (خرید قیمت)", "Sale Price (فروخت قیمت)", "Quantity (مقدار)", "Inventory Value (Purchase) (مالیت - خرید)", "Inventory Value (Sale) (مالیت - فروخت)"];
+                        reportData = products.map(p => ({
+                            id: p.id,
+                            name: p.name,
+                            category: p.category || '-',
+                            unit: p.unit || 'piece',
+                            purchasePrice: p.purchasePrice.toFixed(2),
+                            salePrice: p.salePrice.toFixed(2),
+                            quantity: formatNumber(p.quantity),
+                            inventoryValuePurchase: (p.quantity * p.purchasePrice).toFixed(2),
+                            inventoryValueSale: (p.quantity * p.salePrice).toFixed(2)
+                        }));
+                        reportHtml = generateHtmlTable(reportHeaders, reportData, reportTitle, currencySymbol);
+                        break;
+
+                    case 'sales':
+                    case 'purchases':
+                    case 'stock-log':
+                        const logTypeFilter = reportType === 'sales' ? 'sale' : reportType === 'purchases' ? 'in' : null;
+                        reportTitle = reportType === 'sales' ? `Sales Report (فروخت کی رپورٹ) ${dateFilterText}` :
+                                      reportType === 'purchases' ? `Purchase Report (خریداری کی رپورٹ) ${dateFilterText}` :
+                                      `Full Stock Log (مکمل اسٹاک لاگ) ${dateFilterText}`;
+
+                        const logs = await getAllStockLogs({ startDate, endDate, type: logTypeFilter });
+                        reportHeaders = ["Date (تاریخ)", "Product (چیز)", "Type (قسم)", "Quantity Change (مقدار میں تبدیلی)", "New Quantity (نئی مقدار)", "Note (نوٹ)"];
+                        reportData = logs.map(log => ({
+                            date: new Date(log.date).toLocaleString(),
+                            productName: log.productName || `ID: ${log.productId}`,
+                            type: getStockLogTypeText(log.type),
+                            quantityChange: formatNumber(log.quantityChange),
+                            newQuantity: formatNumber(log.newQuantity),
+                            note: log.note || '-'
+                        }));
+                         // Add summary for Sales/Purchases
+                         if (reportType === 'sales' || reportType === 'purchases') {
+                              let totalChange = 0;
+                              logs.forEach(log => { totalChange += log.quantityChange; });
+                              const summaryText = reportType === 'sales'
+                                  ? `Total Items Sold (کل فروخت شدہ اشیاء): ${formatNumber(Math.abs(totalChange))}`
+                                  : `Total Items Purchased (کل خریدی گئی اشیاء): ${formatNumber(totalChange)}`;
+                              reportHtml += `<p style="text-align:center; font-weight: bold;">${summaryText}</p>`;
+                         }
+
+                        reportHtml += generateHtmlTable(reportHeaders, reportData, reportTitle);
+                        break;
+
+                    default:
+                        reportHtml = "<p style='color: red; text-align: center;'>Invalid report type selected. (غلط رپورٹ کی قسم منتخب کی گئی ہے۔)</p>";
+                }
+
+                outputDiv.innerHTML = reportHtml;
+                // Store data for export/print
+                outputDiv.dataset.reportData = JSON.stringify(reportData);
+                outputDiv.dataset.reportHeaders = JSON.stringify(reportHeaders);
+                outputDiv.dataset.reportTitle = reportTitle;
+                outputDiv.dataset.currencySymbol = currencySymbol;
+
+                printButton.disabled = false;
+                exportButton.disabled = false;
+
+            } catch (error) {
+                console.error("Failed to generate report:", error);
+                outputDiv.innerHTML = `<p style='color: red; text-align: center;'>Error generating report: (رپورٹ بنانے میں خرابی:) ${error}</p>`;
+                printButton.disabled = true;
+                exportButton.disabled = true;
+            }
+        }
+
+        // Helper to generate HTML table for reports
+        function generateHtmlTable(headers, data, title, currencySymbol = '') {
+             let tableHtml = `<h3>${title}</h3>`;
+             if (data.length === 0) {
+                 return tableHtml + "<p style='text-align: center;'>No data found for this report. (اس رپورٹ کے لیے کوئی ڈیٹا نہیں ملا۔)</p>";
+             }
+             tableHtml += '<table class="data-table">';
+             // Header row
+             tableHtml += '<thead><tr>';
+             headers.forEach(header => {
+                 tableHtml += `<th>${header}</th>`;
+             });
+             tableHtml += '</tr></thead>';
+             // Data rows
+             tableHtml += '<tbody>';
+             data.forEach(row => {
+                 tableHtml += '<tr>';
+                 headers.forEach(headerKeySource => {
+                     // Extract the key part before parenthesis for data access
+                     const headerKey = headerKeySource.split(' (')[0].toLowerCase()
+                         .replace(/ /g, '') // Remove spaces
+                         .replace('(نام)', 'name') // Manual mappings if needed
+                         .replace('(زمرہ)', 'category')
+                         .replace('(اکائی)', 'unit')
+                         .replace('(خریدقیمت)', 'purchaseprice')
+                         .replace('(فروختقیمت)', 'saleprice')
+                         .replace('(مقدار)', 'quantity')
+                         .replace('(مالیت-خرید)', 'inventoryvaluepurchase')
+                         .replace('(مالیت-فروخت)', 'inventoryvaluesale')
+                         .replace('(تاریخ)', 'date')
+                         .replace('(چیز)', 'productname')
+                         .replace('(قسم)', 'type')
+                         .replace('(مقدارمیںتبدیلی)', 'quantitychange')
+                         .replace('(نئیمقدار)', 'newquantity')
+                         .replace('(نوٹ)', 'note');
+
+                     let cellValue = row[headerKey];
+
+                      // Format currency for specific columns
+                     if (currencySymbol && (headerKey.includes('price') || headerKey.includes('value'))) {
+                         cellValue = `${currencySymbol} ${parseFloat(cellValue).toFixed(2)}`;
+                     }
+                      // Handle potential undefined values
+                     cellValue = (cellValue === undefined || cellValue === null) ? '-' : cellValue;
+
+                     tableHtml += `<td>${cellValue}</td>`;
+                 });
+                 tableHtml += '</tr>';
+             });
+             tableHtml += '</tbody></table>';
+             return tableHtml;
+        }
+
+
+        // Export generated report data to CSV
+        function exportReportToCSV() {
+            const outputDiv = document.getElementById('report-output');
+            const headers = JSON.parse(outputDiv.dataset.reportHeaders || '[]');
+            const data = JSON.parse(outputDiv.dataset.reportData || '[]');
+            const title = outputDiv.dataset.reportTitle || 'Report';
+
+            if (data.length === 0) {
+                alert("No data to export. (برآمد کرنے کے لیے کوئی ڈیٹا نہیں ہے۔)");
+                return;
+            }
+
+            // Convert headers to keys (simple approach, might need refinement)
+             const keys = headers.map(h => h.split(' (')[0].toLowerCase().replace(/ /g, '')
+                 .replace('(نام)', 'name')
+                 .replace('(زمرہ)', 'category')
+                 .replace('(اکائی)', 'unit')
+                 .replace('(خریدقیمت)', 'purchaseprice')
+                 .replace('(فروختقیمت)', 'saleprice')
+                 .replace('(مقدار)', 'quantity')
+                 .replace('(مالیت-خرید)', 'inventoryvaluepurchase')
+                 .replace('(مالیت-فروخت)', 'inventoryvaluesale')
+                 .replace('(تاریخ)', 'date')
+                 .replace('(چیز)', 'productname')
+                 .replace('(قسم)', 'type')
+                 .replace('(مقدارمیںتبدیلی)', 'quantitychange')
+                 .replace('(نئیمقدار)', 'newquantity')
+                 .replace('(نوٹ)', 'note')
+             );
+
+
+            const rows = data.map(row =>
+                 keys.map(key => {
+                     let value = row[key];
+                     // Format for CSV: escape quotes, handle commas
+                     value = (value === undefined || value === null) ? '' : String(value);
+                     if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+                         return `"${value.replace(/"/g, '""')}"`; // Enclose in quotes and escape existing quotes
+                     }
+                     return value;
+                 }).join(",")
+             );
+
+
+            const csvContent = "data:text/csv;charset=utf-8,"
+                + [headers.join(","), ...rows].join("\n");
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            const timestamp = new Date().toISOString().slice(0, 10);
+            const safeTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase(); // Sanitize title for filename
+            link.setAttribute("download", `dukaan_manager_${safeTitle}_${timestamp}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+         // Prepare and trigger print for the generated report
+        function printGeneratedReport() {
+            const printableArea = document.getElementById('printable-report');
+            const reportContent = document.getElementById('report-output').innerHTML; // Get generated HTML
+            const reportTitle = document.getElementById('report-output').dataset.reportTitle || 'Report';
+
+            // Clear previous printable content and add new content
+            printableArea.innerHTML = `<h2>${reportTitle}</h2>` + reportContent; // Use the generated HTML directly
+            // Remove the H3 title from the copied content if it exists, as we added H2
+             const h3 = printableArea.querySelector('h3');
+             if (h3 && h3.textContent === reportTitle) {
+                 h3.remove();
+             }
+
+            printableArea.style.display = 'block'; // Make it visible for printing
+            window.print(); // Trigger browser print dialog
+            printableArea.style.display = 'none'; // Hide after printing attempt
+        }
+
+        // --- Settings Functions ---
+        async function loadSettings() { /* ... same as v1 ... */
+             try {
+                 const currency = await getSetting('currencySymbol');
+                 document.getElementById('setting-currency').value = currency || 'Rs.';
+             } catch (error) {
+                 console.error("Error loading settings:", error);
+                 alert("Could not load settings. (ترتیبات لوڈ نہیں ہو سکیں۔)");
+             }
+        }
+        async function saveSettings() { /* ... same as v1, but refresh more ... */
+             const currency = document.getElementById('setting-currency').value.trim();
+             try {
+                 await saveSetting('currencySymbol', currency);
+                 alert("Settings saved successfully! (ترتیبات کامیابی سے محفوظ ہو گئیں!)");
+                 // Refresh parts of the UI that use settings
+                 refreshProductList();
+                 refreshDashboard();
+                 // Clear report output as currency might have changed
+                 document.getElementById('report-output').innerHTML = '<p style="text-align: center;">Settings updated. Please regenerate report if needed. (ترتیبات اپ ڈیٹ ہو گئیں۔ ضرورت پڑنے پر براہ کرم رپورٹ دوبارہ بنائیں۔)</p>';
+                 document.getElementById('print-report-btn').disabled = true;
+                 document.getElementById('export-report-csv-btn').disabled = true;
+             } catch (error) {
+                 console.error("Error saving settings:", error);
+                 alert("Error saving settings. (ترتیبات محفوظ کرنے میں خرابی۔)");
+             }
+        }
+
+        // --- Backup & Restore (Updated for Stock Logs) ---
+        async function backupData() {
+            if (!confirm("This will create a JSON file containing all your current data (products, stock logs, settings). Save this file securely. (یہ ایک JSON فائل بنائے گا جس میں آپ کا تمام موجودہ ڈیٹا (اشیاء، اسٹاک لاگز، ترتیبات) شامل ہوگا۔ اس فائل کو محفوظ جگہ پر رکھیں۔)")) {
+                return;
+            }
+            try {
+                const products = await getAllProducts();
+                const stockLogs = await getAllStockLogs(); // Fetch all logs
+                const settings = { // Fetch individual settings or all if needed
+                         currencySymbol: await getSetting('currencySymbol')
+                };
+
+                const backupData = {
+                    dbVersion: DB_VERSION, // Store DB version at time of backup
+                    backupDate: new Date().toISOString(),
+                    products: products,
+                    stockLogs: stockLogs, // Include logs
+                    settings: settings
+                };
+
+                const jsonContent = JSON.stringify(backupData, null, 2); // Pretty print JSON
+                const blob = new Blob([jsonContent], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                const timestamp = new Date().toISOString().slice(0, 10);
+                link.download = `dukaan_manager_backup_v${DB_VERSION}_${timestamp}.json`; // Include version in filename
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+            } catch (error) {
+                console.error("Backup failed:", error);
+                alert("Data backup failed: (ڈیٹا بیک اپ ناکام:) " + error);
+            }
+        }
+
+        function handleRestoreData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!confirm(`WARNING (انتباہ): Restoring data will ERASE all current data in the app and replace it with the data from the file '${file.name}'. Are you absolutely sure you want to proceed? (ڈیٹا بحال کرنے سے ایپ میں موجودہ تمام ڈیٹا مٹ جائے گا اور اس کی جگہ فائل '${file.name}' کے ڈیٹا سے لے لی جائے گی۔ کیا آپ واقعی آگے بڑھنا چاہتے ہیں؟)`)) {
+                event.target.value = null; // Reset file input
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const backupData = JSON.parse(e.target.result);
+
+                    // Basic validation of backup file structure
+                    if (!backupData || !backupData.products || !backupData.stockLogs || !backupData.settings || !backupData.backupDate) {
+                        throw new Error("Invalid backup file format. Required fields missing. (غلط بیک اپ فائل فارمیٹ۔ مطلوبہ فیلڈز غائب ہیں۔)");
+                    }
+
+                     // Optional: Check backup version compatibility if needed in future
+                     // if (backupData.dbVersion && backupData.dbVersion !== DB_VERSION) {
+                     //     if (!confirm(`Backup file is from a different app version (v${backupData.dbVersion}). Restoring might cause issues. Continue anyway?`)) {
+                     //          event.target.value = null;
+                     //          return;
+                     //     }
+                     // }
+
+
+                    // --- Perform Restore ---
+                    if (!db) {
+                         alert("Database not ready. Please wait and try again. (ڈیٹا بیس تیار نہیں ہے۔ براہ کرم انتظار کریں اور دوبارہ کوشش کریں۔)");
+                         return;
+                    }
+
+                    // 1. Clear existing data (IMPORTANT!)
+                    const storesToClear = [PRODUCT_STORE, STOCK_LOG_STORE, SETTINGS_STORE];
+                    const clearTransaction = db.transaction(storesToClear, 'readwrite');
+                    let clearPromises = storesToClear.map(storeName => {
+                        return new Promise((resolve, reject) => {
+                            if (db.objectStoreNames.contains(storeName)) {
+                                const request = clearTransaction.objectStore(storeName).clear();
+                                request.onsuccess = resolve;
+                                request.onerror = (ev) => reject(`Failed to clear ${storeName}: ${ev.target.error}`);
+                            } else {
+                                resolve(); // Store doesn't exist, nothing to clear
+                            }
+                        });
+                    });
+
+                     clearTransaction.oncomplete = async () => {
+                         console.log("Existing data cleared.");
+
+                         // 2. Add restored data in a new transaction
+                         const restoreTransaction = db.transaction(storesToClear, 'readwrite');
+                         const productStore = restoreTransaction.objectStore(PRODUCT_STORE);
+                         const stockLogStore = restoreTransaction.objectStore(STOCK_LOG_STORE);
+                         const settingsStore = restoreTransaction.objectStore(SETTINGS_STORE);
+                         let restoreError = null; // Flag for errors during restore
+
+                         try {
+                             // Restore Products
+                             backupData.products.forEach(product => {
+                                 // Assume backup IDs are not reliable, let DB auto-generate
+                                 delete product.id;
+                                 productStore.add(product);
+                             });
+
+                             // Restore Stock Logs
+                             backupData.stockLogs.forEach(log => {
+                                 delete log.id;
+                                 stockLogStore.add(log);
+                             });
+
+                             // Restore Settings
+                             if (backupData.settings) {
+                                 for (const key in backupData.settings) {
+                                     settingsStore.put({ key: key, value: backupData.settings[key] });
+                                 }
+                             } else { // Add default if missing
+                                  settingsStore.put({ key: 'currencySymbol', value: 'Rs.' });
+                             }
+
+                         } catch (err) {
+                             restoreError = err; // Catch errors during add operations
+                             console.error("Error during data insertion:", err);
+                             if (restoreTransaction.abort) restoreTransaction.abort(); // Abort transaction on error
+                         }
+
+
+                         restoreTransaction.oncomplete = () => {
+                             if (!restoreError) {
+                                 alert(`Data restored successfully from ${file.name}! The application will now reload. (ڈیٹا کامیابی سے ${file.name} سے بحال ہو گیا! ایپلیکیشن اب دوبارہ لوڈ ہو گی۔)`);
+                                 window.location.reload();
+                             } else {
+                                 // This might not be reached if abort() was called, error handled below
+                             }
+                         };
+
+                         restoreTransaction.onerror = (event) => {
+                             console.error("Error during data restore transaction:", event.target.error);
+                             alert(`Data restore failed during saving: ${event.target.error}. Please check the backup file and try again. (ڈیٹا بحالی محفوظ کرنے کے دوران ناکام: ${event.target.error}۔ براہ کرم بیک اپ فائل چیک کریں اور دوبارہ کوشش کریں۔)`);
+                         };
+
+                     }; // End clearTransaction.oncomplete
+
+                     clearTransaction.onerror = (event) => {
+                          console.error("Error clearing existing data:", event.target.error);
+                          throw new Error("Failed to clear existing data before restore: " + event.target.error);
+                     };
+
+
+                } catch (error) {
+                    console.error("Restore failed:", error);
+                    alert("Data restore failed: (ڈیٹا بحالی ناکام:) " + error + "\nPlease ensure the file is a valid JSON backup. (براہ کرم یقینی بنائیں کہ فائل ایک درست JSON بیک اپ ہے۔)");
+                } finally {
+                     event.target.value = null; // Reset file input regardless of outcome
+                }
+            };
+            reader.onerror = () => {
+                 alert("Failed to read the backup file. (بیک اپ فائل پڑھنے میں ناکام۔)");
+                 event.target.value = null; // Reset file input
+            };
+            reader.readAsText(file);
+        }
+
+         // --- Utility Functions ---
+         function formatNumber(num) {
+             // Simple formatting, potentially add locale-specific later
+             if (typeof num !== 'number') return num; // Return as is if not a number
+             // Avoid unnecessary decimals for integers
+             return Number.isInteger(num) ? String(num) : num.toFixed(2);
+         }
+
+
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await initDB(); // Initialize the database first
+
+                // --- Navigation ---
+                document.querySelectorAll('nav .nav-btn').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const sectionId = button.id.replace('nav-', '');
+                        navigateTo(sectionId);
+                    });
+                });
+
+                // --- Product Section ---
+                document.getElementById('add-product-btn').addEventListener('click', () => openModal('product-modal'));
+                document.getElementById('product-form').addEventListener('submit', handleProductFormSubmit);
+                document.getElementById('product-search').addEventListener('input', refreshProductList);
+                document.getElementById('product-category-filter').addEventListener('change', refreshProductList);
+                document.getElementById('product-sort').addEventListener('change', refreshProductList);
+
+                 // --- Stock Log Section ---
+                 document.getElementById('add-stock-log-btn').addEventListener('click', () => openModal('stock-log-modal'));
+                 document.getElementById('stock-log-form').addEventListener('submit', handleStockLogFormSubmit);
+                 document.getElementById('stock-log-product-filter').addEventListener('change', refreshStockLogList);
+                 document.getElementById('stock-log-type-filter').addEventListener('change', refreshStockLogList);
+                 document.getElementById('stock-log-date-filter').addEventListener('change', refreshStockLogList);
+                 document.getElementById('clear-stock-filters-btn').addEventListener('click', () => {
+                     document.getElementById('stock-log-product-filter').value = '';
+                     document.getElementById('stock-log-type-filter').value = '';
+                     document.getElementById('stock-log-date-filter').value = '';
+                     refreshStockLogList();
+                 });
+                 // Update quantity display in stock log modal
+                 document.getElementById('stock-log-product').addEventListener('change', updateStockLogModalQuantities);
+                 document.getElementById('stock-log-quantity').addEventListener('input', updateStockLogModalQuantities);
+
+
+                // --- Reporting Section ---
+                document.getElementById('generate-report-btn').addEventListener('click', generateReport);
+                document.getElementById('print-report-btn').addEventListener('click', printGeneratedReport);
+                document.getElementById('export-report-csv-btn').addEventListener('click', exportReportToCSV);
+
+
+                 // --- Settings Section ---
+                 document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
+                 document.getElementById('backup-data-btn').addEventListener('click', backupData);
+                 document.getElementById('restore-data-input').addEventListener('change', handleRestoreData);
+
+
+                // --- Initial Load ---
+                navigateTo('dashboard'); // Start on dashboard
+
+            } catch (error) {
+                console.error("Initialization failed:", error);
+                alert("Error initializing the application. Please check the console for details. (ایپلیکیشن شروع کرنے میں خرابی۔ براہ کرم تفصیلات کے لیے کنسول چیک کریں۔)");
+                document.querySelector('main').innerHTML = `<p style="color: red; text-align: center; padding: 20px;">Failed to load application data storage. The app cannot function correctly. Error: (ایپلیکیشن ڈیٹا اسٹوریج لوڈ کرنے میں ناکام۔ ایپ صحیح طریقے سے کام نہیں کر سکتی۔ خرابی:) ${error}</p>`;
+            }
+        });
+
+        // --- Global Event Listeners ---
+        // Close modal if clicking outside the content
+        window.onclick = function(event) {
+            document.querySelectorAll('.modal').forEach(modal => {
+                if (event.target == modal) {
+                    closeModal(modal.id);
+                }
+            });
+        }
+
+    </script>
+
+</body>
+</html>
