@@ -2695,6 +2695,40 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
 });
 
+
+        (function() {
+  const icon = document.createElement("div");
+  icon.textContent = "💾";
+  icon.style.cssText = "position:fixed;top:10px;right:10px;font-size:24px;cursor:pointer;z-index:9999;background:#fff;padding:5px;border-radius:5px;box-shadow:0 0 5px rgba(0,0,0,0.5)";
+  icon.title = "Save Offline Copy";
+  icon.onclick = function() {
+    const html = document.documentElement.outerHTML;
+    const local = JSON.stringify(localStorage);
+    const session = JSON.stringify(sessionStorage);
+    const cookies = document.cookie;
+
+    const saveHtml = `
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Offline Copy</title>
+<script>
+(function(){
+  const l=${local},s=${session},c=${JSON.stringify(cookies)};
+  for(let k in l)localStorage.setItem(k,l[k]);
+  for(let k in s)sessionStorage.setItem(k,s[k]);
+  document.cookie=c;
+})();
+</script></head><body>${document.body.innerHTML}</body></html>`;
+
+    const blob = new Blob([saveHtml], {type:"text/html"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "offline_copy.html";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  document.body.appendChild(icon);
+})();
+                                                           
     </script>
 </body>
 </html>
