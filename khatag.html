@@ -32,13 +32,13 @@
             line-height: 1.6;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
+           /* min-height: 100vh;*/
             padding: 10px;
         }
 
         .container {
             max-width: 1000px;
-            margin: 15px auto;
+            margin: 1px 150px;
             padding: 15px;
             background-color: #fff;
             border-radius: 8px;
@@ -50,7 +50,7 @@
 
         h1, h2, h3 {
             color: var(--primary-color);
-            margin-bottom: 15px;
+            margin-bottom: 5px;
             font-weight: 600;
         }
 
@@ -189,7 +189,7 @@
 
         .modal-content {
             background-color: #fff;
-            margin: 10% auto;
+            margin: .1% auto;
             padding: 25px;
             border-radius: 8px;
             max-width: 500px;
@@ -259,8 +259,8 @@
 
         /* --- Layout & Sections --- */
         .section {
-            margin-bottom: 25px;
-            padding: 15px;
+            margin-bottom: 7px;
+            padding:  7px;
             background: #fff;
             border-radius: 5px;
             border: 1px solid var(--border-color);
@@ -2514,6 +2514,187 @@ document.getElementById('add-transaction-btn').addEventListener('click', async (
         customAlert(getLang("Error preparing transaction."), getLang("Error"));
     }
 });
+
+
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', async function() {
+    // Load jsPDF and autoTable libraries
+    try {
+        const scripts = [
+            'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js'
+        ];
+
+        for (const src of scripts) {
+            const script = document.createElement('script');
+            script.src = src;
+            script.async = true;
+            document.head.appendChild(script);
+            await new Promise((resolve, reject) => {
+                script.onload = resolve;
+                script.onerror = () => reject(new Error(`Failed to load ${src}`));
+            });
+        }
+    } catch (error) {
+        console.error('Error loading libraries:', error);
+        return;
+    }
+
+    // Function to check if table is visible
+    function isTableVisible(table) {
+        const rect = table.getBoundingClientRect();
+        return (
+            table.offsetParent !== null &&
+            rect.top < window.innerHeight &&
+            rect.bottom > 0 &&
+            rect.left < window.innerWidth &&
+            rect.right > 0 &&
+            window.getComputedStyle(table).visibility !== 'hidden'
+        );
+    }
+
+    // Function to add export icon to visible tables
+    function addExportIconToTables() {
+        const tables = document.querySelectorAll('table');
+        tables.forEach(table => {
+            if (!table.dataset.pdfIconAdded) {
+                // Create icon container
+                const iconContainer = document.createElement('div');
+                iconContainer.className = 'pdf-export-container';
+                iconContainer.style.position = 'absolute';
+                iconContainer.style.zIndex = '10';
+                iconContainer.style.pointerEvents = 'none'; // Allow clicks to pass through container
+
+                // Create icon
+                const icon = document.createElement('span');
+                icon.className = 'pdf-export-icon';
+                icon.style.display = 'inline-block';
+                icon.style.cursor = 'pointer';
+                icon.style.pointerEvents = 'auto'; // Enable clicks on icon
+                icon.style.fontSize = '14px';
+                icon.style.background = '#ffffff';
+                icon.style.border = '1px solid #ccc';
+                icon.style.borderRadius = '50%';
+                icon.style.padding = '4px';
+                icon.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                icon.style.transition = 'transform 0.2s';
+                icon.innerHTML = '📄';
+                icon.title = 'Export to PDF';
+
+                // Hover effect
+                icon.addEventListener('mouseenter', () => {
+                    icon.style.transform = 'scale(1.2)';
+                });
+                icon.addEventListener('mouseleave', () => {
+                    icon.style.transform = 'scale(1)';
+                });
+
+                // Position icon relative to table
+                const updateIconPosition = () => {
+                    if (isTableVisible(table)) {
+                        const tablePos = table.getBoundingClientRect();
+                        iconContainer.style.left = `${tablePos.left + window.scrollX - 20}px`;
+                        iconContainer.style.top = `${tablePos.top + window.scrollY - 20}px`;
+                        iconContainer.style.display = 'block';
+                    } else {
+                        iconContainer.style.display = 'none';
+                    }
+                };
+
+                // Add click event for PDF export
+                icon.addEventListener('click', () => {
+                    try {
+                        if (!window.jspdf || !window.jspdf.jsPDF) {
+                            alert('PDF library not loaded. Please try again.');
+                            return;
+                        }
+
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF();
+
+                        // Extract table data
+                        const headers = [];
+                        const rows = [];
+                        table.querySelectorAll('th').forEach(th => headers.push(th.textContent));
+                        rows.push(headers);
+
+                        table.querySelectorAll('tr').forEach(tr => {
+                            const row = [];
+                            tr.querySelectorAll('td').forEach(td => row.push(td.textContent));
+                            if (row.length) rows.push(row);
+                        });
+
+                        // Generate PDF with autoTable
+                        doc.autoTable({
+                            head: [headers],
+                            body: rows.slice(1),
+                            theme: 'grid',
+                            styles: { fontSize: 8 },
+                            margin: { top: 10 }
+                        });
+
+                        doc.save(`table_export_${Date.now()}.pdf`);
+                    } catch (error) {
+                        console.error('Error generating PDF:', error);
+                        alert('Failed to export PDF. Check console for details.');
+                    }
+                });
+
+                // Append icon to container and container to body
+                iconContainer.appendChild(icon);
+                document.body.appendChild(iconContainer);
+
+                // Mark table as processed
+                table.dataset.pdfIconAdded = 'true';
+
+                // Update position initially
+                updateIconPosition();
+
+                // Observe table visibility and position changes
+                const mutationObserver = new MutationObserver(updateIconPosition);
+                mutationObserver.observe(table, { attributes: true, attributeFilter: ['style', 'class'] });
+
+                // Observe table size/position changes
+                const resizeObserver = new ResizeObserver(updateIconPosition);
+                resizeObserver.observe(table);
+
+                // Update on scroll and resize
+                window.addEventListener('scroll', updateIconPosition);
+                window.addEventListener('resize', updateIconPosition);
+            }
+        });
+    }
+
+    // Initial run
+    try {
+        addExportIconToTables();
+    } catch (error) {
+        console.error('Error in initial table processing:', error);
+    }
+
+    // Watch for dynamically added tables with debouncing
+    let timeout;
+    const observer = new MutationObserver(() => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            try {
+                addExportIconToTables();
+            } catch (error) {
+                console.error('Error in dynamic table processing:', error);
+            }
+        }, 500); // Debounce to prevent performance issues
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+});
+
     </script>
 </body>
 </html>
