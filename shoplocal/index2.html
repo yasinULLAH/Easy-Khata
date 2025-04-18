@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رسید سسٹم</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;700&display=swap');
+
+        :root {
+            --font-urdu-nastaliq: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Urdu Typesetting', serif;
+            --font-urdu-simple: 'IBM Plex Sans Arabic', 'Noto Sans Arabic', sans-serif; /* Simpler font for address/inputs */
+            --border-color-receipt: #000; /* Black borders for receipt */
+            --border-color-ui: #ccc; /* Lighter borders for UI elements */
+            --input-bg: #fdfdfd;
+            --paper-bg: #fff;
+            --button-bg: #4CAF50;
+            --button-text: white;
+            --danger-bg: #f44336;
+            --accent-color: #007bff;
+            --header-bg: #000;
+            --header-text: #fff;
+        }
+
+        body {
+            font-family: var(--font-urdu-simple); /* Default to simpler font for UI */
+            direction: rtl;
+            text-align: right;
+            margin: 0;
+            padding: 15px;
+            background-color: #f0f0f0;
+            font-size: 16px; /* Base font size */
+            line-height: 1.8;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 10px auto;
+            background-color: var(--paper-bg);
+            padding: 20px;
+            border: 1px solid var(--border-color-ui);
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            font-family: var(--font-urdu-nastaliq); /* Use Nastaliq for headings */
+            text-align: center;
+            color: #333;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+         h1 { font-size: 2em;}
+         h2 { font-size: 1.6em;}
+         h3 { font-size: 1.3em;}
+
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color-ui);
+        }
+
+        .tab-button {
+            font-family: var(--font-urdu-nastaliq);
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background-color: transparent;
+            font-size: 1.1em;
+            border-bottom: 3px solid transparent;
+            transition: border-color 0.3s ease, color 0.3s ease;
+            color: #555;
+        }
+
+        .tab-button.active {
+            border-bottom-color: var(--accent-color);
+            font-weight: 700;
+            color: #000;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-top: none;
+            margin-top: -1px; /* Overlap border */
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* --- General Form Styles --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px 15px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+         .form-grid-three {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px 15px;
+            margin-bottom: 15px;
+         }
+
+        label {
+            font-weight: 700;
+            white-space: nowrap;
+            font-family: var(--font-urdu-nastaliq); /* Use Nastaliq for labels */
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="tel"],
+        textarea,
+        select {
+            font-family: var(--font-urdu-simple); /* Simple font for inputs */
+            font-size: 1em;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color-ui);
+            background-color: var(--input-bg);
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: right;
+            direction: rtl;
+        }
+         input[type="date"] {
+             font-family: sans-serif; /* Date input has issues with some Urdu fonts */
+             padding: 8px 10px;
+             border: 1px solid var(--border-color-ui);
+             border-radius: 4px;
+             text-align: right; /* Ensure date aligns right */
+         }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        button {
+            font-family: var(--font-urdu-nastaliq); /* Nastaliq for buttons */
+            font-size: 1em;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            transition: background-color 0.3s ease;
+            margin: 5px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button.danger {
+            background-color: var(--danger-bg);
+        }
+
+        .action-buttons {
+            text-align: left; /* Align buttons to the left in RTL */
+            margin-top: 20px;
+        }
+
+        /* --- Receipt Preview Styles (Matching Image) --- */
+        #receipt-preview-area {
+            border: 1px solid var(--border-color-ui); /* Light border for the area */
+            padding: 15px;
+            margin-top: 30px;
+            background-color: #f9f9f9;
+            display: none; /* Hidden by default */
+        }
+
+        #receipt-content {
+            border: 1px solid var(--border-color-receipt); /* Black border around content */
+            padding: 15px;
+            background-color: var(--paper-bg);
+            font-family: var(--font-urdu-nastaliq); /* Nastaliq for receipt text */
+            font-size: 14px; /* Adjust for visual match */
+            line-height: 1.7;
+            color: #000;
+        }
+
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color-receipt);
+        }
+
+        /* Hide logo img element if it exists but not needed for this style */
+        .receipt-header img#previewLogo {
+            display: none;
+        }
+
+        .receipt-header h2#previewShopName {
+            margin: 5px 0 10px 0;
+            font-size: 2.8em; /* Larger Nastaliq font */
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .receipt-header .shop-contact-bar {
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            padding: 6px 10px;
+            margin-top: 10px;
+            font-family: var(--font-urdu-simple); /* Simpler font for address bar */
+            font-size: 0.95em;
+            text-align: center;
+            font-weight: bold;
+        }
+         /* Separate p tags inside for potentially different styling if needed */
+         .receipt-header .shop-contact-bar p {
+             margin: 0;
+             display: inline; /* Keep address and phone on same line potentially */
+         }
+
+        .receipt-meta-info {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr; /* Space for Bill To, Number, Date */
+            gap: 15px;
+            align-items: baseline; /* Align text baselines */
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            font-size: 0.95em;
+            border-bottom: 2px solid var(--border-color-receipt); /* Thicker line like image */
+        }
+
+         .receipt-meta-info > div {
+             display: flex;
+             align-items: baseline;
+             white-space: nowrap;
+         }
+         .receipt-meta-info > div span:first-child { /* Label */
+             margin-left: 5px; /* Space between label and value/line */
+             font-weight: bold;
+         }
+         .receipt-meta-info > div span:nth-child(2) { /* Value */
+            min-width: 100px; /* Ensure some space for value */
+             border-bottom: 1px solid var(--border-color-receipt);
+             padding: 0 5px;
+             flex-grow: 1; /* Allow value span to take space */
+             text-align: right; /* Align value to right before line */
+         }
+
+         /* Specific alignments based on image */
+         .receipt-meta-info .meta-bill-to { grid-column: 3 / 4; justify-self: end;} /* Right */
+         .receipt-meta-info .meta-number { grid-column: 2 / 3; justify-self: center;} /* Center */
+         .receipt-meta-info .meta-date { grid-column: 1 / 2; justify-self: start;} /* Left */
+
+        /* Hide the old customer details box in preview */
+        #receipt-preview-area .receipt-customer {
+            display: none;
+        }
+
+        .receipt-table-container {
+            border: 2px solid var(--border-color-receipt); /* Outer border for the table area */
+            margin-top: 0;
+            border-top: none; /* Top border is handled by meta-info */
+        }
+
+        .receipt-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 1.0em; /* Match form input */
+        }
+
+        .receipt-table th,
+        .receipt-table td {
+            border-left: 1px solid var(--border-color-receipt);
+            border-right: 1px solid var(--border-color-receipt);
+            padding: 6px 8px;
+            text-align: center; /* Center align content like image */
+            vertical-align: top;
+        }
+         .receipt-table th:first-child, .receipt-table td:first-child { border-right: none; } /* Remove double border */
+         .receipt-table th:last-child, .receipt-table td:last-child { border-left: none; }
+
+        .receipt-table thead th {
+            border-bottom: 2px solid var(--border-color-receipt); /* Thick line under headers */
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+         /* Column Widths (Adjust based on visual inspection) */
+         .receipt-table .col-qty { width: 12%; }
+         .receipt-table .col-desc { width: 50%; text-align: right !important; } /* Description right aligned */
+         .receipt-table .col-rate { width: 18%; }
+         .receipt-table .col-amount { width: 20%; }
+
+         /* Body cell specifics */
+         .receipt-table tbody td {
+             border-bottom: 1px dotted var(--border-color-receipt); /* Dotted lines between items */
+             min-height: 30px; /* Ensure rows have some height */
+             padding: 8px 8px;
+         }
+          .receipt-table tbody tr:last-child td {
+              border-bottom: none; /* No dots under last item */
+          }
+
+         .receipt-table tbody .item-description {
+             text-align: right; /* Ensure description text is right aligned */
+             white-space: normal; /* Allow wrapping */
+             word-break: break-word;
+         }
+
+
+        .receipt-table tfoot td {
+            border-top: 2px solid var(--border-color-receipt); /* Thick line above total */
+            font-weight: bold;
+        }
+         .receipt-table tfoot .total-label {
+             text-align: right;
+             padding-right: 15px;
+             font-size: 1.1em;
+         }
+         .receipt-table tfoot .total-value {
+            text-align: center; /* Center total value */
+            font-size: 1.1em;
+         }
+
+        /* Hide the original totals grid in preview */
+        #receipt-preview-area .receipt-totals {
+            display: none;
+        }
+
+        .receipt-footer {
+            margin-top: 25px;
+            padding-top: 10px;
+            text-align: right; /* Align signature to right */
+            font-size: 0.95em;
+        }
+
+        .signature-line {
+             display: inline-block; /* Keep label and line together */
+             font-weight: bold;
+             margin-left: 10px; /* Space after label */
+        }
+         .signature-line::after {
+             content: "";
+             display: inline-block;
+             width: 250px; /* Adjust width of signature line */
+             border-bottom: 1px solid var(--border-color-receipt);
+             vertical-align: baseline; /* Align line with text baseline */
+             margin-right: 5px; /* Space before line */
+         }
+
+        /* --- Table Styles for Lists (Customers, Products, Khata) - Keep UI styles --- */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .data-table th,
+        .data-table td {
+            border: 1px solid var(--border-color-ui);
+            padding: 8px 10px;
+            text-align: right;
+        }
+
+        .data-table th {
+            background-color: #e9e9e9;
+            font-weight: 700;
+            font-family: var(--font-urdu-nastaliq); /* Use Nastaliq for table headers */
+        }
+
+        .data-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .data-table .action-cell {
+             width: 120px; /* Adjust as needed for buttons */
+             text-align: center;
+        }
+         .data-table .action-cell button {
+             padding: 4px 8px;
+             font-size: 0.9em;
+             margin: 2px;
+         }
+
+        /* --- Specific Element Styles --- */
+        #shopLogoPreview { /* For settings tab */
+            max-width: 150px;
+            max-height: 80px;
+            margin-top: 10px;
+            border: 1px solid var(--border-color-ui);
+            display: block;
+        }
+
+        #receiptItemsTable .item-row input[type="number"] {
+             text-align: center; /* Center numbers in receipt table inputs */
+             font-family: var(--font-urdu-simple); /* Ensure simple font */
+        }
+         #receiptItemsTable .item-row select {
+             font-size: 0.95em; /* Slightly smaller font for product dropdown */
+             font-family: var(--font-urdu-simple);
+         }
+         /* Style the remove item button */
+         #receiptItemsTable .actions-column button {
+             padding: 2px 6px;
+             font-size: 0.85em;
+         }
+
+        .khata-summary {
+            border: 1px solid var(--accent-color);
+            padding: 15px;
+            margin-top: 20px;
+            background-color: #e7f3ff;
+        }
+        .khata-summary h3 {
+            margin-top: 0;
+            color: var(--accent-color);
+        }
+        .khata-summary p { font-family: var(--font-urdu-simple); }
+        .khata-summary strong { font-family: var(--font-urdu-simple); }
+
+
+        /* --- Print Styles --- */
+        @media print {
+            body {
+                font-size: 11pt; /* Adjust print font size if needed */
+                background-color: #fff;
+                margin: 0;
+                padding: 0;
+                color: #000; /* Ensure text is black for printing */
+                 -webkit-print-color-adjust: exact !important; /* Force background colors/borders in Chrome/Safari */
+                 print-color-adjust: exact !important; /* Standard */
+                 font-family: var(--font-urdu-nastaliq); /* Use Nastaliq for print */
+            }
+
+            .container, .tab-container, .tab-content:not(.active), #receiptCreationForm, #settingsForm, #customerManagement, #productManagement, #khataTab, .action-buttons:not(#printButtonContainer), header, footer, button:not(.print-only), h1:not(#receipt-preview-area h1), h2:not(#receipt-preview-area h2), h3:not(#receipt-preview-area h3), .no-print {
+                display: none !important; /* Hide everything except the receipt preview area */
+            }
+
+            #receipt-preview-area {
+                display: block !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 10mm auto !important; /* Add margins for printing */
+                box-shadow: none !important;
+                width: 100% !important;
+                max-width: 180mm; /* Typical A4 width minus margins */
+                background-color: #fff !important;
+            }
+
+            #receipt-content {
+                 border: 1px solid #000 !important; /* Ensure border prints */
+                 box-shadow: none !important;
+                 padding: 5mm !important; /* Reduce padding slightly for print */
+                 font-size: 10pt; /* Adjust font size inside receipt */
+            }
+
+             .receipt-header h2#previewShopName { font-size: 2em; } /* Adjust header size for print */
+             .receipt-header .shop-contact-bar { font-size: 0.85em; padding: 4px 8px;}
+
+             .receipt-meta-info { font-size: 0.9em; }
+
+             .receipt-table-container { border: 2px solid #000 !important; }
+
+            .receipt-table { font-size: 0.95em; } /* Adjust table font size */
+
+            .receipt-table th, .receipt-table td {
+                border: 1px solid #000 !important; /* Ensure table borders print */
+                 padding: 4px 6px; /* Adjust padding for print */
+            }
+            .receipt-table th { background-color: transparent !important; font-weight: bold;} /* Remove grey background for print header */
+            .receipt-table thead th { border-bottom: 2px solid #000 !important;}
+            .receipt-table tbody td { border-bottom: 1px dotted #000 !important; }
+            .receipt-table tfoot td { border-top: 2px solid #000 !important; }
+
+            .receipt-footer { margin-top: 15px; font-size: 0.9em; }
+             .signature-line::after { width: 180px; } /* Adjust signature line width */
+
+             img { max-width: 100% !important; } /* Ensure images don't overflow */
+             /* Avoid breaking inside elements */
+             .receipt-header, .receipt-meta-info, .receipt-table, .receipt-footer { page-break-inside: avoid; }
+             tr { page-break-inside: avoid; }
+        }
+
+    </style>
+</head>
+<body>
+    <header style="text-align: center; margin-bottom: 10px;" class="no-print">
+        <h1>رسید مینجمنٹ سسٹم</h1>
+    </header>
+
+    <div class="container">
+        <div class="tab-container no-print">
+            <button class="tab-button active" onclick="openTab(event, 'receiptTab')">نئی رسید</button>
+            <button class="tab-button" onclick="openTab(event, 'customersTab')">کسٹمرز</button>
+            <button class="tab-button" onclick="openTab(event, 'productsTab')">پروڈکٹس</button>
+             <button class="tab-button" onclick="openTab(event, 'khataTab')">کھاتہ دیکھیں</button>
+            <button class="tab-button" onclick="openTab(event, 'settingsTab')">سیٹنگز</button>
+        </div>
+
+        <!-- Receipt Creation Tab -->
+        <div id="receiptTab" class="tab-content active">
+            <h2>نئی رسید بنائیں / لوڈ کریں</h2>
+            <form id="receiptCreationForm">
+                <div class="form-grid">
+                    <label for="receiptCustomer">کسٹمر (بل بنام):</label>
+                    <select id="receiptCustomer" name="receiptCustomer" required onchange="handleCustomerSelectionForReceipt()">
+                        <option value="">کسٹمر منتخب کریں...</option>
+                        <option value="new">نیا کسٹمر شامل کریں...</option>
+                    </select>
+
+                    <label for="receiptNumber">رسید نمبر:</label>
+                    <input type="text" id="receiptNumber" name="receiptNumber" readonly>
+
+                    <label for="receiptDate">تاریخ:</label>
+                    <input type="date" id="receiptDate" name="receiptDate" required>
+
+                    <label for="loadReceiptNumber">رسید لوڈ کریں (نمبر):</label>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="number" id="loadReceiptNumber" placeholder="لوڈ کرنے کیلئے نمبر درج کریں">
+                        <button type="button" onclick="loadReceipt()">لوڈ کریں</button>
+                        <button type="button" onclick="clearReceiptForm()">نئی رسید</button>
+                    </div>
+                </div>
+
+                <hr style="margin: 20px 0;">
+
+                <h3>اشیاء</h3>
+                <table class="data-table" id="receiptItemsTable"> <!-- Use data-table style for consistency in UI -->
+                    <thead>
+                        <tr>
+                            <th style="width: 10%;">تعداد</th>
+                            <th style="width: 45%;">تفصیل</th>
+                            <th style="width: 15%;">نرخ</th>
+                            <th style="width: 20%;">روپے</th>
+                            <th class="actions-column no-print" style="width: 10%;">عمل</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Item rows will be added here dynamically -->
+                    </tbody>
+                </table>
+                 <button type="button" onclick="addReceiptItemRow()" class="no-print" style="margin-bottom: 15px;">+ آئٹم شامل کریں</button>
+
+                <hr style="margin: 20px 0;">
+
+                <!-- Keep these fields for calculation and data storage, but they won't show in the specific image-matched preview -->
+                <div class="form-grid" style="max-width: 400px; margin-right: auto; margin-left: 0;">
+                     <label>کل رقم (بغیر رعایت):</label>
+                     <input type="text" id="receiptTotal" readonly style="font-weight: bold; background-color: #eee;">
+
+                     <label for="receiptDiscount">رعایت (Discount):</label>
+                     <input type="number" id="receiptDiscount" name="receiptDiscount" value="0" min="0" oninput="calculateTotals()">
+
+                     <label>قابلِ ادا رقم:</label>
+                     <input type="text" id="receiptGrandTotal" readonly style="font-weight: bold; background-color: #eee;">
+
+                     <label for="receiptAmountPaid">ادا شدہ رقم:</label>
+                     <input type="number" id="receiptAmountPaid" name="receiptAmountPaid" value="0" min="0" required oninput="calculateTotals()">
+
+                     <label>بقایا:</label>
+                     <input type="text" id="receiptBalance" readonly style="font-weight: bold; background-color: #eee; color: red;">
+                </div>
+
+                <div class="action-buttons no-print">
+                    <button type="button" onclick="saveReceipt()">رسید محفوظ کریں</button>
+                    <button type="button" onclick="generateReceiptPreview()">پیش منظر دیکھیں</button>
+                </div>
+            </form>
+
+             <!-- Receipt Preview Area - Styled to match the image -->
+             <div id="receipt-preview-area">
+                 <div id="receipt-content">
+                     <div class="receipt-header">
+                         <!-- Logo removed as per image -->
+                         <h2 id="previewShopName">بہاولپور ووڈ ورکس</h2>
+                         <div class="shop-contact-bar">
+                             <p id="previewShopAddress"></p> <span style="margin: 0 10px;">|</span> <p id="previewShopPhone"></p>
+                         </div>
+                     </div>
+
+                     <div class="receipt-meta-info">
+                          <div class="meta-date"><span>تاریخ:</span> <span id="previewDate"></span></div>
+                          <div class="meta-number"><span>نمبر:</span> <span id="previewReceiptNumber"></span></div>
+                          <div class="meta-bill-to"><span>بل بنام:</span> <span id="previewCustomerName"></span></div>
+                     </div>
+
+                     <!-- Customer details box removed as per image -->
+
+                     <div class="receipt-table-container">
+                         <table class="receipt-table" id="previewItemsTable">
+                             <thead>
+                                 <tr>
+                                     <th class="col-qty">تعداد</th>
+                                     <th class="col-desc">تفصیل</th>
+                                     <th class="col-rate">نرخ</th>
+                                     <th class="col-amount">روپے</th>
+                                 </tr>
+                             </thead>
+                             <tbody>
+                                 <!-- Preview items here -->
+                                 <!-- Example Row Structure:
+                                 <tr>
+                                     <td>1</td>
+                                     <td class="item-description">آئٹم کا نام یہاں آئے گا</td>
+                                     <td>1500.00</td>
+                                     <td>1500.00</td>
+                                 </tr>
+                                 -->
+                             </tbody>
+                             <tfoot>
+                                 <tr>
+                                      <!-- Span label across first 3 cols, value in last -->
+                                      <td colspan="3" class="total-label">ٹوٹل:</td>
+                                      <td class="total-value" id="previewTotal">0.00</td>
+                                 </tr>
+                             </tfoot>
+                         </table>
+                     </div>
+
+                     <!-- Original totals grid removed as per image -->
+
+                     <div class="receipt-footer">
+                          <span class="signature-line">دستخط</span>
+                     </div>
+                 </div>
+                 <div class="action-buttons no-print" id="printButtonContainer" style="text-align: center; margin-top: 20px;">
+                      <button type="button" onclick="window.print()" class="print-only">پرنٹ کریں / PDF بنائیں</button>
+                      <button type="button" onclick="hideReceiptPreview()">پیش منظر بند کریں</button>
+                 </div>
+             </div>
+
+        </div>
+
+        <!-- Customers Tab -->
+        <div id="customersTab" class="tab-content">
+            <h2>کسٹمر مینجمنٹ</h2>
+            <form id="customerForm">
+                <input type="hidden" id="customerId">
+                 <div class="form-grid-three">
+                    <div>
+                        <label for="customerName">نام:</label>
+                        <input type="text" id="customerName" required>
+                    </div>
+                    <div>
+                        <label for="customerPhone">فون نمبر:</label>
+                        <input type="tel" id="customerPhone">
+                    </div>
+                    <div>
+                        <label for="customerAddress">پتہ:</label>
+                        <input type="text" id="customerAddress">
+                    </div>
+                 </div>
+                <div class="action-buttons">
+                    <button type="button" onclick="saveCustomer()">محفوظ کریں</button>
+                    <button type="button" onclick="clearCustomerForm()">صاف کریں</button>
+                </div>
+            </form>
+            <hr style="margin: 25px 0;">
+            <h3>کسٹمرز کی فہرست</h3>
+             <input type="text" id="customerSearch" onkeyup="filterCustomers()" placeholder="کسٹمر تلاش کریں (نام یا فون)" style="margin-bottom: 10px; max-width: 300px;">
+            <table class="data-table" id="customersTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>نام</th>
+                        <th>فون نمبر</th>
+                        <th>پتہ</th>
+                        <th>کل بقایا</th>
+                        <th class="action-cell">عمل</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Customer rows will be added here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Products Tab -->
+        <div id="productsTab" class="tab-content">
+            <h2>پروڈکٹ مینجمنٹ</h2>
+            <form id="productForm">
+                <input type="hidden" id="productId">
+                 <div class="form-grid-three">
+                     <div>
+                         <label for="productDescription">تفصیل:</label>
+                         <input type="text" id="productDescription" required>
+                     </div>
+                    <div>
+                         <label for="productRate">نرخ (Rate):</label>
+                         <input type="number" id="productRate" required min="0" step="0.01">
+                     </div>
+                </div>
+                <div class="action-buttons">
+                    <button type="button" onclick="saveProduct()">محفوظ کریں</button>
+                     <button type="button" onclick="clearProductForm()">صاف کریں</button>
+                </div>
+            </form>
+            <hr style="margin: 25px 0;">
+            <h3>پروڈکٹس کی فہرست</h3>
+            <input type="text" id="productSearch" onkeyup="filterProducts()" placeholder="پروڈکٹ تلاش کریں (تفصیل)" style="margin-bottom: 10px; max-width: 300px;">
+            <table class="data-table" id="productsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>تفصیل</th>
+                        <th>نرخ</th>
+                        <th class="action-cell">عمل</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Product rows will be added here -->
+                </tbody>
+            </table>
+        </div>
+
+         <!-- Khata Tab -->
+         <div id="khataTab" class="tab-content">
+             <h2>کسٹمر کھاتہ</h2>
+             <div class="form-grid">
+                  <label for="khataCustomerSelect">کسٹمر منتخب کریں:</label>
+                  <select id="khataCustomerSelect" onchange="loadKhata()">
+                      <option value="">-- کسٹمر منتخب کریں --</option>
+                  </select>
+             </div>
+
+             <div id="khataDetails" style="display: none;">
+                 <div class="khata-summary">
+                    <h3 id="khataCustomerName"></h3>
+                    <p>کل بقایا رقم: <strong id="khataTotalBalance" style="color: red;">0.00</strong></p>
+                    </div>
+                 <hr style="margin: 20px 0;">
+                 <h3>ٹرانزیکشنز</h3>
+                 <table class="data-table" id="khataTable">
+                     <thead>
+                         <tr>
+                             <th>تاریخ</th>
+                             <th>تفصیل (رسید #)</th>
+                             <th>رقم (Debit)</th>
+                             <th>وصول شدہ (Credit)</th>
+                             <th>بقایا</th>
+                         </tr>
+                     </thead>
+                     <tbody>
+                         <!-- Khata entries will be added here -->
+                     </tbody>
+                 </table>
+             </div>
+         </div>
+
+
+        <!-- Settings Tab -->
+        <div id="settingsTab" class="tab-content">
+            <h2>شاپ سیٹنگز</h2>
+            <form id="settingsForm" class="form-grid">
+                <label for="shopName">شاپ کا نام:</label>
+                <input type="text" id="shopName" required placeholder="مثال: بہاولپور ووڈ ورکس">
+
+                <label for="shopAddress">پتہ:</label>
+                <textarea id="shopAddress" rows="2" placeholder="مثال: F-11/1, مین سروس گولڑہ روڈ..."></textarea>
+
+                <label for="shopPhone">فون/سیل نمبر:</label>
+                <input type="tel" id="shopPhone" placeholder="مثال: 0343-5154855">
+
+                <label for="shopLogo">لوگو:</label>
+                 <div>
+                     <input type="file" id="shopLogo" accept="image/*" onchange="previewLogo(event)">
+                     <img id="shopLogoPreview" src="#" alt="Logo Preview" style="display: none;">
+                     <small>(اختیاری، موجودہ رسید ڈیزائن میں استعمال نہیں ہوگا)</small>
+                 </div>
+
+                 <label for="nextReceiptNumber">اگلا رسید نمبر:</label>
+                 <input type="number" id="nextReceiptNumber" min="1" value="1">
+
+            </form>
+             <div class="action-buttons">
+                    <button type="button" onclick="saveSettings()">سیٹنگز محفوظ کریں</button>
+             </div>
+        </div>
+    </div>
+
+    <footer style="text-align: center; margin-top: 20px; font-size: 0.8em; color: #555;" class="no-print">
+        <p> بنایا گیا بذریعہ Perplexity</p>
+        <p id="currentDateTime"></p>
+    </footer>
+
+    <script>
+        let db;
+        const DB_NAME = "UrduReceiptAppDB_v2"; // Increment DB name slightly if schema changes significantly, though not strictly needed here
+        const DB_VERSION = 1; // Keep version unless object stores change structure
+        const STORES = ["settings", "customers", "products", "receipts"];
+
+        // --- IndexedDB Initialization ---
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    if (!db.objectStoreNames.contains("settings")) {
+                        db.createObjectStore("settings", { keyPath: "id" });
+                    }
+                    if (!db.objectStoreNames.contains("customers")) {
+                        const customerStore = db.createObjectStore("customers", { keyPath: "id", autoIncrement: true });
+                        customerStore.createIndex("name", "name", { unique: false });
+                        customerStore.createIndex("phone", "phone", { unique: false });
+                        customerStore.createIndex("totalBalance", "totalBalance", {unique: false }); // Index balance if needed for queries
+                    }
+                    if (!db.objectStoreNames.contains("products")) {
+                        const productStore = db.createObjectStore("products", { keyPath: "id", autoIncrement: true });
+                        productStore.createIndex("description", "description", { unique: false });
+                    }
+                    if (!db.objectStoreNames.contains("receipts")) {
+                       const receiptStore = db.createObjectStore("receipts", { keyPath: "receiptNumber" }); // Use receiptNumber as key
+                       receiptStore.createIndex("customerId", "customerId", { unique: false });
+                       receiptStore.createIndex("date", "date", { unique: false });
+                    }
+                     console.log("Database upgrade needed/complete");
+                };
+
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    console.log("Database opened successfully");
+                    resolve(db);
+                };
+
+                request.onerror = (event) => {
+                    console.error("Database error:", event.target.error);
+                    reject("Database error: " + event.target.error.message);
+                };
+            });
+        }
+
+        // --- Generic DB Operations (Add, Put, Get, GetAll, Delete) ---
+        function performDbOperation(storeName, mode, operation, data = null) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    console.error("DB not initialized for operation");
+                    return reject("Database not initialized");
+                }
+                try {
+                    const transaction = db.transaction([storeName], mode);
+                    const store = transaction.objectStore(storeName);
+                    let request;
+
+                    switch (operation) {
+                        case 'add':
+                            request = store.add(data);
+                            break;
+                        case 'put':
+                            request = store.put(data);
+                            break;
+                        case 'get':
+                            request = store.get(data); // data is the key here
+                            break;
+                        case 'getAll':
+                            // data can be { indexName, query } or null
+                            if (data && data.indexName) {
+                                const index = store.index(data.indexName);
+                                request = index.getAll(data.query);
+                            } else {
+                                request = store.getAll();
+                            }
+                            break;
+                        case 'delete':
+                            request = store.delete(data); // data is the key here
+                            break;
+                        default:
+                            return reject("Invalid DB operation specified");
+                    }
+
+                    request.onsuccess = (event) => {
+                        resolve(event.target.result);
+                    };
+                    request.onerror = (event) => {
+                        console.error(`DB operation '${operation}' failed on store '${storeName}':`, event.target.error);
+                        reject(`Error during ${operation} on ${storeName}: ${event.target.error}`);
+                    };
+                } catch (error) {
+                     console.error(`Error initiating transaction for ${operation} on ${storeName}:`, error);
+                     reject(`Transaction error: ${error.message}`);
+                }
+            });
+        }
+
+        // --- Simplified DB function wrappers ---
+        const addObject = (storeName, object) => performDbOperation(storeName, "readwrite", "add", object);
+        const putObject = (storeName, object) => performDbOperation(storeName, "readwrite", "put", object);
+        const getObject = (storeName, key) => performDbOperation(storeName, "readonly", "get", key);
+        const getAllObjects = (storeName, indexName = null, query = null) => {
+            const options = indexName ? { indexName, query } : null;
+            return performDbOperation(storeName, "readonly", "getAll", options);
+        };
+        const deleteObject = (storeName, key) => performDbOperation(storeName, "readwrite", "delete", key);
+
+
+        // --- Tab Management ---
+        function openTab(evt, tabName) {
+            let i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+                tabcontent[i].classList.remove("active");
+            }
+            tablinks = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            const tabElement = document.getElementById(tabName);
+            if(tabElement) {
+                 tabElement.style.display = "block";
+                 tabElement.classList.add("active");
+            }
+            if(evt && evt.currentTarget) {
+                evt.currentTarget.className += " active";
+            }
+
+            // Refresh data when switching to relevant tabs
+            if (tabName === 'customersTab') loadCustomers();
+            if (tabName === 'productsTab') loadProducts();
+            if (tabName === 'receiptTab') { loadCustomersIntoDropdown(); loadProductsIntoDropdowns(); }
+             if (tabName === 'khataTab') { loadCustomersIntoKhataDropdown(); loadKhata(); }
+        }
+
+        // --- Settings Management ---
+        let currentSettings = {
+            id: "shopSettings",
+            shopName: "بہاولپور ووڈ ورکس", // Default from image
+            shopAddress: "F-11/1, مین سروس گولڑہ روڈ ، اعوان مارکیٹ گلی نمبر 5 کے سامنے دوکان نمبر 2 اسلام آباد", // Default from image
+            shopPhone: "0343-5154855", // Default from image
+            shopLogo: null, // Base64 string - not used in current receipt design
+            nextReceiptNumber: 1
+        };
+
+        async function loadSettings() {
+            try {
+                const settings = await getObject("settings", "shopSettings");
+                if (settings) {
+                    currentSettings = { ...currentSettings, ...settings }; // Merge defaults with saved
+                }
+                // Update UI elements from currentSettings
+                 document.getElementById('shopName').value = currentSettings.shopName || '';
+                 document.getElementById('shopAddress').value = currentSettings.shopAddress || '';
+                 document.getElementById('shopPhone').value = currentSettings.shopPhone || '';
+                 document.getElementById('nextReceiptNumber').value = currentSettings.nextReceiptNumber || 1;
+                 const logoPreview = document.getElementById('shopLogoPreview');
+                 if (currentSettings.shopLogo) {
+                     logoPreview.src = currentSettings.shopLogo;
+                     logoPreview.style.display = 'block';
+                 } else {
+                      logoPreview.style.display = 'none';
+                 }
+                 // Update receipt number field if it's empty or needs initialization
+                 const receiptNumberField = document.getElementById('receiptNumber');
+                  if (!receiptNumberField.value || parseInt(receiptNumberField.value) < currentSettings.nextReceiptNumber) {
+                     setNextReceiptNumber();
+                  }
+                 console.log("Settings loaded:", currentSettings);
+
+            } catch (error) {
+                console.error("Failed to load settings:", error);
+                alert("سیٹنگز لوڈ کرنے میں خرابی!");
+                setNextReceiptNumber(); // Still try to set default receipt number
+            }
+        }
+
+         function previewLogo(event) {
+             const reader = new FileReader();
+             const file = event.target.files[0];
+             const preview = document.getElementById('shopLogoPreview');
+
+             reader.onloadend = function () {
+                 preview.src = reader.result;
+                 preview.style.display = 'block';
+                 currentSettings.shopLogo = reader.result; // Store base64 string temporarily
+             }
+
+             if (file) {
+                 reader.readAsDataURL(file);
+             } else {
+                 preview.src = "#";
+                 preview.style.display = 'none';
+                 currentSettings.shopLogo = null;
+             }
+         }
+
+        async function saveSettings() {
+             currentSettings.shopName = document.getElementById('shopName').value.trim();
+             currentSettings.shopAddress = document.getElementById('shopAddress').value.trim();
+             currentSettings.shopPhone = document.getElementById('shopPhone').value.trim();
+             currentSettings.nextReceiptNumber = parseInt(document.getElementById('nextReceiptNumber').value) || 1;
+             // Logo is already updated in currentSettings by previewLogo
+
+            try {
+                await putObject("settings", currentSettings);
+                alert("سیٹنگز کامیابی سے محفوظ ہو گئیں۔");
+                // Refresh receipt number if needed and if currently lower than new next number
+                const receiptNumberField = document.getElementById('receiptNumber');
+                if (parseInt(receiptNumberField.value) < currentSettings.nextReceiptNumber) {
+                      setNextReceiptNumber();
+                }
+            } catch (error) {
+                console.error("Failed to save settings:", error);
+                alert("سیٹنگز محفوظ کرنے میں خرابی!");
+            }
+        }
+
+
+        // --- Customer Management ---
+        function clearCustomerForm() {
+            document.getElementById('customerForm').reset();
+            document.getElementById('customerId').value = '';
+        }
+
+        async function saveCustomer() {
+            const customerId = document.getElementById('customerId').value;
+            const customer = {
+                name: document.getElementById('customerName').value.trim(),
+                phone: document.getElementById('customerPhone').value.trim(),
+                address: document.getElementById('customerAddress').value.trim(),
+            };
+
+            if (!customer.name) {
+                alert("کسٹمر کا نام درکار ہے۔");
+                return;
+            }
+
+            try {
+                 if (customerId) { // Update existing customer
+                     customer.id = parseInt(customerId);
+                     const existingCustomer = await getObject("customers", customer.id);
+                     customer.totalBalance = existingCustomer ? existingCustomer.totalBalance || 0 : 0; // Preserve balance
+                     await putObject("customers", customer);
+                     alert("کسٹمر کی معلومات اپ ڈیٹ ہو گئیں۔");
+                 } else { // Add new customer
+                     customer.totalBalance = 0; // Initial balance
+                     const newId = await addObject("customers", customer);
+                     alert(`نیا کسٹمر شامل ہو گیا۔ ID: ${newId}`);
+                 }
+                 clearCustomerForm();
+                 await loadCustomers();
+                 await loadCustomersIntoDropdown();
+                 await loadCustomersIntoKhataDropdown();
+            } catch (error) {
+                console.error("Failed to save customer:", error);
+                alert("کسٹمر کو محفوظ کرنے میں خرابی!");
+            }
+        }
+
+        async function loadCustomers() {
+            try {
+                 const customers = await getAllObjects("customers");
+                 const tableBody = document.getElementById('customersTable').getElementsByTagName('tbody')[0];
+                 const searchTerm = document.getElementById('customerSearch').value.trim().toLowerCase();
+                 tableBody.innerHTML = ''; // Clear existing rows
+
+                 customers.filter(cust => { // Filter logic
+                     if (!searchTerm) return true;
+                     return (cust.name.toLowerCase().includes(searchTerm) ||
+                             (cust.phone && cust.phone.includes(searchTerm)));
+                 }).forEach(cust => {
+                     const row = tableBody.insertRow();
+                     row.insertCell(0).textContent = cust.id;
+                     row.insertCell(1).textContent = cust.name;
+                     row.insertCell(2).textContent = cust.phone || '-';
+                     row.insertCell(3).textContent = cust.address || '-';
+                     const balanceCell = row.insertCell(4);
+                     balanceCell.textContent = (cust.totalBalance || 0).toFixed(2);
+                     balanceCell.style.color = (cust.totalBalance || 0) > 0 ? 'red' : 'green';
+                     balanceCell.style.fontWeight = 'bold';
+
+                     const actionCell = row.insertCell(5);
+                     actionCell.classList.add('action-cell');
+                     actionCell.innerHTML = `
+                         <button onclick="editCustomer(${cust.id})">ترمیم</button>
+                         <button class="danger" onclick="deleteCustomer(${cust.id})">حذف کریں</button>
+                     `;
+                 });
+            } catch (error) {
+                 console.error("Failed to load customers:", error);
+                 // Avoid alert here, can be annoying if it fails silently
+            }
+        }
+
+         function filterCustomers() {
+            loadCustomers(); // Reload and filter the customer list
+         }
+
+        async function editCustomer(id) {
+            try {
+                 const customer = await getObject("customers", id);
+                 if (customer) {
+                     document.getElementById('customerId').value = customer.id;
+                     document.getElementById('customerName').value = customer.name;
+                     document.getElementById('customerPhone').value = customer.phone || '';
+                     document.getElementById('customerAddress').value = customer.address || '';
+                     openTab({ currentTarget: document.querySelector('.tab-button[onclick*="customersTab"]') }, 'customersTab');
+                     document.getElementById('customerName').focus();
+                 }
+            } catch (error) {
+                console.error("Failed to load customer for editing:", error);
+                alert("ترمیم کے لئے کسٹمر لوڈ کرنے میں خرابی!");
+            }
+        }
+
+        async function deleteCustomer(id) {
+             try {
+                 const customer = await getObject("customers", id);
+                 if (customer && customer.totalBalance && Math.abs(customer.totalBalance) > 0.01) {
+                     if (!confirm(`اس کسٹمر کا بیلنس ${customer.totalBalance.toFixed(2)} ہے۔ کیا آپ واقعی حذف کرنا چاہتے ہیں؟ اس سے کھاتہ متاثر ہو سکتا ہے۔`)) {
+                         return;
+                     }
+                 } else if (!confirm("کیا آپ واقعی اس کسٹمر کو حذف کرنا چاہتے ہیں؟")) {
+                     return;
+                 }
+
+                 // Consider implications: Deleting customer might orphan receipts or Khata entries.
+                 // For simplicity, we allow deletion but maybe should prevent if balance != 0 or receipts exist.
+                await deleteObject("customers", id);
+                alert("کسٹمر کامیابی سے حذف ہو گیا۔");
+                await loadCustomers();
+                await loadCustomersIntoDropdown();
+                await loadCustomersIntoKhataDropdown();
+             } catch (error) {
+                console.error("Failed to delete customer:", error);
+                alert("کسٹمر کو حذف کرنے میں خرابی!");
+             }
+        }
+
+        async function loadCustomersIntoDropdown() {
+            try {
+                const customers = await getAllObjects("customers");
+                const select = document.getElementById('receiptCustomer');
+                const currentVal = select.value;
+                const fragment = document.createDocumentFragment();
+                fragment.appendChild(new Option("کسٹمر منتخب کریں...", ""));
+                fragment.appendChild(new Option("نیا کسٹمر شامل کریں...", "new"));
+
+                customers.sort((a, b) => a.name.localeCompare(b.name, 'ur'));
+                customers.forEach(cust => {
+                    fragment.appendChild(new Option(`${cust.name} (${cust.phone || 'فون نہیں'})`, cust.id));
+                });
+                select.innerHTML = '';
+                select.appendChild(fragment);
+
+                if (select.querySelector(`option[value="${currentVal}"]`)) {
+                     select.value = currentVal;
+                } else {
+                     select.value = "";
+                }
+            } catch (error) {
+                console.error("Failed to load customers into dropdown:", error);
+            }
+        }
+
+         function handleCustomerSelectionForReceipt() {
+             const select = document.getElementById('receiptCustomer');
+             if (select.value === 'new') {
+                 clearCustomerForm();
+                 openTab({ currentTarget: document.querySelector('.tab-button[onclick*="customersTab"]') }, 'customersTab');
+                 document.getElementById('customerName').focus();
+                  select.value = ''; // Reset dropdown after switching
+             }
+         }
+
+         async function loadCustomersIntoKhataDropdown() {
+            try {
+                const customers = await getAllObjects("customers");
+                const select = document.getElementById('khataCustomerSelect');
+                const currentVal = select.value;
+                const fragment = document.createDocumentFragment();
+                fragment.appendChild(new Option("-- کسٹمر منتخب کریں --", ""));
+
+                customers.sort((a, b) => a.name.localeCompare(b.name, 'ur'));
+                customers.forEach(cust => {
+                    fragment.appendChild(new Option(`${cust.name} (${cust.phone || 'فون نہیں'}) - بقایا: ${(cust.totalBalance || 0).toFixed(2)}`, cust.id));
+                 });
+                select.innerHTML = '';
+                select.appendChild(fragment);
+                 if (select.querySelector(`option[value="${currentVal}"]`)) {
+                     select.value = currentVal;
+                 }
+             } catch (error) {
+                 console.error("Failed to load customers into Khata dropdown:", error);
+             }
+         }
+
+
+        // --- Product Management ---
+        function clearProductForm() {
+            document.getElementById('productForm').reset();
+            document.getElementById('productId').value = '';
+        }
+
+        async function saveProduct() {
+            const productId = document.getElementById('productId').value;
+            const product = {
+                description: document.getElementById('productDescription').value.trim(),
+                rate: parseFloat(document.getElementById('productRate').value) || 0,
+            };
+
+            if (!product.description || product.rate <= 0) {
+                alert("براہ کرم پروڈکٹ کی تفصیل اور درست نرخ درج کریں۔");
+                return;
+            }
+
+             try {
+                 if (productId) {
+                     product.id = parseInt(productId);
+                     await putObject("products", product);
+                     alert("پروڈکٹ کی معلومات اپ ڈیٹ ہو گئیں۔");
+                 } else {
+                     const newId = await addObject("products", product);
+                     alert(`نیا پروڈکٹ شامل ہو گیا۔ ID: ${newId}`);
+                 }
+                 clearProductForm();
+                 await loadProducts();
+                 await loadProductsIntoDropdowns();
+             } catch (error) {
+                 console.error("Failed to save product:", error);
+                 alert("پروڈکٹ کو محفوظ کرنے میں خرابی!");
+             }
+        }
+
+        async function loadProducts() {
+            try {
+                 const products = await getAllObjects("products");
+                 const tableBody = document.getElementById('productsTable').getElementsByTagName('tbody')[0];
+                 const searchTerm = document.getElementById('productSearch').value.trim().toLowerCase();
+                 tableBody.innerHTML = '';
+
+                 products.filter(prod => {
+                     if(!searchTerm) return true;
+                     return prod.description.toLowerCase().includes(searchTerm);
+                 }).forEach(prod => {
+                     const row = tableBody.insertRow();
+                     row.insertCell(0).textContent = prod.id;
+                     row.insertCell(1).textContent = prod.description;
+                     row.insertCell(2).textContent = prod.rate.toFixed(2);
+                     const actionCell = row.insertCell(3);
+                     actionCell.classList.add('action-cell');
+                     actionCell.innerHTML = `
+                         <button onclick="editProduct(${prod.id})">ترمیم</button>
+                         <button class="danger" onclick="deleteProduct(${prod.id})">حذف کریں</button>
+                     `;
+                 });
+            } catch (error) {
+                 console.error("Failed to load products:", error);
+            }
+        }
+
+         function filterProducts() {
+            loadProducts();
+         }
+
+        async function editProduct(id) {
+             try {
+                 const product = await getObject("products", id);
+                 if (product) {
+                     document.getElementById('productId').value = product.id;
+                     document.getElementById('productDescription').value = product.description;
+                     document.getElementById('productRate').value = product.rate;
+                      openTab({ currentTarget: document.querySelector('.tab-button[onclick*="productsTab"]') }, 'productsTab');
+                      document.getElementById('productDescription').focus();
+                 }
+             } catch (error) {
+                 console.error("Failed to load product for editing:", error);
+                 alert("ترمیم کے لئے پروڈکٹ لوڈ کرنے میں خرابی!");
+             }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm("کیا آپ واقعی اس پروڈکٹ کو حذف کرنا چاہتے ہیں؟")) {
+                return;
+            }
+            try {
+                // Check if product is used in receipts? Could be slow. Skip for now.
+                await deleteObject("products", id);
+                alert("پروڈکٹ کامیابی سے حذف ہو گیا۔");
+                await loadProducts();
+                await loadProductsIntoDropdowns();
+            } catch (error) {
+                console.error("Failed to delete product:", error);
+                alert("پروڈکٹ کو حذف کرنے میں خرابی!");
+            }
+        }
+
+         // Load products into ALL existing dropdowns in the receipt items table
+         async function loadProductsIntoDropdowns() {
+            try {
+                 const products = await getAllObjects("products");
+                 products.sort((a, b) => a.description.localeCompare(b.description, 'ur'));
+
+                 const selects = document.querySelectorAll('#receiptItemsTable .product-select');
+                 const fragment = document.createDocumentFragment();
+                 fragment.appendChild(new Option("پروڈکٹ منتخب کریں...", ""));
+                  products.forEach(prod => {
+                     const option = new Option(prod.description, prod.id);
+                     option.dataset.rate = prod.rate;
+                     fragment.appendChild(option);
+                 });
+
+                 selects.forEach(select => {
+                     const currentVal = select.value; // Preserve selection
+                     select.innerHTML = ''; // Clear existing
+                     select.appendChild(fragment.cloneNode(true)); // Append cloned options
+                     // Restore selection if possible
+                     if (select.querySelector(`option[value="${currentVal}"]`)) {
+                         select.value = currentVal;
+                     } else {
+                         select.value = "";
+                     }
+                 });
+             } catch (error) {
+                 console.error("Failed to load products into item dropdowns:", error);
+             }
+         }
+
+        // --- Receipt Management ---
+        function clearReceiptForm() {
+            document.getElementById('receiptCreationForm').reset();
+            document.getElementById('receiptItemsTable').getElementsByTagName('tbody')[0].innerHTML = '';
+            document.getElementById('receiptTotal').value = '0.00';
+            document.getElementById('receiptGrandTotal').value = '0.00';
+            document.getElementById('receiptBalance').value = '0.00';
+            document.getElementById('receiptCustomer').value = '';
+            document.getElementById('loadReceiptNumber').value = '';
+            document.getElementById('receiptDiscount').value = '0';
+            document.getElementById('receiptAmountPaid').value = '0';
+            setReceiptDate();
+            setNextReceiptNumber();
+            hideReceiptPreview();
+            addReceiptItemRow(); // Add one empty row
+        }
+
+        function setReceiptDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            document.getElementById('receiptDate').value = `${year}-${month}-${day}`;
+        }
+
+         function setNextReceiptNumber() {
+             document.getElementById('receiptNumber').value = currentSettings.nextReceiptNumber;
+         }
+
+         // Add a single row to the receipt items table in the form
+        function addReceiptItemRow(item = null) {
+            const tableBody = document.getElementById('receiptItemsTable').getElementsByTagName('tbody')[0];
+            const newRow = tableBody.insertRow();
+            newRow.classList.add('item-row');
+
+            const cellCount = newRow.insertCell(0);
+            const cellDesc = newRow.insertCell(1);
+            const cellRate = newRow.insertCell(2);
+            const cellAmount = newRow.insertCell(3);
+            const cellAction = newRow.insertCell(4);
+            cellAction.classList.add('actions-column', 'no-print');
+
+            const qtyInput = document.createElement('input');
+            qtyInput.type = 'number';
+            qtyInput.min = 1;
+            qtyInput.value = item ? item.quantity : 1;
+            qtyInput.oninput = calculateTotals;
+            cellCount.appendChild(qtyInput);
+
+            const descSelect = document.createElement('select');
+            descSelect.classList.add('product-select');
+            descSelect.onchange = (event) => {
+                 updateRateFromProduct(event.target);
+                 // calculateTotals() is called within updateRateFromProduct
+            };
+             // Store initial value if loading an item, for async population
+             if (item && item.productId) {
+                  descSelect.dataset.initialValue = item.productId;
+             }
+            cellDesc.appendChild(descSelect);
+
+             const rateInput = document.createElement('input');
+             rateInput.type = 'number';
+             rateInput.min = 0;
+             rateInput.step = "0.01";
+             rateInput.value = item ? item.rate.toFixed(2) : '0.00';
+             rateInput.oninput = calculateTotals;
+             rateInput.classList.add('item-rate');
+             cellRate.appendChild(rateInput);
+
+             const amountInput = document.createElement('input');
+             amountInput.type = 'text';
+             amountInput.readOnly = true;
+             amountInput.value = item ? (item.quantity * item.rate).toFixed(2) : '0.00';
+             amountInput.style.backgroundColor = '#eee';
+             amountInput.classList.add('item-amount');
+             amountInput.tabIndex = -1; // Prevent tabbing into read-only field
+             cellAmount.appendChild(amountInput);
+
+             const deleteButton = document.createElement('button');
+             deleteButton.type = 'button';
+             deleteButton.textContent = 'حذف';
+             deleteButton.className = 'danger';
+             deleteButton.onclick = function() {
+                 newRow.remove();
+                 calculateTotals();
+             };
+             cellAction.appendChild(deleteButton);
+
+             // Populate this new dropdown (async)
+             loadProductsIntoSingleDropdown(descSelect).then(() => {
+                 // After products are loaded, if an item was provided, set selection and rate
+                 if (item && item.productId) {
+                     if (descSelect.querySelector(`option[value="${item.productId}"]`)) {
+                         descSelect.value = item.productId;
+                         updateRateFromProduct(descSelect); // This will set rate and calculate totals
+                     }
+                 } else if (item) {
+                     // Handle case where loaded item has no productId (manual entry?)
+                     // Currently no direct support for manual description in this setup
+                     console.warn("Loaded item without matching product ID:", item);
+                 } else {
+                     // For a new empty row, trigger calculation in case default values matter
+                     calculateTotals();
+                 }
+             });
+
+             return newRow;
+        }
+
+        // Helper to populate products into a *single* dropdown element (used by addReceiptItemRow)
+        async function loadProductsIntoSingleDropdown(selectElement) {
+            try {
+                const products = await getAllObjects("products");
+                products.sort((a, b) => a.description.localeCompare(b.description, 'ur'));
+
+                const fragment = document.createDocumentFragment();
+                fragment.appendChild(new Option("پروڈکٹ منتخب کریں...", ""));
+                products.forEach(prod => {
+                    const option = new Option(prod.description, prod.id);
+                    option.dataset.rate = prod.rate;
+                    fragment.appendChild(option);
+                });
+
+                const currentVal = selectElement.dataset.initialValue || selectElement.value; // Use initial value if set
+                selectElement.innerHTML = '';
+                selectElement.appendChild(fragment);
+
+                if (selectElement.querySelector(`option[value="${currentVal}"]`)) {
+                    selectElement.value = currentVal;
+                } else {
+                    selectElement.value = "";
+                }
+            } catch (error) {
+                console.error("Failed to load products into single dropdown:", error);
+            }
+        }
+
+
+        // Update rate input when a product is selected from dropdown
+        function updateRateFromProduct(selectElement) {
+             const selectedOption = selectElement.options[selectElement.selectedIndex];
+             const rateInput = selectElement.closest('tr').querySelector('.item-rate');
+             if (!rateInput) return;
+
+             if (selectedOption && selectedOption.value && selectedOption.dataset.rate) {
+                 rateInput.value = parseFloat(selectedOption.dataset.rate).toFixed(2);
+                 rateInput.readOnly = true;
+                 rateInput.style.backgroundColor = '#eee';
+             } else {
+                  // If "Select Product" or empty option is chosen
+                  rateInput.value = '0.00';
+                  rateInput.readOnly = false; // Allow manual rate entry maybe? Or keep 0?
+                  rateInput.style.backgroundColor = ''; // Reset background
+                  // Consider: should we allow manual description entry if product not selected?
+                  // Current setup requires selecting a product to get description.
+             }
+            calculateTotals(); // Recalculate when rate changes
+        }
+
+        function calculateTotals() {
+            let total = 0;
+            const rows = document.querySelectorAll('#receiptItemsTable tbody tr.item-row');
+
+            rows.forEach(row => {
+                const qtyInput = row.cells[0].querySelector('input');
+                const rateInput = row.cells[2].querySelector('input');
+                const amountInput = row.cells[3].querySelector('input');
+
+                const quantity = parseFloat(qtyInput.value) || 0;
+                const rate = parseFloat(rateInput.value) || 0;
+                const amount = quantity * rate;
+
+                if(amountInput) amountInput.value = amount.toFixed(2);
+                total += amount;
+            });
+
+             document.getElementById('receiptTotal').value = total.toFixed(2);
+
+             const discount = parseFloat(document.getElementById('receiptDiscount').value) || 0;
+             // Ensure discount is not more than total
+             const actualDiscount = Math.min(total, discount);
+             if (discount > total) {
+                 document.getElementById('receiptDiscount').value = actualDiscount.toFixed(2); // Correct input field if needed
+             }
+
+             const grandTotal = total - actualDiscount;
+             document.getElementById('receiptGrandTotal').value = grandTotal.toFixed(2);
+
+             const amountPaidInput = document.getElementById('receiptAmountPaid');
+             const amountPaid = parseFloat(amountPaidInput.value) || 0;
+             // Ensure amount paid is not more than grand total
+             const actualAmountPaid = Math.min(grandTotal, amountPaid);
+              if (amountPaid > grandTotal) {
+                  amountPaidInput.value = actualAmountPaid.toFixed(2); // Correct input field
+              }
+
+             const balance = grandTotal - actualAmountPaid;
+             document.getElementById('receiptBalance').value = balance.toFixed(2);
+        }
+
+        async function saveReceipt() {
+            const receiptNumber = document.getElementById('receiptNumber').value;
+             if (!receiptNumber || parseInt(receiptNumber) <= 0) {
+                 alert("براہ کرم درست رسید نمبر فراہم کریں۔");
+                 return;
+             }
+            const customerId = parseInt(document.getElementById('receiptCustomer').value);
+             if (!customerId) {
+                 alert("براہ کرم کسٹمر منتخب کریں۔");
+                 return;
+             }
+            const date = document.getElementById('receiptDate').value;
+            if (!date) {
+                 alert("براہ کرم تاریخ منتخب کریں۔");
+                 return;
+            }
+
+            const items = [];
+            const rows = document.querySelectorAll('#receiptItemsTable tbody tr.item-row');
+             if (rows.length === 0) {
+                 alert("کم از کم ایک آئٹم شامل کریں۔");
+                 return;
+             }
+
+            let validItems = true;
+            rows.forEach(row => {
+                 const qtyInput = row.cells[0].querySelector('input');
+                 const descSelect = row.cells[1].querySelector('select');
+                 const rateInput = row.cells[2].querySelector('input');
+
+                 const quantity = parseFloat(qtyInput.value) || 0;
+                 const productId = descSelect.value ? parseInt(descSelect.value) : null;
+                 const description = productId ? descSelect.options[descSelect.selectedIndex].text : null; // Get desc from selected option
+                 const rate = parseFloat(rateInput.value) || 0;
+
+                 // Basic validation for each item
+                 if (quantity <= 0 || !productId || !description || rate < 0) { // Rate can be 0
+                     validItems = false;
+                 }
+
+                 items.push({ quantity, productId, description, rate, amount: quantity * rate });
+             });
+
+            if (!validItems) {
+                 alert("براہ کرم تمام آئٹمز کے لیے درست تعداد، منتخب پروڈکٹ، اور نرخ درج کریں۔");
+                 return;
+             }
+
+            calculateTotals(); // Ensure totals are final before saving
+
+             const total = parseFloat(document.getElementById('receiptTotal').value) || 0;
+             const discount = parseFloat(document.getElementById('receiptDiscount').value) || 0;
+             const grandTotal = parseFloat(document.getElementById('receiptGrandTotal').value) || 0;
+             const amountPaid = parseFloat(document.getElementById('receiptAmountPaid').value) || 0;
+             const balance = parseFloat(document.getElementById('receiptBalance').value) || 0; // Balance for THIS receipt
+
+            const receiptData = {
+                receiptNumber: receiptNumber, // Use the number from the field
+                date: date,
+                customerId: customerId,
+                items: items,
+                total: total,
+                discount: discount,
+                grandTotal: grandTotal,
+                amountPaid: amountPaid,
+                balance: balance
+            };
+
+            try {
+                 const existingReceipt = await getObject("receipts", receiptNumber);
+                 let oldBalance = 0;
+                 if (existingReceipt) {
+                     if (!confirm(`رسید نمبر ${receiptNumber} پہلے سے موجود ہے۔ کیا آپ اوور رائٹ کرنا چاہتے ہیں؟`)) {
+                         return;
+                     }
+                     // Store the old balance to adjust customer total correctly
+                     oldBalance = existingReceipt.balance || 0;
+                 }
+
+                 // Save the receipt (Add or Update)
+                 await putObject("receipts", receiptData);
+
+                 // Adjust customer's total balance: subtract old balance, add new balance
+                 const balanceChange = balance - oldBalance;
+                 await adjustCustomerBalance(customerId, balanceChange);
+
+                 // Update next receipt number in settings if this was the 'next' number or higher
+                 const numericReceiptNumber = parseInt(receiptNumber);
+                 if (!isNaN(numericReceiptNumber) && numericReceiptNumber >= currentSettings.nextReceiptNumber) {
+                    currentSettings.nextReceiptNumber = numericReceiptNumber + 1;
+                    await putObject("settings", currentSettings); // Save updated settings
+                    document.getElementById('nextReceiptNumber').value = currentSettings.nextReceiptNumber; // Update settings tab UI
+                 }
+
+                 alert(`رسید ${receiptNumber} کامیابی سے محفوظ/اپ ڈیٹ ہو گئی۔`);
+                 clearReceiptForm(); // Prepare for next receipt
+                 await loadCustomers(); // Refresh customer list (shows updated balance)
+                 await loadCustomersIntoKhataDropdown(); // Refresh khata dropdown balances
+                 await loadKhata(); // Refresh Khata details if this customer was selected
+
+            } catch (error) {
+                console.error("Failed to save receipt:", error);
+                alert(`رسید محفوظ کرنے میں خرابی: ${error}`);
+                 // Attempt to revert balance adjustment? Very complex, maybe just warn user.
+            }
+        }
+
+        // Adjusts the totalBalance property of a customer in the DB
+        async function adjustCustomerBalance(customerId, amountChange) {
+            if (!customerId || isNaN(amountChange)) return;
+
+            const transaction = db.transaction(["customers"], "readwrite");
+            const store = transaction.objectStore("customers");
+            const request = store.get(customerId);
+
+            return new Promise((resolve, reject) => {
+                request.onsuccess = (event) => {
+                    const customer = event.target.result;
+                    if (customer) {
+                        customer.totalBalance = (customer.totalBalance || 0) + amountChange;
+                        const updateRequest = store.put(customer);
+                        updateRequest.onsuccess = resolve;
+                        updateRequest.onerror = (e) => {
+                            console.error("Failed to update customer balance:", e.target.error);
+                            reject("Failed to update customer balance");
+                        };
+                    } else {
+                         console.warn("Customer not found for balance adjustment:", customerId);
+                         resolve(); // Resolve anyway, maybe log error?
+                    }
+                };
+                request.onerror = (event) => {
+                     console.error("Failed to get customer for balance adjustment:", event.target.error);
+                     reject("Failed to get customer for balance adjustment");
+                };
+                 transaction.oncomplete = () => {
+                      console.log(`Balance adjustment (${amountChange}) transaction completed for customer ${customerId}.`);
+                 };
+                 transaction.onerror = (event) => {
+                      console.error("Balance adjustment transaction error:", event.target.error);
+                      reject("Balance adjustment transaction failed");
+                 };
+            });
+        }
+
+
+        async function loadReceipt() {
+             const receiptNumToLoad = document.getElementById('loadReceiptNumber').value.trim();
+             if (!receiptNumToLoad) {
+                 alert("براہ کرم لوڈ کرنے کے لیے رسید نمبر درج کریں۔");
+                 return;
+             }
+
+             try {
+                 const receipt = await getObject("receipts", receiptNumToLoad);
+                 if (receipt) {
+                     clearReceiptForm(); // Clear form before loading
+
+                     document.getElementById('receiptNumber').value = receipt.receiptNumber;
+                     document.getElementById('receiptDate').value = receipt.date;
+                     document.getElementById('receiptCustomer').value = receipt.customerId; // Dropdown will update
+                     document.getElementById('receiptDiscount').value = receipt.discount;
+                     document.getElementById('receiptAmountPaid').value = receipt.amountPaid;
+
+                     // Load items - Clear existing rows first
+                     const tableBody = document.getElementById('receiptItemsTable').getElementsByTagName('tbody')[0];
+                     tableBody.innerHTML = '';
+                     receipt.items.forEach(item => {
+                          addReceiptItemRow(item); // This function now handles async product loading and selection
+                     });
+
+                     // Wait a brief moment for rows to be added and potentially populated, then calculate
+                     setTimeout(calculateTotals, 100); // Let DB ops finish in row creation
+
+                     alert(`رسید ${receiptNumToLoad} لوڈ ہو گئی۔`);
+                     generateReceiptPreview(); // Show preview after loading
+
+                 } else {
+                     alert(`رسید نمبر ${receiptNumToLoad} نہیں ملی۔`);
+                     document.getElementById('loadReceiptNumber').focus();
+                 }
+             } catch (error) {
+                 console.error("Failed to load receipt:", error);
+                 alert(`رسید لوڈ کرنے میں خرابی: ${error}`);
+             }
+        }
+
+        // Generate the visual preview matching the Urdu receipt image
+        async function generateReceiptPreview() {
+            // 1. Validate Required Fields
+             const customerId = document.getElementById('receiptCustomer').value;
+             const date = document.getElementById('receiptDate').value;
+             const receiptNumber = document.getElementById('receiptNumber').value;
+             const rows = document.querySelectorAll('#receiptItemsTable tbody tr.item-row');
+
+             if (!customerId || !date || !receiptNumber || rows.length === 0) {
+                 alert("پیش منظر دیکھنے کے لیے براہ کرم کسٹمر، تاریخ، رسید نمبر منتخب کریں اور کم از کم ایک آئٹم شامل کریں۔");
+                 hideReceiptPreview(); // Ensure preview is hidden if validation fails
+                 return;
+             }
+
+            // 2. Get Customer Data (Needed for Name)
+            let customer;
+            try {
+                customer = await getObject("customers", parseInt(customerId));
+                if (!customer) throw new Error("کسٹمر نہیں ملا");
+            } catch (error) {
+                 alert(`کسٹمر کی معلومات لوڈ کرنے میں ناکامی: ${error.message}`);
+                 hideReceiptPreview();
+                 return;
+            }
+
+            // 3. Populate Preview Area (using currentSettings and form data)
+            // Header
+             document.getElementById('previewShopName').textContent = currentSettings.shopName;
+             document.getElementById('previewShopAddress').textContent = currentSettings.shopAddress;
+             document.getElementById('previewShopPhone').textContent = `Cell: ${currentSettings.shopPhone}`; // Match image format
+
+            // Meta Info
+             try {
+                // Format date as DD/MM/YYYY or similar common format
+                const dateObj = new Date(date);
+                const formattedDate = !isNaN(dateObj) ? `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}` : date;
+                 document.getElementById('previewDate').textContent = formattedDate;
+             } catch (e) { document.getElementById('previewDate').textContent = date; } // Fallback to raw date
+            document.getElementById('previewReceiptNumber').textContent = receiptNumber;
+            document.getElementById('previewCustomerName').textContent = customer.name;
+
+            // Items Table
+            const previewTableBody = document.getElementById('previewItemsTable').getElementsByTagName('tbody')[0];
+            previewTableBody.innerHTML = ''; // Clear previous items
+            let calculatedTotal = 0;
+            rows.forEach(row => {
+                 const qty = row.cells[0].querySelector('input').value;
+                 const descSelect = row.cells[1].querySelector('select');
+                 const desc = descSelect.value ? descSelect.options[descSelect.selectedIndex].text : '---'; // Description from dropdown
+                 const rateVal = parseFloat(row.cells[2].querySelector('input').value) || 0;
+                 const amountVal = parseFloat(row.cells[3].querySelector('input').value) || 0;
+                 calculatedTotal += amountVal; // Sum amounts for the total row
+
+                 const previewRow = previewTableBody.insertRow();
+                 previewRow.insertCell(0).textContent = qty;
+                 const descCell = previewRow.insertCell(1);
+                 descCell.textContent = desc;
+                 descCell.classList.add('item-description'); // Ensure right alignment and wrapping
+                 previewRow.insertCell(2).textContent = rateVal.toFixed(2);
+                 previewRow.insertCell(3).textContent = amountVal.toFixed(2);
+            });
+             // Add empty rows if needed to fill space (optional aesthetic)
+             const minRows = 10; // Example minimum number of rows
+             const currentRows = rows.length;
+             if (currentRows < minRows) {
+                 for (let i = 0; i < (minRows - currentRows); i++) {
+                     const emptyRow = previewTableBody.insertRow();
+                     emptyRow.insertCell(0).innerHTML = '&nbsp;'; // Non-breaking space
+                     emptyRow.insertCell(1).innerHTML = '&nbsp;';
+                     emptyRow.insertCell(2).innerHTML = '&nbsp;';
+                     emptyRow.insertCell(3).innerHTML = '&nbsp;';
+                     emptyRow.style.height = "30px"; // Give empty rows height
+                     emptyRow.style.borderBottom = "1px dotted var(--border-color-receipt)";
+                 }
+                 // Remove bottom border from the very last row (could be an added empty one)
+                 if (previewTableBody.lastChild) previewTableBody.lastChild.style.borderBottom = "none";
+             }
+
+
+             // Total Row (in tfoot) - Use the calculated total from items
+             document.getElementById('previewTotal').textContent = calculatedTotal.toFixed(2);
+
+
+            // 4. Show Preview Area
+            document.getElementById('receipt-preview-area').style.display = 'block';
+            document.getElementById('receipt-preview-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function hideReceiptPreview() {
+             document.getElementById('receipt-preview-area').style.display = 'none';
+        }
+
+         // --- Khata Management ---
+         async function loadKhata() {
+             const customerId = parseInt(document.getElementById('khataCustomerSelect').value);
+             const detailsDiv = document.getElementById('khataDetails');
+             const tableBody = document.getElementById('khataTable').getElementsByTagName('tbody')[0];
+             tableBody.innerHTML = '';
+             document.getElementById('khataCustomerName').textContent = '';
+             document.getElementById('khataTotalBalance').textContent = '0.00';
+
+             if (!customerId) {
+                 detailsDiv.style.display = 'none';
+                 return;
+             }
+
+             detailsDiv.style.display = 'block';
+
+             try {
+                 const customer = await getObject("customers", customerId);
+                 if (!customer) {
+                     throw new Error("کسٹمر نہیں ملا");
+                 }
+                 document.getElementById('khataCustomerName').textContent = `کھاتہ برائے: ${customer.name}`;
+                 const totalBalance = customer.totalBalance || 0;
+                 const balanceElement = document.getElementById('khataTotalBalance');
+                 balanceElement.textContent = totalBalance.toFixed(2);
+                 balanceElement.style.color = totalBalance > 0 ? 'red' : 'green';
+
+                 const receipts = await getAllObjects("receipts", "customerId", customerId);
+                 receipts.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                 let runningBalance = 0;
+                 // Add opening balance row? For simplicity, assume starts from 0 unless manually implemented.
+
+                 receipts.forEach(receipt => {
+                     const row = tableBody.insertRow();
+                     // Date | Details (Receipt#) | Debit (Amount Due) | Credit (Amount Paid) | Balance
+                     runningBalance += receipt.balance; // Accumulate the balance *from this receipt*
+
+                     row.insertCell(0).textContent = new Date(receipt.date).toLocaleDateString('ur-PK'); // Or 'en-CA' for YYYY-MM-DD
+                     row.insertCell(1).textContent = `رسید #${receipt.receiptNumber}`;
+                     row.insertCell(2).textContent = receipt.grandTotal.toFixed(2); // Amount due for this transaction
+                     row.insertCell(3).textContent = receipt.amountPaid.toFixed(2); // Amount paid for this transaction
+                     const balanceCell = row.insertCell(4);
+                     balanceCell.textContent = runningBalance.toFixed(2); // Running balance after this transaction
+                     balanceCell.style.color = runningBalance > 0 ? 'red' : 'green';
+                     balanceCell.style.fontWeight = 'bold';
+                 });
+
+                 // Verify final running balance against stored balance
+                 if (Math.abs(runningBalance - totalBalance) > 0.01) {
+                     console.warn(`Khata Mismatch: Calculated balance (${runningBalance.toFixed(2)}) vs Stored (${totalBalance.toFixed(2)}) for Customer ID ${customerId}`);
+                     // Optionally add a visual warning in the UI
+                 }
+
+             } catch (error) {
+                 console.error("Failed to load Khata:", error);
+                 alert(`کھاتہ لوڈ کرنے میں خرابی: ${error.message}`);
+                 detailsDiv.style.display = 'none';
+             }
+         }
+
+
+        // --- Initialization ---
+         function updateDateTime() {
+             const now = new Date();
+             // Use a clear, internationally understandable format or keep Urdu
+             // const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Karachi' };
+             const optionsDate = { year: 'numeric', month: 'long', day: 'numeric' };
+             const optionsTime = { hour: '2-digit', minute: '2-digit', hour12: true };
+             const dateStr = now.toLocaleDateString('ur-PK', optionsDate);
+             const timeStr = now.toLocaleTimeString('en-US', optionsTime); // Use en-US for AM/PM consistency
+             document.getElementById('currentDateTime').textContent = `${dateStr} - ${timeStr}`;
+         }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+             updateDateTime();
+             setInterval(updateDateTime, 60000);
+
+             try {
+                 await initDB();
+                 await loadSettings(); // Load settings first
+                 await Promise.all([ // Load customers and products in parallel
+                     loadCustomers(),
+                     loadProducts()
+                 ]);
+                 await Promise.all([ // Populate dropdowns after data is loaded
+                      loadCustomersIntoDropdown(),
+                      loadCustomersIntoKhataDropdown()
+                      // loadProductsIntoDropdowns() called within addReceiptItemRow / clearReceiptForm
+                 ]);
+                 clearReceiptForm(); // Setup receipt form, adds first item row which loads products
+                 // Activate the default tab (Receipt Tab)
+                 const defaultTabButton = document.querySelector('.tab-button[onclick*="receiptTab"]');
+                 if(defaultTabButton) openTab({ currentTarget: defaultTabButton }, 'receiptTab');
+
+             } catch (error) {
+                 console.error("Initialization failed:", error);
+                 document.body.innerHTML = `<div style="text-align: center; padding: 50px; font-family: var(--font-urdu-nastaliq); color: red; font-size: 1.5em;">ایپلیکیشن شروع کرنے میں شدید خرابی!<br> IndexedDB تک رسائی ممکن نہیں ہے یا ڈیٹا بیس کرپٹ ہے۔<br><small>${error.message}</small></div>`;
+             }
+        });
+
+    </script>
+
+</body>
+</html>
