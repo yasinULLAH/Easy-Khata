@@ -1,661 +1,916 @@
 <!DOCTYPE html>
-<html lang="en">
+<html dir="rtl" lang="ur">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khata System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu&display=swap" rel="stylesheet">
+    <title>مدرسہ مینجمنٹ سسٹم</title>
     <style>
+        @font-face {
+            font-family: 'Nastaleeq';
+            src: url('data:font/ttf;base64,/* Add base64 encoded Nastaleeq font here */') format('truetype');
+        }
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f8f1e9;
+            font-family: 'Nastaleeq', monospace;
+            direction: rtl;
+            text-align: right;
             margin: 0;
-            padding: 10px;
-            line-height: 1.6;
+            padding: 20px;
+            background: #f4f4f4;
         }
         .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: #fffef5;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
-            background-repeat: repeat;
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border: 1px solid #ccc;
         }
-        h1 {
-            text-align: center;
-            color: #2b1a07;
-            font-family: 'Noto Nastaliq Urdu', serif;
-            text-decoration: underline;
-            margin: 10px 0;
+        h1, h2, h3 {
+            color: #000;
+            border-bottom: 1px solid #000;
+            padding-bottom: 5px;
         }
-        .tabs {
-            display: flex;
-            border-bottom: 2px solid #2b1a07;
-            background: #f9f6ef;
-            padding: 0 10px;
-        }
-        .tab {
-            flex: 1;
-            text-align: center;
-            padding: 10px;
-            cursor: pointer;
-            color: #2b1a07;
-            font-family: 'Noto Nastaliq Urdu', sans-serif;
-            border-right: 1px solid #2b1a07;
-            transition: background 0.3s;
-        }
-        .tab:last-child {
-            border-right: none;
-        }
-        .tab.active, .tab:hover {
-            background: #2b1a07;
-            color: #fffef5;
-        }
-        .tab-content {
-            display: none;
-            padding: 15px;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        .ledger-input {
-
-            padding: 10px;
-            border: 2px solid #2b1a07;
-            border-radius: 5px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            color: #2b1a07;
-            margin-bottom: 10px;
-        }
-        input, select, textarea, button {
+        input, select, textarea {
+            border: none;
+            background: transparent;
+            font-family: 'Nastaleeq', monospace;
+            font-size: 16px;
+            color: #000;
+            padding: 5px;
             width: 100%;
-            padding: 6px;
-            margin: 4px 0;
-            border: 1px solid #2b1a07;
-            border-radius: 5px;
             box-sizing: border-box;
-            font-family: 'Noto Nastaliq Urdu', sans-serif;
-            color: #2b1a07;
-            font-size: 14px;
         }
-        textarea {
-            height: 60px;
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            background: #f0f0f0;
         }
         button {
-            background-color: #2b1a07;
-            color: #fffef5;
+            background: #333;
+            color: white;
+            border: none;
+            padding: 10px 20px;
             cursor: pointer;
-            padding: 8px;
+            font-family: 'Nastaleeq', monospace;
         }
         button:hover {
-            background-color: #4a2f0d;
+            background: #555;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
-            max-height: 300px;
-            overflow-y: auto;
+            margin-top: 20px;
         }
         th, td {
-            border: 1px solid #2b1a07;
-            padding: 6px;
-            text-align: left;
-            color: #2b1a07;
-            font-size: 14px;
-        }
-        th {
-            background-color: #2b1a07;
-            color: #fffef5;
-        }
-        .filter-section, .report-section {
-            margin-top: 10px;
+            border: 1px solid #000;
             padding: 10px;
-            background: #f9f6ef;
-            border-radius: 5px;
+            text-align: right;
         }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+        .printable {
+            page-break-inside: avoid;
         }
-        .modal-content {
-            background: #fffef5;
-            padding: 15px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 400px;
-        }
-        @media (max-width: 600px) {
+        @media print {
+            .no-print {
+                display: none;
+            }
+            body {
+                background: white;
+                padding: 0;
+            }
             .container {
-                padding: 5px;
+                border: none;
+                padding: 0;
             }
-            .tabs {
-                flex-direction: column;
+            input, select, textarea {
+                border: none !important;
+                background: none !important;
             }
-            .tab {
-                border-right: none;
-                border-bottom: 1px solid #2b1a07;
-            }
-            .tab:last-child {
-                border-bottom: none;
-            }
-            table, th, td {
-                font-size: 12px;
-            }
-            input, select, textarea, button {
-                font-size: 12px;
-            }
-        }
-        .urdu {
-            font-family: 'Noto Nastaliq Urdu', sans-serif;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="urdu">خاتہ سسٹم</h1>
+        <h1>مدرسہ مینجمنٹ سسٹم</h1>
+        <nav class="no-print">
+            <button onclick="showModule('settings')">ترتیبات</button>
+            <button onclick="showModule('students')">طلباء</button>
+            <button onclick="showModule('teachers')">اساتذہ</button>
+            <button onclick="showModule('classes')">کلاسیں</button>
+            <button onclick="showModule('attendance')">حاضری</button>
+            <button onclick="showModule('exams')">امتحانات</button>
+            <button onclick="showModule('fees')">فیس</button>
+            <button onclick="showModule('salaries')">تنخواہ</button>
+            <button onclick="showModule('ledger')">خاتہ</button>
+            <button onclick="showModule('reports')">رپورٹس</button>
+        </nav>
 
-        <!-- Tabs -->
-        <div class="tabs">
-            <div class="tab active" onclick="showTab('customerTab')">صارفین</div>
-            <div class="tab" onclick="showTab('transactionTab')">ٹرانزیکشنز</div>
-            <div class="tab" onclick="showTab('filterTab')">فلٹر</div>
-            <div class="tab" onclick="showTab('reportTab')">رپورٹس</div>
+        <!-- Settings Module -->
+        <div id="settings" class="module" style="display: none;">
+            <h2>ترتیبات</h2>
+            <label>مدرسہ کا نام: <input id="madrasaName" type="text"></label><br>
+            <label>پتہ: <textarea id="madrasaAddress"></textarea></label><br>
+            <label>فون نمبر: <input id="madrasaPhone" type="text"></label><br>
+            <label>لوگو: <input id="madrasaLogo" type="file" accept="image/*"></label><br>
+            <label>تعلیمی سال: <input id="academicYear" type="text"></label><br>
+            <label>طے شدہ ماہانہ فیس فی کلاس: <input id="defaultFee" type="number"></label><br>
+            <label>اساتذہ کی طے شدہ تنخواہ: <input id="defaultSalary" type="number"></label><br>
+            <label>سٹیمپ/دستخط: <input id="stampSignature" type="file" accept="image/*"></label><br>
+            <button onclick="saveSettings()">محفوظ کریں</button>
+            <button onclick="exportData()">بیک اپ ایکسپورٹ</button>
+            <button onclick="document.getElementById('importFile').click()">بیک اپ امپورٹ</button>
+            <input id="importFile" type="file" style="display: none;" onchange="importData(event)">
         </div>
 
-        <!-- Tab Contents -->
-        <div id="customerTab" class="tab-content active">
-            <div class="ledger-input">
-                <h2 class="urdu">صارف شامل کریں</h2>
-                <input type="text" id="customerName" placeholder="نام">
-                <input type="text" id="customerPhone" placeholder="فون نمبر">
-                <input type="text" id="customerAddress" placeholder="پتہ">
-                <textarea id="customerNotes" placeholder="نوٹس"></textarea>
-                <button onclick="addCustomer()">صارف شامل کریں</button>
-            </div>
-        </div>
-
-        <div id="transactionTab" class="tab-content">
-            <div class="ledger-input">
-                <h2 class="urdu">ٹرانزیکشن شامل کریں</h2>
-                <select id="transactionCustomer">
-                    <option value="">صارف منتخب کریں</option>
-                </select>
-                <input type="date" id="transactionDate">
-                <input type="number" id="transactionAmount" placeholder="رقم">
-                <select id="transactionType">
-                    <option value="udhaar">ادھار</option>
-                    <option value="payment">ادائیگی</option>
-                </select>
-                <select id="paymentMethod">
-                    <option value="cash">نقد</option>
-                    <option value="jazzcash">JazzCash</option>
-                    <option value="easypaisa">EasyPaisa</option>
-                    <option value="bank">بینک</option>
-                </select>
-                <button onclick="addTransaction()">ٹرانزیکشن شامل کریں</button>
-            </div>
-            <table id="transactionTable">
-                <thead>
-                    <tr>
-                        <th class="urdu">صارف</th>
-                        <th class="urdu">تاریخ</th>
-                        <th class="urdu">رقم</th>
-                        <th class="urdu">قسم</th>
-                        <th class="urdu">ادائیگی کا طریقہ</th>
-                        <th class="urdu">بقایا</th>
-                        <th class="urdu">ایکشنز</th>
-                    </tr>
-                </thead>
+        <!-- Student Management -->
+        <div id="students" class="module" style="display: none;">
+            <h2>طلباء کا انتظام</h2>
+            <label>نام: <input id="studentName" type="text"></label><br>
+            <label>والد کا نام: <input id="studentFatherName" type="text"></label><br>
+            <label>تاریخ پیدائش: <input id="studentDOB" type="date"></label><br>
+            <label>داخلہ نمبر: <input id="studentAdmissionNo" type="text"></label><br>
+            <label>کلاس: <select id="studentClass"></select></label><br>
+            <label>رابطہ: <input id="studentContact" type="text"></label><br>
+            <label>پتہ: <textarea id="studentAddress"></textarea></label><br>
+            <button onclick="addStudent()">طالب علم شامل کریں</button>
+            <button onclick="printStudentID()">شناختی کارڈ پرنٹ کریں</button>
+            <table id="studentTable">
+                <thead><tr><th>نام</th><th>والد کا نام</th><th>کلاس</th><th>رابطہ</th><th>عمل</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
 
-        <div id="filterTab" class="tab-content">
-            <div class="filter-section">
-                <h2 class="urdu">فلٹر</h2>
-                <select id="filterCustomer">
-                    <option value="">تمام صارفین</option>
-                </select>
-                <input type="date" id="filterStartDate">
-                <input type="date" id="filterEndDate">
-                <input type="text" id="searchQuery" placeholder="ٹرانزیکشن تلاش کریں">
-                <button onclick="filterTransactions()">فلٹر کریں</button>
-            </div>
+        <!-- Teacher Management -->
+        <div id="teachers" class="module" style="display: none;">
+            <h2>اساتذہ کا انتظام</h2>
+            <label>نام: <input id="teacherName" type="text"></label><br>
+            <label>مضامین: <input id="teacherSubjects" type="text"></label><br>
+            <label>فون: <input id="teacherPhone" type="text"></label><br>
+            <label>تنخواہ کی قسم: <select id="teacherSalaryType"><option value="fixed">فکسڈ</option><option value="hourly">فی گھنٹہ</option></select></label><br>
+            <label>شمولیت کی تاریخ: <input id="teacherJoiningDate" type="date"></label><br>
+            <button onclick="addTeacher()">استاد شامل کریں</button>
+            <table id="teacherTable">
+                <thead><tr><th>نام</th><th>مضامین</th><th>فون</th><th>عمل</th></tr></thead>
+                <tbody></tbody>
+            </table>
         </div>
 
-        <div id="reportTab" class="tab-content">
-            <div class="report-section">
-                <h2 class="urdu">رپورٹس</h2>
-                <select id="reportCustomer">
-                    <option value="">صارف منتخب کریں</option>
-                </select>
-                <input type="month" id="reportMonth">
-                <button onclick="generateReport()">ماہانہ رپورٹ بنائیں</button>
-                <button onclick="exportCSV()">CSV ایکسپورٹ کریں</button>
-                <button onclick="exportPDF()">PDF ایکسپورٹ کریں</button>
-                <button onclick="backupData()">بیک اپ</button>
-                <input type="file" id="restoreFile" accept=".json">
-                <button onclick="restoreData()">بحال کریں</button>
-            </div>
+        <!-- Class and Subject Management -->
+        <div id="classes" class="module" style="display: none;">
+            <h2>کلاس اور مضامین</h2>
+            <label>کلاس کا نام: <input id="className" type="text"></label><br>
+            <label>مضامین: <input id="classSubjects" type="text"></label><br>
+            <label>استاد: <select id="classTeacher"></select></label><br>
+            <label>فیس ٹیمپلیٹ: <input id="classFeeTemplate" type="number"></label><br>
+            <button onclick="addClass()">کلاس شامل کریں</button>
+            <table id="classTable">
+                <thead><tr><th>کلاس</th><th>مضامین</th><th>استاد</th><th>عمل</th></tr></thead>
+                <tbody></tbody>
+            </table>
         </div>
-    </div>
 
-    <!-- Edit Customer Modal -->
-    <div id="editCustomerModal" class="modal">
-        <div class="modal-content">
-            <h2 class="urdu">صارف میں ترمیم کریں</h2>
-            <input type="hidden" id="editCustomerId">
-            <input type="text" id="editCustomerName" placeholder="نام">
-            <input type="text" id="editCustomerPhone" placeholder="فون نمبر">
-            <input type="text" id="editCustomerAddress" placeholder="پتہ">
-            <textarea id="editCustomerNotes" placeholder="نوٹس"></textarea>
-            <button onclick="updateCustomer()">محفوظ کریں</button>
-            <button onclick="closeModal('editCustomerModal')">بند کریں</button>
+        <!-- Attendance System -->
+        <div id="attendance" class="module" style="display: none;">
+            <h2>حاضری کا نظام</h2>
+            <label>تاریخ: <input id="attendanceDate" type="date"></label><br>
+            <label>کلاس: <select id="attendanceClass" onchange="loadAttendanceStudents()"></select></label><br>
+            <table id="attendanceTable">
+                <thead><tr><th>نام</th><th>حاضری</th></tr></thead>
+                <tbody></tbody>
+            </table>
+            <button onclick="saveAttendance()">حاضری محفوظ کریں</button>
+            <button onclick="printAttendance()">حاضری رجسٹر پرنٹ کریں</button>
+        </div>
+
+        <!-- Exam and Result Management -->
+        <div id="exams" class="module" style="display: none;">
+            <h2>امتحانات اور نتائج</h2>
+            <label>امتحان کا نام: <input id="examName" type="text"></label><br>
+            <label>تاریخ: <input id="examDate" type="date"></label><br>
+            <label>مضامین: <input id="examSubjects" type="text"></label><br>
+            <button onclick="addExam()">امتحان شامل کریں</button>
+            <table id="examTable">
+                <thead><tr><th>امتحان</th><th>تاریخ</th><th>عمل</th></tr></thead>
+                <tbody></tbody>
+            </table>
+            <h3>نتائج درج کریں</h3>
+            <label>طالب علم: <select id="resultStudent"></select></label><br>
+            <label>مضمون: <input id="resultSubject" type="text"></label><br>
+            <label>نمبر: <input id="resultMarks" type="number"></label><br>
+            <button onclick="addResult()">نتیجہ شامل کریں</button>
+            <button onclick="printResultCard()">نتیجہ کارڈ پرنٹ کریں</button>
+        </div>
+
+        <!-- Fee Management -->
+        <div id="fees" class="module" style="display: none;">
+            <h2>فیس کا انتظام</h2>
+            <label>طالب علم: <select id="feeStudent"></select></label><br>
+            <label>ماہ: <input id="feeMonth" type="month"></label><br>
+            <label>رقم: <input id="feeAmount" type="number"></label><br>
+            <label>چھوٹ: <input id="feeDiscount" type="number"></label><br>
+            <label>تاخیری فیس: <input id="feeLate" type="number"></label><br>
+            <button onclick="addFeePayment()">ادائیگی شامل کریں</button>
+            <button onclick="printFeeReceipt()">رسید پرنٹ کریں</button>
+            <table id="feeTable">
+                <thead><tr><th>طالب علم</th><th>ماہ</th><th>رقم</th><th>عمل</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Teacher Salary Management -->
+        <div id="salaries" class="module" style="display: none;">
+            <h2>اساتذہ کی تنخواہ</h2>
+            <label>استاد: <select id="salaryTeacher"></select></label><br>
+            <label>ماہ: <input id="salaryMonth" type="month"></label><br>
+            <label>رقم: <input id="salaryAmount" type="number"></label><br>
+            <label>بونس: <input id="salaryBonus" type="number"></label><br>
+            <label>کٹوتی: <input id="salaryDeduction" type="number"></label><br>
+            <button onclick="addSalaryPayment()">ادائیگی شامل کریں</button>
+            <button onclick="printSalarySlip()">تنخواہ سلپ پرنٹ کریں</button>
+            <table id="salaryTable">
+                <thead><tr><th>استاد</th><th>ماہ</th><th>رقم</th><th>عمل</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Khata Ledger System -->
+        <div id="ledger" class="module" style="display: none;">
+            <h2>خاتہ لیجر</h2>
+            <label>قسم: <select id="ledgerType"><option value="student">طالب علم</option><option value="teacher">استاد</option><option value="madrasa">مدرسہ</option></select></label><br>
+            <label>تفصیل: <input id="ledgerDescription" type="text"></label><br>
+            <label>رقم: <input id="ledgerAmount" type="number"></label><br>
+            <label>تاریخ: <input id="ledgerDate" type="date"></label><br>
+            <button onclick="addLedgerEntry()">اندراج شامل کریں</button>
+            <button onclick="printLedger()">لیجر پرنٹ کریں</button>
+            <table id="ledgerTable">
+                <thead><tr><th>قسم</th><th>تفصیل</th><th>رقم</th><th>تاریخ</th><th>عمل</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Reports and Summaries -->
+        <div id="reports" class="module" style="display: none;">
+            <h2>رپورٹس اور خلاصے</h2>
+            <label>رپورٹ کی قسم: 
+                <select id="reportType">
+                    <option value="students">طلباء</option>
+                    <option value="fees">فیس وصولی</option>
+                    <option value="salaries">اساتذہ کی تنخواہ</option>
+                    <option value="attendance">حاضری</option>
+                    <option value="exams">امتحانات</option>
+                    <option value="donations">عطیات</option>
+                </select>
+            </label><br>
+            <label>فلٹر: <input id="reportFilter" type="text"></label><br>
+            <button onclick="generateReport()">رپورٹ بنائیں</button>
+            <button onclick="printReport()">رپورٹ پرنٹ کریں</button>
+            <div id="reportOutput"></div>
         </div>
     </div>
 
     <script>
         let db;
-        const request = indexedDB.open('KhataDB', 1);
+        const request = indexedDB.open('MadrasaDB', 1);
 
         request.onupgradeneeded = (event) => {
             db = event.target.result;
-            db.createObjectStore('customers', { keyPath: 'id', autoIncrement: true });
-            db.createObjectStore('transactions', { keyPath: 'id', autoIncrement: true });
+            db.createObjectStore('settings', { keyPath: 'id' });
+            db.createObjectStore('students', { keyPath: 'id', autoIncrement: true });
+            db.createObjectStore('teachers', { keyPath: 'id', autoIncrement: true });
+            db.createObjectStore('classes', { keyPath: 'id', autoIncrement: true });
+            db.createObjectStore('attendance', { keyPath: 'id', autoIncrement: true });
+            db.createObjectStore('exams', { keyPath: 'id', autoIncrement: true });
+            db.createObjectStore('results', { keyPath: 'id', autoIncrement: true });
+            db.createObjectStore('fees', { keyPath: 'id', autoIncrement: true });
+            db.createObjectStore('salaries', { keyPath: 'id', autoIncrement: true });
+            db.createObjectStore('ledger', { keyPath: 'id', autoIncrement: true });
         };
 
         request.onsuccess = (event) => {
             db = event.target.result;
-            loadCustomers();
-            loadTransactions();
+            loadSettings();
+            loadStudents();
+            loadTeachers();
+            loadClasses();
         };
 
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
+        function showModule(moduleId) {
+            document.querySelectorAll('.module').forEach(module => module.style.display = 'none');
+            document.getElementById(moduleId).style.display = 'block';
         }
 
-        function addCustomer() {
-            const name = document.getElementById('customerName').value;
-            const phone = document.getElementById('customerPhone').value;
-            const address = document.getElementById('customerAddress').value;
-            const notes = document.getElementById('customerNotes').value;
-
-            if (!name) {
-                alert('نام درج کریں');
-                return;
+        function saveSettings() {
+            const settings = {
+                id: 'main',
+                madrasaName: document.getElementById('madrasaName').value,
+                madrasaAddress: document.getElementById('madrasaAddress').value,
+                madrasaPhone: document.getElementById('madrasaPhone').value,
+                academicYear: document.getElementById('academicYear').value,
+                defaultFee: document.getElementById('defaultFee').value,
+                defaultSalary: document.getElementById('defaultSalary').value
+            };
+            const logoFile = document.getElementById('madrasaLogo').files[0];
+            const stampFile = document.getElementById('stampSignature').files[0];
+            if (logoFile) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    settings.logo = reader.result;
+                    saveToDB('settings', settings);
+                };
+                reader.readAsDataURL(logoFile);
+            } else if (stampFile) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    settings.stamp = reader.result;
+                    saveToDB('settings', settings);
+                };
+                reader.readAsDataURL(stampFile);
+            } else {
+                saveToDB('settings', settings);
             }
+        }
 
-            const transaction = db.transaction(['customers'], 'readwrite');
-            const store = transaction.objectStore('customers');
-            store.add({ name, phone, address, notes });
-
-            transaction.oncomplete = () => {
-                loadCustomers();
-                clearInputs(['customerName', 'customerPhone', 'customerAddress', 'customerNotes']);
+        function loadSettings() {
+            const transaction = db.transaction(['settings'], 'readonly');
+            const store = transaction.objectStore('settings');
+            const request = store.get('main');
+            request.onsuccess = (event) => {
+                if (event.target.result) {
+                    document.getElementById('madrasaName').value = event.target.result.madrasaName || '';
+                    document.getElementById('madrasaAddress').value = event.target.result.madrasaAddress || '';
+                    document.getElementById('madrasaPhone').value = event.target.result.madrasaPhone || '';
+                    document.getElementById('academicYear').value = event.target.result.academicYear || '';
+                    document.getElementById('defaultFee').value = event.target.result.defaultFee || '';
+                    document.getElementById('defaultSalary').value = event.target.result.defaultSalary || '';
+                }
             };
         }
 
-        function loadCustomers() {
-            const transaction = db.transaction(['customers'], 'readonly');
-            const store = transaction.objectStore('customers');
-            const request = store.getAll();
+        function addStudent() {
+            const student = {
+                name: document.getElementById('studentName').value,
+                fatherName: document.getElementById('studentFatherName').value,
+                dob: document.getElementById('studentDOB').value,
+                admissionNo: document.getElementById('studentAdmissionNo').value,
+                class: document.getElementById('studentClass').value,
+                contact: document.getElementById('studentContact').value,
+                address: document.getElementById('studentAddress').value,
+                status: 'active'
+            };
+            saveToDB('students', student, loadStudents);
+        }
 
-            request.onsuccess = () => {
-                const customers = request.result;
-                const customerSelects = ['transactionCustomer', 'filterCustomer', 'reportCustomer'];
-                customerSelects.forEach(selectId => {
-                    const select = document.getElementById(selectId);
-                    select.innerHTML = '<option value="">' + (selectId === 'filterCustomer' ? 'تمام صارفین' : 'صارف منتخب کریں') + '</option>';
-                    customers.forEach(customer => {
-                        select.innerHTML += `<option value="${customer.id}">${customer.name}</option>`;
-                    });
+        function loadStudents() {
+            const transaction = db.transaction(['students'], 'readonly');
+            const store = transaction.objectStore('students');
+            const request = store.getAll();
+            request.onsuccess = (event) => {
+                const students = event.target.result;
+                const tbody = document.getElementById('studentTable').querySelector('tbody');
+                tbody.innerHTML = '';
+                students.forEach(student => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${student.name}</td>
+                        <td>${student.fatherName}</td>
+                        <td>${student.class}</td>
+                        <td>${student.contact}</td>
+                        <td>
+                            <button onclick="editStudent(${student.id})">ترمیم</button>
+                            <button onclick="deleteStudent(${student.id})">حذف</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                updateStudentDropdowns();
+            };
+        }
+
+        function addTeacher() {
+            const teacher = {
+                name: document.getElementById('teacherName').value,
+                subjects: document.getElementById('teacherSubjects').value,
+                phone: document.getElementById('teacherPhone').value,
+                salaryType: document.getElementById('teacherSalaryType').value,
+                joiningDate: document.getElementById('teacherJoiningDate').value
+            };
+            saveToDB('teachers', teacher, loadTeachers);
+        }
+
+        function loadTeachers() {
+            const transaction = db.transaction(['teachers'], 'readonly');
+            const store = transaction.objectStore('teachers');
+            const request = store.getAll();
+            request.onsuccess = (event) => {
+                const teachers = event.target.result;
+                const tbody = document.getElementById('teacherTable').querySelector('tbody');
+                tbody.innerHTML = '';
+                teachers.forEach(teacher => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${teacher.name}</td>
+                        <td>${teacher.subjects}</td>
+                        <td>${teacher.phone}</td>
+                        <td>
+                            <button onclick="editTeacher(${teacher.id})">ترمیم</button>
+                            <button onclick="deleteTeacher(${teacher.id})">حذف</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                updateTeacherDropdowns();
+            };
+        }
+
+        function addClass() {
+            const classData = {
+                name: document.getElementById('className').value,
+                subjects: document.getElementById('classSubjects').value,
+                teacher: document.getElementById('classTeacher').value,
+                feeTemplate: document.getElementById('classFeeTemplate').value
+            };
+            saveToDB('classes', classData, loadClasses);
+        }
+
+        function loadClasses() {
+            const transaction = db.transaction(['classes'], 'readonly');
+            const store = transaction.objectStore('classes');
+            const request = store.getAll();
+            request.onsuccess = (event) => {
+                const classes = event.target.result;
+                const tbody = document.getElementById('classTable').querySelector('tbody');
+                tbody.innerHTML = '';
+                classes.forEach(cls => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${cls.name}</td>
+                        <td>${cls.subjects}</td>
+                        <td>${cls.teacher}</td>
+                        <td>
+                            <button onclick="editClass(${cls.id})">ترمیم</button>
+                            <button onclick="deleteClass(${cls.id})">حذف</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                updateClassDropdowns();
+            };
+        }
+
+        function saveAttendance() {
+            const date = document.getElementById('attendanceDate').value;
+            const className = document.getElementById('attendanceClass').value;
+            const table = document.getElementById('attendanceTable').querySelector('tbody');
+            const rows = table.querySelectorAll('tr');
+            rows.forEach(row => {
+                const studentId = row.dataset.studentId;
+                const present = row.querySelector('input').checked;
+                const attendance = { date, className, studentId, present };
+                saveToDB('attendance', attendance);
+            });
+        }
+
+        function loadAttendanceStudents() {
+            const className = document.getElementById('attendanceClass').value;
+            const transaction = db.transaction(['students'], 'readonly');
+            const store = transaction.objectStore('students');
+            const request = store.getAll();
+            request.onsuccess = (event) => {
+                const students = event.target.result.filter(s => s.class === className);
+                const tbody = document.getElementById('attendanceTable').querySelector('tbody');
+                tbody.innerHTML = '';
+                students.forEach(student => {
+                    const row = document.createElement('tr');
+                    row.dataset.studentId = student.id;
+                    row.innerHTML = `
+                        <td>${student.name}</td>
+                        <td><input type="checkbox"></td>
+                    `;
+                    tbody.appendChild(row);
                 });
             };
         }
 
-        function addTransaction() {
-            const customerId = document.getElementById('transactionCustomer').value;
-            const date = document.getElementById('transactionDate').value;
-            const amount = parseFloat(document.getElementById('transactionAmount').value);
-            const type = document.getElementById('transactionType').value;
-            const paymentMethod = document.getElementById('paymentMethod').value;
-
-            if (!customerId || !date || !amount) {
-                alert('تمام فیلڈز پُر کریں');
-                return;
-            }
-
-            const transaction = db.transaction(['transactions'], 'readwrite');
-            const store = transaction.objectStore('transactions');
-            store.add({ customerId: parseInt(customerId), date, amount, type, paymentMethod });
-
-            transaction.oncomplete = () => {
-                loadTransactions();
-                clearInputs(['transactionCustomer', 'transactionDate', 'transactionAmount', 'transactionType', 'paymentMethod']);
+        function addExam() {
+            const exam = {
+                name: document.getElementById('examName').value,
+                date: document.getElementById('examDate').value,
+                subjects: document.getElementById('examSubjects').value
             };
+            saveToDB('exams', exam, loadExams);
         }
 
-        function loadTransactions() {
-            const transaction = db.transaction(['transactions'], 'readonly');
-            const store = transaction.objectStore('transactions');
+        function loadExams() {
+            const transaction = db.transaction(['exams'], 'readonly');
+            const store = transaction.objectStore('exams');
             const request = store.getAll();
-
-            request.onsuccess = () => {
-                const transactions = request.result;
-                const customerTransaction = db.transaction(['customers'], 'readonly');
-                const customerStore = customerTransaction.objectStore('customers');
-                const customerRequest = customerStore.getAll();
-
-                customerRequest.onsuccess = () => {
-                    const customers = customerRequest.result;
-                    const balances = {};
-                    transactions.forEach(t => {
-                        if (!balances[t.customerId]) balances[t.customerId] = 0;
-                        balances[t.customerId] += t.type === 'udhaar' ? t.amount : -t.amount;
-                    });
-
-                    const tableBody = document.querySelector('#transactionTable tbody');
-                    tableBody.innerHTML = '';
-                    transactions.forEach(t => {
-                        const customer = customers.find(c => c.id === t.customerId);
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${customer ? customer.name : 'نامعلوم'}</td>
-                            <td>${t.date}</td>
-                            <td>${t.amount}</td>
-                            <td>${t.type === 'udhaar' ? 'ادھار' : 'ادائیگی'}</td>
-                            <td>${t.paymentMethod}</td>
-                            <td>${balances[t.customerId]}</td>
-                            <td>
-                                <button onclick="sendReminder(${t.id})">یاددہانی</button>
-                                <button onclick="deleteTransaction(${t.id})">حذف کریں</button>
-                            </td>
-                        `;
-                        tableBody.appendChild(row);
-                    });
-                };
-            };
-        }
-
-        function filterTransactions() {
-            const customerId = document.getElementById('filterCustomer').value;
-            const startDate = document.getElementById('filterStartDate').value;
-            const endDate = document.getElementById('filterEndDate').value;
-            const searchQuery = document.getElementById('searchQuery').value.toLowerCase();
-
-            const transaction = db.transaction(['transactions'], 'readonly');
-            const store = transaction.objectStore('transactions');
-            const request = store.getAll();
-
-            request.onsuccess = () => {
-                let transactions = request.result;
-                const customerTransaction = db.transaction(['customers'], 'readonly');
-                const customerStore = customerTransaction.objectStore('customers');
-                const customerRequest = customerStore.getAll();
-
-                customerRequest.onsuccess = () => {
-                    const customers = customerRequest.result;
-                    if (customerId) {
-                        transactions = transactions.filter(t => t.customerId === parseInt(customerId));
-                    }
-                    if (startDate) {
-                        transactions = transactions.filter(t => t.date >= startDate);
-                    }
-                    if (endDate) {
-                        transactions = transactions.filter(t => t.date <= endDate);
-                    }
-                    if (searchQuery) {
-                        transactions = transactions.filter(t => {
-                            const customer = customers.find(c => c.id === t.customerId);
-                            return customer.name.toLowerCase().includes(searchQuery) ||
-                                   t.amount.toString().includes(searchQuery) ||
-                                   t.paymentMethod.toLowerCase().includes(searchQuery);
-                        });
-                    }
-
-                    const tableBody = document.querySelector('#transactionTable tbody');
-                    tableBody.innerHTML = '';
-                    const balances = {};
-                    transactions.forEach(t => {
-                        if (!balances[t.customerId]) balances[t.customerId] = 0;
-                        balances[t.customerId] += t.type === 'udhaar' ? t.amount : -t.amount;
-                    });
-
-                    transactions.forEach(t => {
-                        const customer = customers.find(c => c.id === t.customerId);
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${customer ? customer.name : 'نامعلوم'}</td>
-                            <td>${t.date}</td>
-                            <td>${t.amount}</td>
-                            <td>${t.type === 'udhaar' ? 'ادھار' : 'ادائیگی'}</td>
-                            <td>${t.paymentMethod}</td>
-                            <td>${balances[t.customerId]}</td>
-                            <td>
-                                <button onclick="sendReminder(${t.id})">یاددہانی</button>
-                                <button onclick="deleteTransaction(${t.id})">حذف کریں</button>
-                            </td>
-                        `;
-                        tableBody.appendChild(row);
-                    });
-                };
-            };
-        }
-
-        function deleteTransaction(id) {
-            if (!confirm('کیا آپ اس ٹرانزیکشن کو حذف کرنا چاہتے ہیں؟')) return;
-            const transaction = db.transaction(['transactions'], 'readwrite');
-            const store = transaction.objectStore('transactions');
-            store.delete(id);
-            transaction.oncomplete = () => loadTransactions();
-        }
-
-        function sendReminder(transactionId) {
-            const transaction = db.transaction(['transactions', 'customers'], 'readonly');
-            const tStore = transaction.objectStore('transactions');
-            const cStore = transaction.objectStore('customers');
-            const tRequest = tStore.get(transactionId);
-
-            tRequest.onsuccess = () => {
-                const t = tRequest.result;
-                const cRequest = cStore.get(t.customerId);
-                cRequest.onsuccess = () => {
-                    const customer = cRequest.result;
-                    const message = `محترم ${customer.name}، آپ کا ${t.amount} روپے کا ادھار بقایا ہے۔ براہ کرم جلد ادائیگی کریں۔ شکریہ!`;
-                    const whatsappUrl = `https://wa.me/${customer.phone}?text=${encodeURIComponent(message)}`;
-                    window.open(whatsappUrl, '_blank');
-                };
-            };
-        }
-
-        function generateReport() {
-            const customerId = document.getElementById('reportCustomer').value;
-            const month = document.getElementById('reportMonth').value;
-            if (!customerId || !month) {
-                alert('صارف اور مہینہ منتخب کریں');
-                return;
-            }
-
-            const transaction = db.transaction(['transactions', 'customers'], 'readonly');
-            const tStore = transaction.objectStore('transactions');
-            const cStore = transaction.objectStore('customers');
-            const tRequest = tStore.getAll();
-
-            tRequest.onsuccess = () => {
-                let transactions = tRequest.result.filter(t => t.customerId === parseInt(customerId) && t.date.startsWith(month));
-                const cRequest = cStore.get(parseInt(customerId));
-
-                cRequest.onsuccess = () => {
-                    const customer = cRequest.result;
-                    let balance = 0;
-                    let reportHtml = `
-                        <h2>${customer.name} کی ماہانہ رپورٹ - ${month}</h2>
-                        <p>فون: ${customer.phone}</p>
-                        <p>پتہ: ${customer.address}</p>
-                        <table border="1">
-                            <tr><th>تاریخ</th><th>رقم</th><th>قسم</th><th>ادائیگی کا طریقہ</th><th>بقایا</th></tr>
+            request.onsuccess = (event) => {
+                const exams = event.target.result;
+                const tbody = document.getElementById('examTable').querySelector('tbody');
+                tbody.innerHTML = '';
+                exams.forEach(exam => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${exam.name}</td>
+                        <td>${exam.date}</td>
+                        <td>
+                            <button onclick="editExam(${exam.id})">ترمیم</button>
+                            <button onclick="deleteExam(${exam.id})">حذف</button>
+                        </td>
                     `;
-
-                    transactions.forEach(t => {
-                        balance += t.type === 'udhaar' ? t.amount : -t.amount;
-                        reportHtml += `
-                            <tr>
-                                <td>${t.date}</td>
-                                <td>${t.amount}</td>
-                                <td>${t.type === 'udhaar' ? 'ادھار' : 'ادائیگی'}</td>
-                                <td>${t.paymentMethod}</td>
-                                <td>${balance}</td>
-                            </tr>
-                        `;
-                    });
-
-                    reportHtml += `</table><p>کل بقایا: ${balance}</p>`;
-                    const printWindow = window.open('', '_blank');
-                    printWindow.document.write(`
-                        <html>
-                            <head><title>رپورٹ</title><style>table { width: 100%; border-collapse: collapse; } th, td { border: 1px solid #000; padding: 10px; } body { font-family: 'Noto Nastaliq Urdu', sans-serif; }</style></head>
-                            <body>${reportHtml}<script>window.print();<\/script></body>
-                        </html>
-                    `);
-                    printWindow.document.close();
-                };
+                    tbody.appendChild(row);
+                });
             };
         }
 
-        function exportCSV() {
-            const transaction = db.transaction(['transactions', 'customers'], 'readonly');
-            const tStore = transaction.objectStore('transactions');
-            const cStore = transaction.objectStore('customers');
-            const tRequest = tStore.getAll();
+        function addResult() {
+            const result = {
+                studentId: document.getElementById('resultStudent').value,
+                subject: document.getElementById('resultSubject').value,
+                marks: document.getElementById('resultMarks').value
+            };
+            saveToDB('results', result);
+        }
 
-            tRequest.onsuccess = () => {
-                const transactions = tRequest.result;
-                const cRequest = cStore.getAll();
+        function addFeePayment() {
+            const fee = {
+                studentId: document.getElementById('feeStudent').value,
+                month: document.getElementById('feeMonth').value,
+                amount: document.getElementById('feeAmount').value,
+                discount: document.getElementById('feeDiscount').value,
+                lateFee: document.getElementById('feeLate').value
+            };
+            saveToDB('fees', fee, loadFees);
+        }
 
-                cRequest.onsuccess = () => {
-                    const customers = cRequest.result;
-                    let csv = 'صارف,تاریخ,رقم,قسم,ادائیگی کا طریقہ\n';
-                    transactions.forEach(t => {
-                        const customer = customers.find(c => c.id === t.customerId);
-                        csv += `${customer.name},${t.date},${t.amount},${t.type},${t.paymentMethod}\n`;
-                    });
-
-                    const blob = new Blob([csv], { type: 'text/csv' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'khata_export.csv';
-                    a.click();
-                    URL.revokeObjectURL(url);
-                };
+        function loadFees() {
+            const transaction = db.transaction(['fees'], 'readonly');
+            const store = transaction.objectStore('fees');
+            const request = store.getAll();
+            request.onsuccess = (event) => {
+                const fees = event.target.result;
+                const tbody = document.getElementById('feeTable').querySelector('tbody');
+                tbody.innerHTML = '';
+                fees.forEach(fee => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${fee.studentId}</td>
+                        <td>${fee.month}</td>
+                        <td>${fee.amount}</td>
+                        <td>
+                            <button onclick="deleteFee(${fee.id})">حذف</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
             };
         }
 
-        function exportPDF() {
-            alert('PDF ایکسپورٹ کے لیے براہ کرم ایک بیرونی لائبریری جیسے jsPDF استعمال کریں۔');
+        function addSalaryPayment() {
+            const salary = {
+                teacherId: document.getElementById('salaryTeacher').value,
+                month: document.getElementById('salaryMonth').value,
+                amount: document.getElementById('salaryAmount').value,
+                bonus: document.getElementById('salaryBonus').value,
+                deduction: document.getElementById('salaryDeduction').value
+            };
+            saveToDB('salaries', salary, loadSalaries);
         }
 
-        function backupData() {
-            const transaction = db.transaction(['customers', 'transactions'], 'readonly');
-            const cStore = transaction.objectStore('customers');
-            const tStore = transaction.objectStore('transactions');
-            const cRequest = cStore.getAll();
-            const tRequest = tStore.getAll();
+        function loadSalaries() {
+            const transaction = db.transaction(['salaries'], 'readonly');
+            const store = transaction.objectStore('salaries');
+            const request = store.getAll();
+            request.onsuccess = (event) => {
+                const salaries = event.target.result;
+                const tbody = document.getElementById('salaryTable').querySelector('tbody');
+                tbody.innerHTML = '';
+                salaries.forEach(salary => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${salary.teacherId}</td>
+                        <td>${salary.month}</td>
+                        <td>${salary.amount}</td>
+                        <td>
+                            <button onclick="deleteSalary(${salary.id})">حذف</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            };
+        }
 
-            Promise.all([cRequest, tRequest]).then(([cResult, tResult]) => {
-                const backup = { customers: cResult.target.result, transactions: tResult.target.result };
-                const blob = new Blob([JSON.stringify(backup)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'khata_backup.json';
-                a.click();
-                URL.revokeObjectURL(url);
+        function addLedgerEntry() {
+            const ledger = {
+                type: document.getElementById('ledgerType').value,
+                description: document.getElementById('ledgerDescription').value,
+                amount: document.getElementById('ledgerAmount').value,
+                date: document.getElementById('ledgerDate').value
+            };
+            saveToDB('ledger', ledger, loadLedger);
+        }
+
+        function loadLedger() {
+            const transaction = db.transaction(['ledger'], 'readonly');
+            const store = transaction.objectStore('ledger');
+            const request = store.getAll();
+            request.onsuccess = (event) => {
+                const ledger = event.target.result;
+                const tbody = document.getElementById('ledgerTable').querySelector('tbody');
+                tbody.innerHTML = '';
+                ledger.forEach(entry => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${entry.type}</td>
+                        <td>${entry.description}</td>
+                        <td>${entry.amount}</td>
+                        <td>${entry.date}</td>
+                        <td>
+                            <button onclick="deleteLedger(${entry.id})">حذف</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            };
+        }
+
+        function saveToDB(storeName, data, callback) {
+            const transaction = db.transaction([storeName], 'readwrite');
+            const store = transaction.objectStore(storeName);
+            store.put(data);
+            transaction.oncomplete = () => {
+                if (callback) callback();
+            };
+        }
+
+        function deleteFromDB(storeName, id, callback) {
+            const transaction = db.transaction([storeName], 'readwrite');
+            const store = transaction.objectStore(storeName);
+            store.delete(id);
+            transaction.oncomplete = () => {
+                if (callback) callback();
+            };
+        }
+
+        function updateStudentDropdowns() {
+            const transaction = db.transaction(['students'], 'readonly');
+            const store = transaction.objectStore('students');
+            const request = store.getAll();
+            request.onsuccess = (event) => {
+                const students = event.target.result;
+                const studentSelects = ['studentClass', 'resultStudent', 'feeStudent'];
+                studentSelects.forEach(selectId => {
+                    const select = document.getElementById(selectId);
+                    select.innerHTML = students.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+                });
+            };
+        }
+
+        function updateTeacherDropdowns() {
+            const transaction = db.transaction(['teachers'], 'readonly');
+            const store = transaction.objectStore('teachers');
+            const request = store.getAll();
+            request.onsuccess = (event) => {
+                const teachers = event.target.result;
+                const select = document.getElementById('classTeacher');
+                select.innerHTML = teachers.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+                const salarySelect = document.getElementById('salaryTeacher');
+                salarySelect.innerHTML = teachers.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+            };
+        }
+
+        function updateClassDropdowns() {
+            const transaction = db.transaction(['classes'], 'readonly');
+            const store = transaction.objectStore('classes');
+            const request = store.getAll();
+            request.onsuccess = (event) => {
+                const classes = event.target.result;
+                const select = document.getElementById('attendanceClass');
+                select.innerHTML = classes.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+            };
+        }
+
+        function exportData() {
+            const stores = ['settings', 'students', 'teachers', 'classes', 'attendance', 'exams', 'results', 'fees', 'salaries', 'ledger'];
+            const data = {};
+            let completed = 0;
+            stores.forEach(storeName => {
+                const transaction = db.transaction([storeName], 'readonly');
+                const store = transaction.objectStore(storeName);
+                const request = store.getAll();
+                request.onsuccess = (event) => {
+                    data[storeName] = event.target.result;
+                    completed++;
+                    if (completed === stores.length) {
+                        const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'madrasa_backup.json';
+                        a.click();
+                        URL.revokeObjectURL(url);
+                    }
+                };
             });
         }
 
-        function restoreData() {
-            const fileInput = document.getElementById('restoreFile');
-            const file = fileInput.files[0];
-            if (!file) {
-                alert('فائل منتخب کریں');
-                return;
-            }
-
+        function importData(event) {
+            const file = event.target.files[0];
             const reader = new FileReader();
             reader.onload = (e) => {
-                const backup = JSON.parse(e.target.result);
-                const transaction = db.transaction(['customers', 'transactions'], 'readwrite');
-                const cStore = transaction.objectStore('customers');
-                const tStore = transaction.objectStore('transactions');
-
-                cStore.clear();
-                tStore.clear();
-
-                backup.customers.forEach(c => cStore.add(c));
-                backup.transactions.forEach(t => tStore.add(t));
-
-                transaction.oncomplete = () => {
-                    loadCustomers();
-                    loadTransactions();
-                    alert('ڈیٹا بحال ہو گیا');
-                };
+                const data = JSON.parse(e.target.result);
+                const stores = Object.keys(data);
+                stores.forEach(storeName => {
+                    const transaction = db.transaction([storeName], 'readwrite');
+                    const store = transaction.objectStore(storeName);
+                    data[storeName].forEach(item => store.put(item));
+                });
+                loadSettings();
+                loadStudents();
+                loadTeachers();
+                loadClasses();
+                loadFees();
+                loadSalaries();
+                loadLedger();
             };
             reader.readAsText(file);
         }
 
-        function clearInputs(ids) {
-            ids.forEach(id => document.getElementById(id).value = '');
-        }
-
-        function openEditCustomerModal(id) {
-            const transaction = db.transaction(['customers'], 'readonly');
-            const store = transaction.objectStore('customers');
-            const request = store.get(id);
-
-            request.onsuccess = () => {
-                const customer = request.result;
-                document.getElementById('editCustomerId').value = customer.id;
-                document.getElementById('editCustomerName').value = customer.name;
-                document.getElementById('editCustomerPhone').value = customer.phone;
-                document.getElementById('editCustomerAddress').value = customer.address;
-                document.getElementById('editCustomerNotes').value = customer.notes;
-                document.getElementById('editCustomerModal').style.display = 'flex';
+        function printStudentID() {
+            const transaction = db.transaction(['students'], 'readonly');
+            const store = transaction.objectStore('students');
+            const request = store.getAll();
+            request.onsuccess = (event) => {
+                const students = event.target.result;
+                let html = '<div class="printable">';
+                students.forEach(student => {
+                    html += `
+                        <div style="border: 1px solid #000; padding: 10px; margin-bottom: 10px;">
+                            <h3>شناختی کارڈ</h3>
+                            <p>نام: ${student.name}</p>
+                            <p>والد کا نام: ${student.fatherName}</p>
+                            <p>کلاس: ${student.class}</p>
+                            <p>داخلہ نمبر: ${student.admissionNo}</p>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                printContent(html);
             };
         }
 
-        function updateCustomer() {
-            const id = parseInt(document.getElementById('editCustomerId').value);
-            const name = document.getElementById('editCustomerName').value;
-            const phone = document.getElementById('editCustomerPhone').value;
-            const address = document.getElementById('editCustomerAddress').value;
-            const notes = document.getElementById('editCustomerNotes').value;
-
-            const transaction = db.transaction(['customers'], 'readwrite');
-            const store = transaction.objectStore('customers');
-            store.put({ id, name, phone, address, notes });
-
-            transaction.oncomplete = () => {
-                loadCustomers();
-                closeModal('editCustomerModal');
+        function printAttendance() {
+            const transaction = db.transaction(['attendance'], 'readonly');
+            const store = transaction.objectStore('attendance');
+            const request = store.getAll();
+            request.onsuccess = (event) => {
+                const attendance = event.target.result;
+                let html = '<div class="printable"><h3>حاضری رجسٹر</h3><table>';
+                html += '<tr><th>طالب علم</th><th>تاریخ</th><th>حاضری</th></tr>';
+                attendance.forEach(record => {
+                    html += `<tr><td>${record.studentId}</td><td>${record.date}</td><td>${record.present ? 'حاضر' : 'غیر حاضر'}</td></tr>`;
+                });
+                html += '</table></div>';
+                printContent(html);
             };
         }
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
+        function printResultCard() {
+            const transaction = db.transaction(['results'], 'readonly');
+            const store = transaction.objectStore('results');
+            const request = store.getAll();
+            request.onsuccess = (event) => {
+                const results = event.target.result;
+                let html = '<div class="printable"><h3>نتیجہ کارڈ</h3><table>';
+                html += '<tr><th>طالب علم</th><th>مضمون</th><th>نمبر</th></tr>';
+                results.forEach(result => {
+                    html += `<tr><td>${result.studentId}</td><td>${result.subject}</td><td>${result.marks}</td></tr>`;
+                });
+                html += '</table></div>';
+                printContent(html);
+            };
+        }
+
+        function printFeeReceipt() {
+            const transaction = db.transaction(['fees'], 'readonly');
+            const store = transaction.objectStore('fees');
+            const request = store.getAll();
+            request.onsuccess = (event) => {
+                const fees = event.target.result;
+                let html = '<div class="printable">';
+                fees.forEach(fee => {
+                    html += `
+                        <div style="border: 1px solid #000; padding: 10px; margin-bottom: 10px;">
+                            <h3>فیس رسید</h3>
+                            <p>طالب علم: ${fee.studentId}</p>
+                            <p>ماہ: ${fee.month}</p>
+                            <p>رقم: ${fee.amount}</p>
+                            <p>چھوٹ: ${fee.discount}</p>
+                            <p>تاخیری فیس: ${fee.lateFee}</p>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                printContent(html);
+            };
+        }
+
+        function printSalarySlip() {
+            const transaction = db.transaction(['salaries'], 'readonly');
+            const store = transaction.objectStore('salaries');
+            const request = store.getAll();
+            request.onsuccess = (event) => {
+                const salaries = event.target.result;
+                let html = '<div class="printable">';
+                salaries.forEach(salary => {
+                    html += `
+                        <div style="border: 1px solid #000; padding: 10px; margin-bottom: 10px;">
+                            <h3>تنخواہ سلپ</h3>
+                            <p>استاد: ${salary.teacherId}</p>
+                            <p>ماہ: ${salary.month}</p>
+                            <p>رقم: ${salary.amount}</p>
+                            <p>بونس: ${salary.bonus}</p>
+                            <p>کٹوتی: ${salary.deduction}</p>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                printContent(html);
+            };
+        }
+
+        function printLedger() {
+            const transaction = db.transaction(['ledger'], 'readonly');
+            const store = transaction.objectStore('ledger');
+            const request = store.getAll();
+            request.onsuccess = (event) => {
+                const ledger = event.target.result;
+                let html = '<div class="printable"><h3>خاتہ لیجر</h3><table>';
+                html += '<tr><th>قسم</th><th>تفصیل</th><th>رقم</th><th>تاریخ</th></tr>';
+                ledger.forEach(entry => {
+                    html += `<tr><td>${entry.type}</td><td>${entry.description}</td><td>${entry.amount}</td><td>${entry.date}</td></tr>`;
+                });
+                html += '</table></div>';
+                printContent(html);
+            };
+        }
+
+        function generateReport() {
+            const reportType = document.getElementById('reportType').value;
+            const filter = document.getElementById('reportFilter').value;
+            const transaction = db.transaction([reportType], 'readonly');
+            const store = transaction.objectStore(reportType);
+            const request = store.getAll();
+            request.onsuccess = (event) => {
+                let data = event.target.result;
+                if (filter) {
+                    data = data.filter(item => JSON.stringify(item).includes(filter));
+                }
+                let html = `<h3>${reportType} رپورٹ</h3><table>`;
+                html += '<tr>' + Object.keys(data[0] || {}).map(key => `<th>${key}</th>`).join('') + '</tr>';
+                data.forEach(item => {
+                    html += '<tr>' + Object.values(item).map(val => `<td>${val}</td>`).join('') + '</tr>';
+                });
+                html += '</table>';
+                document.getElementById('reportOutput').innerHTML = html;
+            };
+        }
+
+        function printReport() {
+            const content = document.getElementById('reportOutput').innerHTML;
+            printContent(`<div class="printable">${content}</div>`);
+        }
+
+        function printContent(content) {
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html dir="rtl" lang="ur">
+                <head>
+                    <meta charset="UTF-8">
+                    <style>
+                        @font-face {
+                            font-family: 'Nastaleeq';
+                            src: url('data:font/ttf;base64,/* Add base64 encoded Nastaleeq font here */') format('truetype');
+                        }
+                        body {
+                            font-family: 'Nastaleeq', monospace;
+                            direction: rtl;
+                            text-align: right;
+                            padding: 20px;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                        }
+                        th, td {
+                            border: 1px solid #000;
+                            padding: 10px;
+                            text-align: right;
+                        }
+                    </style>
+                </head>
+                <body>${content}</body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
         }
     </script>
 </body>

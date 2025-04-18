@@ -3373,270 +3373,511 @@
     initApp();
 
 
-
-
-// Global flag to prevent multiple print dialogs
-let isPrinting = false;
-
-// Universal print function to handle specific sections
-function printSection(sectionId) {
-    if (isPrinting) {
-        console.log('Print already in progress, ignoring');
-        return;
-    }
-    isPrinting = true;
-
-    // Store the currently active page
-    const activePage = document.querySelector('.page.active');
-    console.log('Active page before print:', activePage?.id);
-
-    // Hide all pages and elements
-    document.querySelectorAll('.page').forEach(page => {
-        page.style.display = 'none';
-    });
-    const nav = document.querySelector('.nav');
-    const header = document.querySelector('header');
-    if (nav) nav.style.display = 'none';
-    if (header) header.style.display = 'none';
-
-    // Show only the specific section to print
-    const sectionToPrint = document.getElementById(sectionId);
-    if (sectionToPrint) {
-        sectionToPrint.style.display = 'block';
-        sectionToPrint.classList.add('active');
-
-        // Ensure print-only elements are visible
-        sectionToPrint.querySelectorAll('.print-only').forEach(el => {
-            el.style.display = 'block';
-        });
-
-        // Trigger print with delay to ensure DOM updates
-        setTimeout(() => {
-            try {
-                window.print();
-                console.log('Print dialog triggered for section:', sectionId);
-            } catch (e) {
-                console.error('Print error:', e);
-            }
-
-            // Restore original state
-            sectionToPrint.style.display = 'none';
-            sectionToPrint.classList.remove('active');
-            sectionToPrint.querySelectorAll('.print-only').forEach(el => {
-                el.style.display = 'none';
-            });
-
-            // Restore all pages and active page
-            document.querySelectorAll('.page').forEach(page => {
-                page.style.display = 'none';
-            });
-            if (nav) nav.style.display = 'flex';
-            if (header) header.style.display = 'block';
-            if (activePage) {
-                activePage.style.display = 'block';
-                activePage.classList.add('active');
-                console.log('Restored active page:', activePage.id);
-            }
-
-            isPrinting = false;
-            console.log('Print completed, state restored');
-        }, 100); // Increased delay for stability
-    } else {
-        console.error('Section not found:', sectionId);
-        // Restore original state
-        document.querySelectorAll('.page').forEach(page => {
-            page.style.display = 'none';
-        });
-        if (nav) nav.style.display = 'flex';
-        if (header) header.style.display = 'block';
-        if (activePage) {
-            activePage.style.display = 'block';
-            activePage.classList.add('active');
+/*                     ///////////// this is for the Notification feature yasin when needed///////////////////
+function checkNotifications() {
+    const today = new Date();
+    const notifications = [];
+    db.fees.forEach(fee => {
+        const dueDate = new Date(fee.dueDate);
+        if (dueDate > today && dueDate < new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000) && fee.status !== 'paid') {
+            const student = db.students.find(s => s.id === fee.studentId);
+            notifications.push(`Fee due for ${student.name} on ${formatDate(fee.dueDate)}`);
         }
-        isPrinting = false;
+    });
+    const notificationDiv = document.createElement('div');
+    notificationDiv.className = 'card';
+    notificationDiv.innerHTML = `<h3>اطلاعات</h3><ul>${notifications.map(n => `<li>${n}</li>`).join('')}</ul>`;
+    document.getElementById('dashboard-page').appendChild(notificationDiv);
+
+    if (Notification.permission === 'granted') {
+        notifications.forEach(n => new Notification(n));
+    } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                notifications.forEach(n => new Notification(n));
+            }
+        });
     }
 }
+document.addEventListener('DOMContentLoaded', checkNotifications);
+*/
 
-// Helper function to bind event listeners with cleanup
-function bindPrintEvent(buttonId, callback) {
-    const button = document.getElementById(buttonId);
-    if (button) {
-        // Remove all click listeners by replacing the element's onclick
-        button.onclick = null;
-        // Add new listener
-        button.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Button clicked:', buttonId);
-            callback();
+
+
+
+
+// Load Chart.js from CDN and initialize charts
+function loadChartJs(callback) {
+    if (window.Chart) {
+        callback();
+        return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+    script.onload = callback;
+    script.onerror = () => console.error('Failed to load Chart.js');
+    document.head.appendChild(script);
+}
+
+// Initialize dashboard charts
+function initDashboardCharts() {
+    loadChartJs(() => {
+        // Add chart containers to dashboard
+        const dashboardPage = document.getElementById('dashboard-page');
+        if (!dashboardPage) {
+            console.error('Dashboard page not found');
+            return;
+        }
+        const chartSection = document.createElement('div');
+        chartSection.className = 'card';
+        chartSection.style.marginTop = '20px';
+        chartSection.innerHTML = `
+            <h3>تجزیاتی چارٹس</h3>
+            <div class="form-row">
+                <div class="form-group" style="flex: 1;">
+                    <label for="examSelect">امتحان منتخب کریں</label>
+                    <select class="form-control" id="examSelect"></select>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <button class="btn" id="refreshChartsBtn">چارٹس تازہ کریں</button>
+                </div>
+            </div>
+            <div class="form-row">
+                <div style="flex: 1;">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+                <div style="flex: 1;">
+                    <canvas id="feeChart"></canvas>
+                </div>
+            </div>
+            <div class="form-row">
+                <div style="flex: 1;">
+                    <canvas id="examChart"></canvas>
+                </div>
+                <div style="flex: 1;">
+                    <canvas id="growthChart"></canvas>
+                </div>
+            </div>
+        `;
+        dashboardPage.appendChild(chartSection);
+
+        // Populate exam dropdown
+        const examSelect = document.getElementById('examSelect');
+        examSelect.innerHTML = '<option value="">امتحان منتخب کریں</option>' + 
+            (db.exams || []).map(exam => `<option value="${exam.id}">${exam.name}</option>`).join('');
+
+        // Render all charts
+        renderCharts();
+
+        // Event listeners
+        examSelect.addEventListener('change', renderCharts);
+        document.getElementById('refreshChartsBtn').addEventListener('click', renderCharts);
+    });
+}
+
+// Render all charts
+function renderCharts() {
+    renderAttendanceChart();
+    renderFeeChart();
+    renderExamChart();
+    renderGrowthChart();
+}
+
+// Attendance Trend Chart (Line)
+function renderAttendanceChart() {
+    const canvas = document.getElementById('attendanceChart');
+    const ctx = canvas?.getContext('2d');
+    if (!ctx) {
+        console.error('Attendance chart canvas not found');
+        return;
+    }
+
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const labels = Array.from({ length: daysInMonth }, (_, i) => (i + 1).toString());
+    const data = labels.map(day => {
+        const date = `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-${day.padStart(2, '0')}`;
+        const records = (db.attendance || []).filter(r => r.date === date && r.type === 'student');
+        const total = records.length;
+        const present = records.filter(r => r.status === 'present').length;
+        return total > 0 ? (present / total * 100).toFixed(2) : 0;
+    });
+
+    if (data.every(d => d === 0)) {
+        canvas.parentNode.innerHTML = '<p style="text-align: center;">اس مہینے کے لیے کوئی حاضری کا ڈیٹا نہیں ہے</p>';
+        return;
+    }
+
+    // Safely destroy previous chart
+    if (window.attendanceChart && typeof window.attendanceChart.destroy === 'function') {
+        window.attendanceChart.destroy();
+    }
+    window.attendanceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'حاضری فیصد',
+                data,
+                borderColor: '#333',
+                backgroundColor: 'rgba(51, 51, 51, 0.1)',
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: { display: true, text: 'ماہانہ حاضری کا رجحان', font: { family: 'Arial', size: 18 } }
+            },
+            scales: {
+                x: { title: { display: true, text: 'دن', font: { family: 'Arial' } } },
+                y: { 
+                    title: { display: true, text: 'حاضری (%)', font: { family: 'Arial' } },
+                    beginAtZero: true,
+                    max: 100
+                }
+            },
+            layout: { padding: 10 }
+        }
+    });
+}
+
+// Fee Collection Chart (Bar)
+function renderFeeChart() {
+    const canvas = document.getElementById('feeChart');
+    const ctx = canvas?.getContext('2d');
+    if (!ctx) {
+        console.error('Fee chart canvas not found');
+        return;
+    }
+
+    const currentYear = new Date().getFullYear();
+    const labels = ['جنوری', 'فروری', 'مارچ', 'اپریل', 'مئی', 'جون', 'جولائی', 'اگست', 'ستمبر', 'اکتوبر', 'نومبر', 'دسمبر'];
+    const data = labels.map((_, i) => {
+        return (db.fees || [])
+            .filter(f => f.paymentDate && new Date(f.paymentDate).getFullYear() === currentYear && new Date(f.paymentDate).getMonth() === i)
+            .reduce((sum, f) => sum + (f.paid || 0), 0);
+    });
+
+    if (data.every(d => d === 0)) {
+        canvas.parentNode.innerHTML = '<p style="text-align: center;">اس سال کے لیے کوئی فیس کا ڈیٹا نہیں ہے</p>';
+        return;
+    }
+
+    if (window.feeChart && typeof window.feeChart.destroy === 'function') {
+        window.feeChart.destroy();
+    }
+    window.feeChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'فیس وصولی (روپے)',
+                data,
+                backgroundColor: '#f9f7f1',
+                borderColor: '#333',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: { display: true, text: 'ماہانہ فیس وصولی', font: { family: 'Arial', size: 18 } }
+            },
+            scales: {
+                x: { title: { display: true, text: 'مہینہ', font: { family: 'Arial' } } },
+                y: { 
+                    title: { display: true, text: 'رقم (روپے)', font: { family: 'Arial' } },
+                    beginAtZero: true
+                }
+            },
+            layout: { padding: 10 }
+        }
+    });
+}
+
+// Exam Performance Chart (Bar)
+function renderExamChart() {
+    const canvas = document.getElementById('examChart');
+    const ctx = canvas?.getContext('2d');
+    if (!ctx) {
+        console.error('Exam chart canvas not found');
+        return;
+    }
+
+    const examId = document.getElementById('examSelect')?.value;
+    if (!examId) {
+        canvas.parentNode.innerHTML = '<p style="text-align: center;">براہ کرم ایک امتحان منتخب کریں</p>';
+        return;
+    }
+
+    const exam = (db.exams || []).find(e => e.id === examId);
+    if (!exam) {
+        canvas.parentNode.innerHTML = '<p style="text-align: center;">امتحان کا ڈیٹا نہیں ملا</p>';
+        return;
+    }
+
+    const labels = (exam.subjects || []).map(s => s.name);
+    const data = (exam.subjects || []).map(subject => {
+        const marks = (db.marks || []).filter(m => m.examId === examId && m.subject === subject.name);
+        const totalMarks = marks.reduce((sum, m) => sum + (m.obtainedMarks || 0), 0);
+        return marks.length > 0 ? (totalMarks / marks.length).toFixed(2) : 0;
+    });
+
+    if (data.every(d => d === 0)) {
+        canvas.parentNode.innerHTML = '<p style="text-align: center;">اس امتحان کے لیے کوئی نمبرات نہیں ہیں</p>';
+        return;
+    }
+
+    if (window.examChart && typeof window.examChart.destroy === 'function') {
+        window.examChart.destroy();
+    }
+    window.examChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'اوسط نمبرات',
+                data,
+                backgroundColor: '#ebe6d9',
+                borderColor: '#333',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: { display: true, text: `امتحان: ${exam.name}`, font: { family: 'Arial', size: 18 } }
+            },
+            scales: {
+                x: { title: { display: true, text: 'مضمون', font: { family: 'Arial' } } },
+                y: { 
+                    title: { display: true, text: 'اوسط نمبرات', font: { family: 'Arial' } },
+                    beginAtZero: true,
+                    max: 100
+                }
+            },
+            layout: { padding: 10 }
+        }
+    });
+}
+
+// Student and Teacher Growth Chart (Line)
+function renderGrowthChart() {
+    const canvas = document.getElementById('growthChart');
+    const ctx = canvas?.getContext('2d');
+    if (!ctx) {
+        console.error('Growth chart canvas not found');
+        return;
+    }
+
+    const today = new Date();
+    const labels = Array.from({ length: 12 }, (_, i) => {
+        const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+        return `${date.getMonth() + 1}/${date.getFullYear()}`;
+    }).reverse();
+
+    const studentData = labels.map(label => {
+        const [month, year] = label.split('/').map(Number);
+        return (db.students || []).filter(s => {
+            const admissionDate = s.admissionDate ? new Date(s.admissionDate) : new Date();
+            return admissionDate.getFullYear() < year || 
+                   (admissionDate.getFullYear() === year && admissionDate.getMonth() + 1 <= month);
+        }).length;
+    });
+
+    const teacherData = labels.map(label => {
+        const [month, year] = label.split('/').map(Number);
+        return (db.teachers || []).filter(t => {
+            const joiningDate = t.joiningDate ? new Date(t.joiningDate) : new Date();
+            return joiningDate.getFullYear() < year || 
+                   (joiningDate.getFullYear() === year && joiningDate.getMonth() + 1 <= month);
+        }).length;
+    });
+
+    if (studentData.every(d => d === 0) && teacherData.every(d => d === 0)) {
+        canvas.parentNode.innerHTML = '<p style="text-align: center;">کوئی طلبہ یا اساتذہ کا ڈیٹا نہیں ہے</p>';
+        return;
+    }
+
+    if (window.growthChart && typeof window.growthChart.destroy === 'function') {
+        window.growthChart.destroy();
+    }
+    window.growthChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'طلبہ',
+                    data: studentData,
+                    borderColor: '#333',
+                    backgroundColor: 'rgba(51, 51, 51, 0.1)',
+                    fill: true
+                },
+                {
+                    label: 'اساتذہ',
+                    data: teacherData,
+                    borderColor: '#999',
+                    backgroundColor: 'rgba(153, 153, 153, 0.1)',
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: { display: true, text: 'طلبہ اور اساتذہ کی تعداد', font: { family: 'Arial', size: 18 } }
+            },
+            scales: {
+                x: { title: { display: true, text: 'مہینہ/سال', font: { family: 'Arial' } } },
+                y: { 
+                    title: { display: true, text: 'تعداد', font: { family: 'Arial' } },
+                    beginAtZero: true
+                }
+            },
+            layout: { padding: 10 }
+        }
+    });
+}
+
+// Hook into updateDashboard without reassignment
+function wrapUpdateDashboard() {
+    if (typeof updateDashboard === 'function') {
+        const originalUpdateDashboard = updateDashboard;
+        window.updateDashboard = function() {
+            originalUpdateDashboard();
+            renderCharts();
         };
-        console.log('Bound event listener for button:', buttonId);
     } else {
-        console.warn('Button not found:', buttonId);
+        console.warn('updateDashboard function not found, calling renderCharts directly');
+        renderCharts();
     }
 }
 
-// Bind event listeners for all print buttons
-bindPrintEvent('printIdCardBtn', () => {
-    printSection('student-id-card-page');
+// Initialize charts and add sample data
+document.addEventListener('DOMContentLoaded', () => {
+    initDashboardCharts();
+    wrapUpdateDashboard();
+    addSampleData();
 });
 
-bindPrintEvent('printAttendanceBtn', () => {
-    printSection('attendance-page');
-});
-
-bindPrintEvent('printSummaryBtn', () => {
-    const summaryDiv = document.getElementById('attendanceSummary');
-    if (!summaryDiv) {
-        console.error('Attendance summary not found');
+// Add sample data for testing
+function addSampleData() {
+    // Only add sample data if critical chart data is missing
+    if (
+        (db.attendance?.length > 0) &&
+        (db.fees?.length > 0) &&
+        (db.marks?.length > 0) &&
+        (db.exams?.length > 0)
+    ) {
+        console.log('Chart data already exists, skipping sample data addition');
         return;
     }
-    const tempContainer = document.createElement('div');
-    tempContainer.id = 'temp-print-summary';
-    tempContainer.style.padding = '20px';
-    tempContainer.innerHTML = `
-        <h2>حاضری کا خلاصہ</h2>
-        ${summaryDiv.innerHTML}
-    `;
-    document.body.appendChild(tempContainer);
 
-    printSection('temp-print-summary');
-
-    setTimeout(() => {
-        if (tempContainer.parentNode) {
-            document.body.removeChild(tempContainer);
-            console.log('Removed temporary summary container');
-        }
-    }, 100);
-});
-
-bindPrintEvent('printResultBtn', () => {
-    printSection('result-card-page');
-});
-
-bindPrintEvent('printFeeReceiptBtn', () => {
-    printSection('fee-receipt-page');
-});
-
-bindPrintEvent('printReceiptBtn', () => {
-    const feeId = document.getElementById('feeId')?.value;
-    if (feeId) {
-        showFeeReceipt(feeId);
-        printSection('fee-receipt-page');
-    } else {
-        console.error('Fee ID not found');
+    // Ensure generateId exists
+    if (!window.generateId) {
+        window.generateId = () => Date.now().toString() + Math.random().toString().slice(2, 8);
     }
-});
 
-bindPrintEvent('printSalarySlipBtn', () => {
-    const salaryId = document.getElementById('salaryId')?.value;
-    if (salaryId) {
-        showSalarySlip(salaryId);
-        printSection('salary-slip-page');
-    } else {
-        console.error('Salary ID not found');
-    }
-});
+    // Initialize db arrays if undefined
+    db.students = db.students || [];
+    db.teachers = db.teachers || [];
+    db.classes = db.classes || [];
+    db.exams = db.exams || [];
+    db.fees = db.fees || [];
+    db.attendance = db.attendance || [];
+    db.marks = db.marks || [];
 
-bindPrintEvent('printSalarySlipBtn2', () => {
-    printSection('salary-slip-page');
-});
+    // Clear existing data for testing (optional, comment out if you want to keep existing data)
+    // db.students = [];
+    // db.teachers = [];
+    // db.classes = [];
+    // db.exams = [];
+    // db.fees = [];
+    // db.attendance = [];
+    // db.marks = [];
 
-bindPrintEvent('printLedgerBtn', () => {
-    printSection('ledger-page');
-});
-
-bindPrintEvent('printReportBtn', () => {
-    const reportContent = document.getElementById('reportContent');
-    const reportTitle = document.getElementById('reportTitle')?.textContent || 'Report';
-    if (!reportContent) {
-        console.error('Report content not found');
-        return;
-    }
-    const tempContainer = document.createElement('div');
-    tempContainer.id = 'temp-print-report';
-    tempContainer.style.padding = '20px';
-    tempContainer.innerHTML = `
-        <h2>${reportTitle}</h2>
-        ${reportContent.innerHTML}
-    `;
-    document.body.appendChild(tempContainer);
-
-    printSection('temp-print-report');
-
-    setTimeout(() => {
-        if (tempContainer.parentNode) {
-            document.body.removeChild(tempContainer);
-            console.log('Removed temporary report container');
-        }
-    }, 100);
-});
-
-// Add or update print-specific CSS
-const existingPrintStyle = document.querySelector('style[data-print-style]');
-if (existingPrintStyle) {
-    existingPrintStyle.remove();
-}
-const style = document.createElement('style');
-style.setAttribute('data-print-style', 'true');
-style.innerHTML = `
-    @media print {
-        body {
-            background: none;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            box-shadow: none;
-            border: none;
-            padding: 0;
-            margin: 0;
-            width: 100%;
-        }
-        .page:not(.active) {
-            display: none !important;
-        }
-        .page.active {
-            display: block !important;
-        }
-        .nav, .btn, .btn-group, .no-print {
-            display: none !important;
-        }
-        .print-only {
-            display: block !important;
-        }
-        .card, .receipt, .id-card {
-            break-inside: avoid;
-            page-break-inside: avoid;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid #000;
-            padding: 8px;
-        }
-    }
-`;
-document.head.appendChild(style);
-
-// Cleanup any existing print listeners on page load
-function cleanupPrintListeners() {
-    const buttons = [
-        'printIdCardBtn', 'printAttendanceBtn', 'printSummaryBtn', 'printResultBtn',
-        'printFeeReceiptBtn', 'printReceiptBtn', 'printSalarySlipBtn', 'printSalarySlipBtn2',
-        'printLedgerBtn', 'printReportBtn'
-    ];
-    buttons.forEach(id => {
-        const button = document.getElementById(id);
-        if (button) {
-            button.onclick = null;
-            console.log('Cleaned up listeners for:', id);
-        }
+    /*	Add sample data
+    const classId = generateId();
+    db.classes.push({
+        id: classId,
+        name: 'پہلی جماعت',
+        fee: 5000,
+        subjects: [{ name: 'ریاضی', teacherId: '' }]
     });
+
+    const studentId = generateId();
+    db.students.push({
+        id: studentId,
+        name: 'علی احمد',
+        fatherName: 'محمد احمد',
+        admissionNumber: '001',
+        classId: classId,
+        contactNumber: '03001234567',
+        admissionDate: '2024-12-01', // For growth chart
+        status: 'active'
+    });
+
+    const teacherId = generateId();
+    db.teachers.push({
+        id: teacherId,
+        name: 'احمد خان',
+        contactNumber: '03101234567',
+        joiningDate: '2024-11-01', // For growth chart
+        salaryAmount: 30000,
+        status: 'active'
+    });
+
+    const examId = generateId();
+    db.exams.push({
+        id: examId,
+        name: 'ماہانہ امتحان اپریل 2025',
+        classId: classId,
+        startDate: '2025-04-01',
+        endDate: '2025-04-05',
+        subjects: [{ name: 'ریاضی', totalMarks: 100 }]
+    });
+
+    db.fees.push({
+        id: generateId(),
+        studentId: studentId,
+        amount: 5000,
+        paid: 5000,
+        dueDate: '2025-04-01',
+        paymentDate: '2025-04-01', // For fee chart
+        status: 'paid'
+    });
+
+    db.attendance.push({
+        id: generateId(),
+        type: 'student',
+        entityId: studentId,
+        date: '2025-04-01', // For attendance chart
+        status: 'present',
+        comment: ''
+    });
+
+    db.marks.push({
+        id: generateId(),
+        examId: examId,
+        studentId: studentId,
+        subject: 'ریاضی',
+        obtainedMarks: 85 // For exam chart
+    });
+*/
+    // Save data and update UI
+    if (typeof saveData === 'function') {
+        saveData();
+    }
+    if (typeof updateUI === 'function') {
+        updateUI();
+    }
+    renderCharts();
+    console.log('Sample data added:', db);
 }
-document.addEventListener('DOMContentLoaded', cleanupPrintListeners);
     </script>
 </body>
 </html>
