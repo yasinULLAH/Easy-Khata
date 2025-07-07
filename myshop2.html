@@ -1,0 +1,1910 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Management System</title>
+    <style>
+        /* --- Base Styles & Fonts --- */
+        :root {
+            --primary-color: #006400; /* Dark Green */
+            --secondary-color: #f4f4f4; /* Light Gray */
+            --text-color: #333;
+            --border-color: #ccc;
+            --ledger-line-color: #e0e0e0;
+            --ledger-bg-color: #fdfdfd;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --success-color: #28a745;
+            --font-handwritten: 'cursive', 'Segoe Script', 'Brush Script MT', sans-serif; /* Fallback fonts */
+            --font-sans: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 15px auto;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        h2 {
+           font-size: 1.5em;
+        }
+
+        h3 {
+            font-size: 1.2em;
+        }
+
+        /* --- Navigation Tabs --- */
+        .main-nav {
+            display: flex;
+            flex-wrap: wrap;
+            border-bottom: 2px solid var(--primary-color);
+            margin-bottom: 20px;
+        }
+        .nav-tab {
+            padding: 10px 15px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            margin-bottom: -1px;
+            background-color: #f1f1f1;
+            font-size: 1em;
+            font-weight: 500;
+            color: var(--primary-color);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .nav-tab:hover {
+            background-color: #e7e7e7;
+        }
+        .nav-tab.active {
+            background-color: #fff;
+            border-color: var(--primary-color) var(--primary-color) #fff;
+            border-radius: 5px 5px 0 0;
+            font-weight: bold;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+
+        /* --- Ledger Paper Styling --- */
+        .ledger-input,
+        .ledger-textarea,
+        .ledger-select {
+            background-color: var(--ledger-bg-color);
+            border: none;
+            border-bottom: 1px solid var(--ledger-line-color);
+            padding: 10px 5px 5px 5px;
+            margin-bottom: 10px;
+            width: 100%;
+            font-family: var(--font-handwritten);
+            font-size: 1.1em;
+            line-height: 1.8; /* Simulate lines */
+            background-image: linear-gradient(to bottom, transparent 95%, var(--ledger-line-color) 95%);
+            background-size: 100% 1.8em; /* Match line-height */
+            background-repeat: repeat-y;
+            background-position: 0 5px; /* Adjust vertical position */
+            resize: vertical; /* Allow textarea resize */
+        }
+        .ledger-textarea { min-height: 80px; }
+        .ledger-input:focus, .ledger-textarea:focus, .ledger-select:focus {
+            outline: none;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        /* --- Buttons --- */
+        .btn {
+            display: inline-block;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            text-align: center;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            margin: 5px;
+            text-decoration: none;
+            color: #fff;
+        }
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+        .btn-primary { background-color: var(--primary-color); color: #fff; }
+        .btn-primary:hover:not(:disabled) { background-color: #004d00; }
+        .btn-secondary { background-color: #6c757d; color: #fff; }
+        .btn-secondary:hover:not(:disabled) { background-color: #5a6268; }
+        .btn-danger { background-color: var(--danger-color); color: #fff; }
+        .btn-danger:hover:not(:disabled) { background-color: #c82333; }
+        .btn-success { background-color: var(--success-color); color: #fff; }
+        .btn-success:hover:not(:disabled) { background-color: #218838; }
+        .btn-warning { background-color: var(--warning-color); color: #212529; }
+        .btn-warning:hover:not(:disabled) { background-color: #e0a800; }
+        .btn-info { background-color: var(--info-color); color: #fff;}
+        .btn-info:hover:not(:disabled) { background-color: #138496;}
+        .btn-icon { padding: 8px 10px; font-size: 0.9em; }
+
+        /* --- Forms & Modals --- */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; font-family: var(--font-sans); }
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background-color: #fff; margin: 5% auto; padding: 25px; border-radius: 8px;
+            max-width: 600px; width: 90%; position: relative; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .modal-content.modal-lg { max-width: 900px; }
+        .modal-close {
+            position: absolute; top: 10px; right: 15px; font-size: 1.8em;
+            font-weight: bold; color: #aaa; cursor: pointer; line-height: 1;
+        }
+        .modal-close:hover, .modal-close:focus { color: #333; }
+
+        /* --- Tables --- */
+        .data-table {
+            width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.95em; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .data-table thead { background-color: var(--primary-color); color: #fff; }
+        .data-table th, .data-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        .data-table tbody tr:nth-child(even) { background-color: var(--ledger-bg-color); }
+        .data-table tbody tr:hover { background-color: #e9e9e9; }
+        .data-table td .btn { padding: 5px 8px; font-size: 0.85em; margin: 2px; }
+        .balance-positive { color: var(--danger-color); font-weight: bold; } /* We owe them */
+        .balance-negative { color: var(--success-color); font-weight: bold; } /* They owe us */
+        .stock-ok { color: var(--success-color); }
+        .stock-low { color: var(--warning-color); font-weight: bold; }
+        .stock-out { color: var(--danger-color); font-weight: bold; }
+
+
+        /* --- Layout & Sections --- */
+        .section {
+            margin-bottom: 25px; padding: 15px; background: #fff;
+            border-radius: 5px; border: 1px solid var(--border-color);
+        }
+        .section-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; flex-wrap: wrap;
+        }
+        .section-header h2, .section-header h3 { margin-bottom: 0; }
+        .dashboard-summary {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px; margin-bottom: 20px;
+        }
+        .summary-card {
+            background-color: var(--ledger-bg-color); padding: 15px; border-radius: 5px;
+            border: 1px solid var(--border-color); text-align: center;
+        }
+        .summary-card h4 { margin-bottom: 8px; font-size: 1em; color: var(--primary-color); }
+        .summary-card p { font-size: 1.3em; font-weight: bold; }
+        #customer-details-view, #supplier-details-view { display: none; }
+
+        /* --- Filters & Search --- */
+        .filter-controls {
+            display: flex; gap: 10px; margin-bottom: 15px;
+            flex-wrap: wrap; align-items: center;
+        }
+        .filter-controls label { margin-bottom: 0; margin-right: 5px; font-family: var(--font-sans); font-weight: normal; }
+        .filter-controls input[type="date"], .filter-controls input[type="text"], .filter-controls select {
+             padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;
+             font-family: var(--font-sans); font-size: 0.95em;
+             background-image: none; background-color: #fff; line-height: normal;
+        }
+
+        /* --- Sale/Purchase Form specific styles --- */
+        .item-entry-form { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 15px; flex-wrap: wrap; }
+        .item-entry-form .form-group { flex: 1; min-width: 150px; }
+        .invoice-totals {
+            margin-top: 20px; padding-top: 15px; border-top: 2px solid var(--primary-color);
+            text-align: right; font-size: 1.2em; font-weight: bold;
+        }
+
+
+        /* --- Urdu Toggle --- */
+        .language-toggle {
+            position: absolute; top: 15px; right: 15px; display: flex; align-items: center;
+        }
+        .language-toggle label { margin: 0 5px 0 0; font-size: 0.9em; font-weight: normal; }
+
+        /* --- Reporting Section --- */
+        #report-output {
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 5px;
+        }
+        #report-output h3 { text-align: center; }
+
+        /* --- Print Styles --- */
+        @media print {
+            body { padding: 0; background-color: #fff; font-size: 10pt; }
+            .container { max-width: 100%; margin: 0; padding: 0; box-shadow: none; border-radius: 0; }
+            .no-print { display: none !important; }
+            .section { border: none; padding: 0; margin-bottom: 15px; page-break-inside: avoid; }
+            h1, h2, h3 { color: #000; }
+            .data-table { box-shadow: none; font-size: 9pt; }
+            .data-table th, .data-table td { padding: 5px 8px; border: 1px solid #ccc; }
+            .data-table thead { background-color: #eee; color: #000; }
+            .page.active, #printable-report-content { display: block !important; }
+            .page:not(.active), #reports-page, #dashboard-page, #sales-page, #purchases-page, #customers-page, #suppliers-page, #inventory-page { display: none !important; }
+            #printable-report-content h2 { text-align: center; font-size: 1.5em; }
+            #printable-report-content h3 { text-align: center; font-size: 1.2em; }
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            body { padding: 5px; }
+            .container { padding: 10px; margin: 10px auto; }
+            h1 { font-size: 1.6em; } h2 { font-size: 1.3em; } h3 { font-size: 1.1em; }
+            .btn { width: 100%; margin: 5px 0; }
+            .btn-icon { width: auto; }
+            .section-header { flex-direction: column; align-items: flex-start; }
+            .section-header div { margin-top: 10px; width: 100%; display: flex; flex-direction: column; }
+            .filter-controls { flex-direction: column; align-items: stretch; }
+            .data-table .hide-mobile { display: none; }
+            .modal-content { margin: 15% auto; width: 95%; padding: 20px; }
+            .language-toggle { position: static; margin: 10px 0; justify-content: flex-end; }
+            .main-nav { justify-content: center; }
+            .nav-tab { font-size: 0.9em; padding: 8px 10px;}
+        }
+
+         @media (max-width: 480px) {
+            h1 { font-size: 1.4em; }
+            .dashboard-summary { grid-template-columns: 1fr; }
+            .data-table { font-size: 0.8em; }
+            .data-table th, .data-table td { padding: 6px 4px; }
+         }
+        .urdu-font-force { font-family: 'Noto Nastaliq Urdu', serif !important; }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="language-toggle no-print">
+            <label for="language-switch" data-en="Language" data-ur="زبان">Language:</label>
+            <select id="language-switch">
+                <option value="en">English</option>
+                <option value="ur">Urdu (اردو)</option>
+            </select>
+        </div>
+
+        <h1 data-en="Shop Management System" data-ur="شاپ مینجمنٹ سسٹم">Shop Management System</h1>
+
+        <!-- Main Navigation -->
+        <nav class="main-nav no-print">
+            <div class="nav-tab active" data-page="dashboard-page" data-en="Dashboard" data-ur="ڈیش بورڈ">Dashboard</div>
+            <div class="nav-tab" data-page="sales-page" data-en="Sales" data-ur="فروخت">Sales</div>
+            <div class="nav-tab" data-page="purchases-page" data-en="Purchases" data-ur="خریداری">Purchases</div>
+            <div class="nav-tab" data-page="customers-page" data-en="Customers" data-ur="صارفین">Customers</div>
+            <div class="nav-tab" data-page="suppliers-page" data-en="Suppliers" data-ur="سپلائرز">Suppliers</div>
+            <div class="nav-tab" data-page="inventory-page" data-en="Inventory" data-ur="انوینٹری">Inventory</div>
+            <div class="nav-tab" data-page="reports-page" data-en="Reports" data-ur="رپورٹس">Reports</div>
+        </nav>
+
+        <!-- Page: Dashboard -->
+        <div id="dashboard-page" class="page active">
+            <div class="section">
+                <div class="dashboard-summary">
+                    <div class="summary-card">
+                        <h4 data-en="Total Customers" data-ur="کل صارفین">Total Customers</h4>
+                        <p id="total-customers">0</p>
+                    </div>
+                    <div class="summary-card">
+                        <h4 data-en="Receivables (Lena Hai)" data-ur="واجبات (لینا ہے)">Receivables (Lena Hai)</h4>
+                        <p id="total-receivables" class="balance-negative">Rs 0.00</p>
+                    </div>
+                     <div class="summary-card">
+                        <h4 data-en="Payables (Dena Hai)" data-ur="واجب الادا (دینا ہے)">Payables (Dena Hai)</h4>
+                        <p id="total-payables" class="balance-positive">Rs 0.00</p>
+                    </div>
+                    <div class="summary-card">
+                        <h4 data-en="Low Stock Items" data-ur="کم اسٹاک آئٹمز">Low Stock Items</h4>
+                        <p id="low-stock-items" class="stock-low">0</p>
+                    </div>
+                    <div class="summary-card">
+                        <h4 data-en="Total Inventory Value" data-ur="کل انوینٹری مالیت">Total Inventory Value</h4>
+                        <p id="inventory-value">Rs 0.00</p>
+                    </div>
+                </div>
+            </div>
+             <div id="backup-restore-section" class="section no-print">
+                <h3 data-en="Backup & Restore" data-ur="بیک اپ اور بحال کریں">Backup & Restore</h3>
+                <button id="backup-btn" class="btn btn-secondary" data-en="Backup Data (JSON)" data-ur="ڈیٹا بیک اپ (JSON)">Backup Data (JSON)</button>
+                <label for="restore-file" class="btn btn-warning" data-en="Restore Data (JSON)" data-ur="ڈیٹا بحال کریں (JSON)">Restore Data (JSON)</label>
+                <input type="file" id="restore-file" accept=".json" style="display: none;">
+            </div>
+        </div>
+
+        <!-- Page: Sales -->
+        <div id="sales-page" class="page">
+            <div class="section">
+                <div class="section-header">
+                    <h2 data-en="Sales History" data-ur="فروخت کی سرگزشت">Sales History</h2>
+                    <div>
+                        <button id="add-sale-btn" class="btn btn-primary no-print" data-en="New Sale" data-ur="نئی فروخت">New Sale</button>
+                    </div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="data-table" id="sales-table">
+                        <thead>
+                            <tr>
+                                <th data-en="Date" data-ur="تاریخ">Date</th>
+                                <th data-en="Customer" data-ur="صارف">Customer</th>
+                                <th data-en="Amount" data-ur="رقم">Amount</th>
+                                <th data-en="Status" data-ur="حیثیت">Status</th>
+                                <th data-en="Actions" data-ur="کاروائیاں" class="no-print">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sales-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Purchases -->
+        <div id="purchases-page" class="page">
+             <div class="section">
+                <div class="section-header">
+                    <h2 data-en="Purchase History" data-ur="خریداری کی سرگزشت">Purchase History</h2>
+                    <div>
+                        <button id="add-purchase-btn" class="btn btn-primary no-print" data-en="New Purchase" data-ur="نئی خریداری">New Purchase</button>
+                    </div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="data-table" id="purchases-table">
+                        <thead>
+                            <tr>
+                                <th data-en="Date" data-ur="تاریخ">Date</th>
+                                <th data-en="Supplier" data-ur="سپلائر">Supplier</th>
+                                <th data-en="Amount" data-ur="رقم">Amount</th>
+                                <th data-en="Status" data-ur="حیثیت">Status</th>
+                                <th data-en="Actions" data-ur="کاروائیاں" class="no-print">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="purchases-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Customers -->
+        <div id="customers-page" class="page">
+            <div id="customer-list-view">
+                <div class="section">
+                    <div class="section-header">
+                        <h2 data-en="Customers" data-ur="صارفین">Customers</h2>
+                        <div>
+                            <button id="add-customer-btn" class="btn btn-primary no-print" data-en="Add New Customer" data-ur="نیا صارف شامل کریں">Add New Customer</button>
+                        </div>
+                    </div>
+                     <div class="filter-controls no-print">
+                         <input type="text" id="customer-search" placeholder="Search Customers..." data-en-placeholder="Search Customers..." data-ur-placeholder="صارفین تلاش کریں...">
+                     </div>
+                    <div style="overflow-x: auto;">
+                        <table class="data-table" id="customer-table">
+                            <thead>
+                                <tr>
+                                    <th data-en="Name" data-ur="نام">Name</th>
+                                    <th data-en="Phone" data-ur="فون" class="hide-mobile">Phone</th>
+                                    <th data-en="Balance" data-ur="بیلنس">Balance</th>
+                                    <th data-en="Actions" data-ur="کاروائیاں" class="no-print">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customer-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div id="customer-details-view">
+                 <div class="section">
+                     <div class="section-header">
+                        <h2 id="details-customer-name">Customer Details</h2> <div>
+                            <button id="back-to-list-btn-customer" class="btn btn-secondary no-print" data-en="Back to List" data-ur="فہرست پر واپس">Back to List</button>
+                        </div>
+                     </div>
+                     <div id="customer-info"></div>
+                </div>
+                <div class="section">
+                    <div class="section-header">
+                        <h3 data-en="Transactions" data-ur="لین دین">Transactions</h3>
+                         <div>
+                            <button id="add-manual-transaction-btn-customer" class="btn btn-primary no-print" data-en="Add Manual Transaction" data-ur="دستی لین دین شامل کریں">Add Transaction</button>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto;"> <table class="data-table" id="transaction-table-customer"></table></div>
+                    <div class="customer-balance-summary" style="text-align: right; margin-top: 15px; font-size: 1.1em; font-weight: bold;">
+                        <span data-en="Current Balance:" data-ur="موجودہ بیلنس:">Current Balance:</span> <span id="details-current-balance-customer">Rs 0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Suppliers -->
+        <div id="suppliers-page" class="page">
+            <div id="supplier-list-view">
+                <div class="section">
+                    <div class="section-header">
+                        <h2 data-en="Suppliers" data-ur="سپلائرز">Suppliers</h2>
+                        <div>
+                            <button id="add-supplier-btn" class="btn btn-primary no-print" data-en="Add New Supplier" data-ur="نیا سپلائر شامل کریں">Add New Supplier</button>
+                        </div>
+                    </div>
+                     <div class="filter-controls no-print">
+                         <input type="text" id="supplier-search" placeholder="Search Suppliers..." data-en-placeholder="Search Suppliers..." data-ur-placeholder="سپلائرز تلاش کریں...">
+                     </div>
+                    <div style="overflow-x: auto;">
+                        <table class="data-table" id="supplier-table">
+                            <thead>
+                                <tr>
+                                    <th data-en="Name" data-ur="نام">Name</th>
+                                    <th data-en="Phone" data-ur="فون" class="hide-mobile">Phone</th>
+                                    <th data-en="Balance" data-ur="بیلنس">Balance</th>
+                                    <th data-en="Actions" data-ur="کاروائیاں" class="no-print">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="supplier-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div id="supplier-details-view">
+                 <div class="section">
+                     <div class="section-header">
+                        <h2 id="details-supplier-name">Supplier Details</h2> <div>
+                            <button id="back-to-list-btn-supplier" class="btn btn-secondary no-print" data-en="Back to List" data-ur="فہرست پر واپس">Back to List</button>
+                        </div>
+                     </div>
+                     <div id="supplier-info"></div>
+                </div>
+                <div class="section">
+                    <div class="section-header">
+                        <h3 data-en="Transactions" data-ur="لین دین">Transactions</h3>
+                         <div>
+                            <button id="add-manual-transaction-btn-supplier" class="btn btn-primary no-print" data-en="Add Manual Transaction" data-ur="دستی لین دین شامل کریں">Add Transaction</button>
+                        </div>
+                    </div>
+                     <div style="overflow-x: auto;"> <table class="data-table" id="transaction-table-supplier"></table></div>
+                     <div class="supplier-balance-summary" style="text-align: right; margin-top: 15px; font-size: 1.1em; font-weight: bold;">
+                        <span data-en="Current Balance:" data-ur="موجودہ بیلنس:">Current Balance:</span> <span id="details-current-balance-supplier">Rs 0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Inventory -->
+        <div id="inventory-page" class="page">
+            <div class="section">
+                <div class="section-header">
+                    <h2 data-en="Product Inventory" data-ur="مصنوعات کی انوینٹری">Product Inventory</h2>
+                    <div>
+                        <button id="add-product-btn" class="btn btn-primary no-print" data-en="Add New Product" data-ur="نئی پروڈکٹ شامل کریں">Add New Product</button>
+                    </div>
+                </div>
+                 <div class="filter-controls no-print">
+                     <input type="text" id="product-search" placeholder="Search Products..." data-en-placeholder="Search Products..." data-ur-placeholder="پروڈکٹس تلاش کریں...">
+                 </div>
+                <div style="overflow-x: auto;">
+                    <table class="data-table" id="product-table">
+                        <thead>
+                            <tr>
+                                <th data-en="Product Name" data-ur="پروڈکٹ کا نام">Product Name</th>
+                                <th data-en="Sale Price" data-ur="فروخت کی قیمت">Sale Price</th>
+                                <th data-en="Purchase Price" data-ur="خریداری کی قیمت" class="hide-mobile">Purchase Price</th>
+                                <th data-en="Stock" data-ur="اسٹاک">Stock</th>
+                                <th data-en="Status" data-ur="حیثیت">Status</th>
+                                <th data-en="Actions" data-ur="کاروائیاں" class="no-print">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Reports -->
+        <div id="reports-page" class="page">
+            <div class="section no-print">
+                <h2 data-en="Reports" data-ur="رپورٹس">Reports</h2>
+                <div class="filter-controls">
+                    <div class="form-group">
+                        <label for="report-type-select" data-en="Report Type" data-ur="رپورٹ کی قسم">Report Type</label>
+                        <select id="report-type-select">
+                            <option value="sales" data-en="Sales Report" data-ur="سیلز رپورٹ">Sales Report</option>
+                            <option value="purchases" data-en="Purchase Report" data-ur="پرچیز رپورٹ">Purchase Report</option>
+                            <option value="profit_loss" data-en="Profit & Loss Report" data-ur="نفع و نقصان کی رپورٹ">Profit & Loss Report</option>
+                            <option value="inventory" data-en="Inventory Report" data-ur="انوینٹری رپورٹ">Inventory Report</option>
+                            <option value="customer_ledger" data-en="Customer Ledger" data-ur="کسٹمر لیجر">Customer Ledger</option>
+                            <option value="supplier_ledger" data-en="Supplier Ledger" data-ur="سپلائر لیجر">Supplier Ledger</option>
+                        </select>
+                    </div>
+                     <div class="form-group">
+                        <label for="report-start-date" data-en="Start Date" data-ur="شروعاتی تاریخ">Start Date</label>
+                        <input type="date" id="report-start-date">
+                    </div>
+                     <div class="form-group">
+                        <label for="report-end-date" data-en="End Date" data-ur="اختتامی تاریخ">End Date</label>
+                        <input type="date" id="report-end-date">
+                    </div>
+                    <div class="form-group" id="report-entity-selector-div" style="display:none;">
+                        <label for="report-entity-select" data-en="Select Entity" data-ur="اینٹیٹی منتخب کریں">Select Entity</label>
+                        <select id="report-entity-select"></select>
+                    </div>
+                </div>
+                <div>
+                     <button id="generate-report-btn" class="btn btn-primary" data-en="Generate Report" data-ur="رپورٹ بنائیں">Generate Report</button>
+                     <button id="print-report-btn" class="btn btn-secondary" data-en="Print / PDF" data-ur="پرنٹ / پی ڈی ایف" disabled>Print / PDF</button>
+                     <button id="export-csv-btn" class="btn btn-success" data-en="Export to Excel (CSV)" data-ur="ایکسل میں ایکسپورٹ" disabled>Export to Excel (CSV)</button>
+                </div>
+            </div>
+            <div id="report-output">
+                <p data-en="Select a report type and date range, then click 'Generate Report'." data-ur="رپورٹ کی قسم اور تاریخ کی حد منتخب کریں، پھر 'رپورٹ بنائیں' پر کلک کریں۔">Select a report type and date range, then click 'Generate Report'.</p>
+            </div>
+        </div>
+
+
+        <!-- Printable Report Area -->
+        <div id="printable-report-content" style="display: none;">
+            <h2 id="printable-report-title"></h2>
+            <h3 id="printable-report-period"></h3>
+            <div id="printable-report-table"></div>
+            <div id="printable-report-summary" style="margin-top: 20px; text-align: right; font-weight: bold; font-size: 1.1em;"></div>
+        </div>
+
+    </div>
+
+    <!-- MODALS -->
+    <!-- Customer Form Modal -->
+    <div id="customer-form-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('customer-form-modal')">&times;</span>
+            <h3 id="customer-modal-title">Add New Customer</h3>
+            <form id="customer-form">
+                <input type="hidden" id="customer-id">
+                <div class="form-group">
+                    <label for="customer-name" data-en="Name" data-ur="نام">Name</label>
+                    <input type="text" id="customer-name" class="ledger-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="customer-phone" data-en="Phone (Optional)" data-ur="فون (اختیاری)">Phone</label>
+                    <input type="tel" id="customer-phone" class="ledger-input">
+                </div>
+                <div class="form-group">
+                    <label for="customer-address" data-en="Address (Optional)" data-ur="پتہ (اختیاری)">Address</label>
+                    <textarea id="customer-address" class="ledger-textarea"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" data-en="Save Customer" data-ur="صارف محفوظ کریں">Save Customer</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Supplier Form Modal -->
+    <div id="supplier-form-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('supplier-form-modal')">&times;</span>
+            <h3 id="supplier-modal-title">Add New Supplier</h3>
+            <form id="supplier-form">
+                <input type="hidden" id="supplier-id">
+                <div class="form-group">
+                    <label for="supplier-name" data-en="Name" data-ur="نام">Name</label>
+                    <input type="text" id="supplier-name" class="ledger-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="supplier-phone" data-en="Phone (Optional)" data-ur="فون (اختیاری)">Phone</label>
+                    <input type="tel" id="supplier-phone" class="ledger-input">
+                </div>
+                <div class="form-group">
+                    <label for="supplier-address" data-en="Address (Optional)" data-ur="پتہ (اختیاری)">Address</label>
+                    <textarea id="supplier-address" class="ledger-textarea"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" data-en="Save Supplier" data-ur="سپلائر محفوظ کریں">Save Supplier</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Product Form Modal -->
+    <div id="product-form-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('product-form-modal')">&times;</span>
+            <h3 id="product-modal-title">Add New Product</h3>
+            <form id="product-form">
+                <input type="hidden" id="product-id">
+                <div class="form-group">
+                    <label for="product-name" data-en="Product Name" data-ur="پروڈکٹ کا نام">Product Name</label>
+                    <input type="text" id="product-name" class="ledger-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="product-sale-price" data-en="Sale Price (Rs)" data-ur="فروخت کی قیمت (روپے)">Sale Price</label>
+                    <input type="number" id="product-sale-price" class="ledger-input" step="0.01" min="0" required>
+                </div>
+                 <div class="form-group">
+                    <label for="product-purchase-price" data-en="Purchase Price (Rs)" data-ur="خریداری کی قیمت (روپے)">Purchase Price</label>
+                    <input type="number" id="product-purchase-price" class="ledger-input" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="product-quantity" data-en="Initial Stock Quantity" data-ur="ابتدائی اسٹاک مقدار">Initial Stock Quantity</label>
+                    <input type="number" id="product-quantity" class="ledger-input" step="1" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="product-low-stock" data-en="Low Stock Alert Level" data-ur="کم اسٹاک الرٹ لیول">Low Stock Alert Level</label>
+                    <input type="number" id="product-low-stock" class="ledger-input" step="1" min="0" value="5">
+                </div>
+                <button type="submit" class="btn btn-primary" data-en="Save Product" data-ur="پروڈکٹ محفوظ کریں">Save Product</button>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Manual Transaction Modal -->
+    <div id="transaction-form-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('transaction-form-modal')">&times;</span>
+            <h3><span data-en="Add Manual Transaction for" data-ur="کے لیے دستی لین دین شامل کریں"></span> <span id="transaction-modal-entity-name"></span></h3>
+            <form id="transaction-form">
+                <input type="hidden" id="transaction-entity-id">
+                <input type="hidden" id="transaction-entity-type">
+                <div class="form-group">
+                    <label for="transaction-date" data-en="Date" data-ur="تاریخ">Date</label>
+                    <input type="date" id="transaction-date" class="ledger-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="transaction-type" data-en="Transaction Type" data-ur="لین دین کی قسم">Transaction Type</label>
+                    <select id="transaction-type" class="ledger-select" required>
+                        <option value="debit" data-en="Debit (Payment Made / Sale)" data-ur="ڈیبٹ (ادائیگی کی / فروخت)">Debit (Payment Made / Sale)</option>
+                        <option value="credit" data-en="Credit (Payment Received)" data-ur="کریڈٹ (ادائیگی وصول کی)">Credit (Payment Received)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="transaction-amount" data-en="Amount (Rs)" data-ur="رقم (روپے)">Amount (Rs)</label>
+                    <input type="number" id="transaction-amount" class="ledger-input" step="0.01" min="0.01" required>
+                </div>
+                 <div class="form-group">
+                    <label for="transaction-description" data-en="Description" data-ur="تفصیل">Description</label>
+                    <textarea id="transaction-description" class="ledger-textarea" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" data-en="Save Transaction" data-ur="لین دین محفوظ کریں">Save Transaction</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sale Form Modal -->
+    <div id="sale-form-modal" class="modal">
+        <div class="modal-content modal-lg">
+            <span class="modal-close" onclick="closeModal('sale-form-modal')">&times;</span>
+            <h3 data-en="New Sale / Invoice" data-ur="نئی فروخت / انوائس">New Sale / Invoice</h3>
+            <form id="sale-form">
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="sale-customer" data-en="Customer (Optional)" data-ur="صارف (اختیاری)">Customer</label>
+                        <select id="sale-customer" class="ledger-select"></select>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label for="sale-date" data-en="Date" data-ur="تاریخ">Date</label>
+                        <input type="date" id="sale-date" class="ledger-input" required>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h4 data-en="Add Products" data-ur="مصنوعات شامل کریں">Add Products</h4>
+                    <div class="item-entry-form">
+                         <div class="form-group">
+                            <label for="sale-product-select" data-en="Product" data-ur="پروڈکٹ">Product</label>
+                            <select id="sale-product-select" class="ledger-select"></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="sale-item-qty" data-en="Quantity" data-ur="مقدار">Quantity</label>
+                            <input type="number" id="sale-item-qty" class="ledger-input" min="1" value="1">
+                        </div>
+                        <button type="button" id="add-sale-item-btn" class="btn btn-primary" data-en="Add Item" data-ur="آئٹم شامل کریں">Add Item</button>
+                    </div>
+                    <table class="data-table">
+                        <thead><tr><th data-en="Product" data-ur="پروڈکٹ">Product</th><th data-en="Qty" data-ur="مقدار">Qty</th><th data-en="Price" data-ur="قیمت">Price</th><th data-en="Total" data-ur="کل">Total</th><th></th></tr></thead>
+                        <tbody id="sale-items-table-body"></tbody>
+                    </table>
+                </div>
+
+                <div class="invoice-totals">
+                    <span data-en="Total Amount:" data-ur="کل رقم:">Total Amount:</span> <span id="sale-total-amount">Rs 0.00</span>
+                </div>
+
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="sale-payment-status" data-en="Payment Status" data-ur="ادائیگی کی حیثیت">Payment Status</label>
+                        <select id="sale-payment-status" class="ledger-select" required>
+                            <option value="paid" data-en="Paid (Cash Sale)" data-ur="ادا شدہ (نقد فروخت)">Paid (Cash Sale)</option>
+                            <option value="credit" data-en="Credit (Add to Khata)" data-ur="ادھار (کھاتہ میں شامل کریں)">Credit (Add to Khata)</option>
+                            <option value="partially_paid" data-en="Partially Paid" data-ur="جزوی طور پر ادا شدہ">Partially Paid</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="sale-amount-paid-div" style="flex: 1; display: none;">
+                        <label for="sale-amount-paid" data-en="Amount Paid" data-ur="ادا شدہ رقم">Amount Paid</label>
+                        <input type="number" id="sale-amount-paid" class="ledger-input" min="0" step="0.01">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success" data-en="Complete Sale" data-ur="فروخت مکمل کریں">Complete Sale</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Purchase Form Modal -->
+    <div id="purchase-form-modal" class="modal">
+         <div class="modal-content modal-lg">
+            <span class="modal-close" onclick="closeModal('purchase-form-modal')">&times;</span>
+            <h3 data-en="New Purchase" data-ur="نئی خریداری">New Purchase</h3>
+            <form id="purchase-form">
+                 <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="purchase-supplier" data-en="Supplier" data-ur="سپلائر">Supplier</label>
+                        <select id="purchase-supplier" class="ledger-select" required></select>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label for="purchase-date" data-en="Date" data-ur="تاریخ">Date</label>
+                        <input type="date" id="purchase-date" class="ledger-input" required>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h4 data-en="Add Products" data-ur="مصنوعات شامل کریں">Add Products</h4>
+                     <div class="item-entry-form">
+                         <div class="form-group">
+                            <label for="purchase-product-select" data-en="Product" data-ur="پروڈکٹ">Product</label>
+                            <select id="purchase-product-select" class="ledger-select"></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="purchase-item-qty" data-en="Quantity" data-ur="مقدار">Quantity</label>
+                            <input type="number" id="purchase-item-qty" class="ledger-input" min="1" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="purchase-item-price" data-en="Unit Price" data-ur="فی یونٹ قیمت">Unit Price</label>
+                            <input type="number" id="purchase-item-price" class="ledger-input" min="0" step="0.01">
+                        </div>
+                        <button type="button" id="add-purchase-item-btn" class="btn btn-primary" data-en="Add Item" data-ur="آئٹم شامل کریں">Add Item</button>
+                    </div>
+                     <table class="data-table">
+                        <thead><tr><th data-en="Product" data-ur="پروڈکٹ">Product</th><th data-en="Qty" data-ur="مقدار">Qty</th><th data-en="Price" data-ur="قیمت">Price</th><th data-en="Total" data-ur="کل">Total</th><th></th></tr></thead>
+                        <tbody id="purchase-items-table-body"></tbody>
+                    </table>
+                </div>
+
+                 <div class="invoice-totals">
+                    <span data-en="Total Amount:" data-ur="کل رقم:">Total Amount:</span> <span id="purchase-total-amount">Rs 0.00</span>
+                </div>
+
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="purchase-payment-status" data-en="Payment Status" data-ur="ادائیگی کی حیثیت">Payment Status</label>
+                        <select id="purchase-payment-status" class="ledger-select" required>
+                            <option value="paid" data-en="Paid" data-ur="ادا شدہ">Paid</option>
+                            <option value="credit" data-en="Credit (Add to Khata)" data-ur="ادھار (کھاتہ میں شامل کریں)">Credit (Add to Khata)</option>
+                             <option value="partially_paid" data-en="Partially Paid" data-ur="جزوی طور پر ادا شدہ">Partially Paid</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="purchase-amount-paid-div" style="flex: 1; display: none;">
+                        <label for="purchase-amount-paid" data-en="Amount Paid" data-ur="ادا شدہ رقم">Amount Paid</label>
+                        <input type="number" id="purchase-amount-paid" class="ledger-input" min="0" step="0.01">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success" data-en="Complete Purchase" data-ur="خریداری مکمل کریں">Complete Purchase</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sale/Purchase Details Modal (Generic) -->
+    <div id="transaction-details-modal" class="modal">
+        <div class="modal-content modal-lg">
+            <span class="modal-close" onclick="closeModal('transaction-details-modal')">&times;</span>
+            <h3 id="transaction-details-title">Sale Details</h3>
+            <div id="transaction-details-content">
+                <p><strong><span data-en="Date:" data-ur="تاریخ:">Date:</span></strong> <span id="detail-date"></span></p>
+                <p><strong><span data-en="Associated Entity:" data-ur="متعلقہ اینٹیٹی:">Associated Entity:</span></strong> <span id="detail-entity"></span></p>
+                <p><strong><span data-en="Total Amount:" data-ur="کل رقم:">Total Amount:</span></strong> <span id="detail-total-amount"></span></p>
+                <p><strong><span data-en="Payment Status:" data-ur="ادائیگی کی حیثیت:">Payment Status:</span></strong> <span id="detail-payment-status"></span></p>
+                <p id="detail-amount-paid-row" style="display: none;"><strong><span data-en="Amount Paid:" data-ur="ادا شدہ رقم:">Amount Paid:</span></strong> <span id="detail-amount-paid"></span></p>
+
+                <h4 style="margin-top: 20px;" data-en="Items" data-ur="آئٹمز">Items</h4>
+                <div style="overflow-x: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th data-en="Product" data-ur="پروڈکٹ">Product</th>
+                                <th data-en="Quantity" data-ur="مقدار">Quantity</th>
+                                <th data-en="Unit Price" data-ur="فی یونٹ قیمت">Unit Price</th>
+                                <th data-en="Item Total" data-ur="آئٹم کل">Item Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detail-items-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Alert Modal -->
+    <div id="alert-modal" class="modal">
+        <div class="modal-content">
+             <span class="modal-close" onclick="closeModal('alert-modal')">&times;</span>
+             <h4 id="alert-title">Alert</h4>
+             <p id="alert-message" style="margin: 15px 0;"></p>
+             <div id="alert-buttons" style="text-align: right;">
+                 <button id="alert-ok-btn" class="btn btn-primary" onclick="closeModal('alert-modal')">OK</button>
+                 <button id="alert-confirm-btn" class="btn btn-danger" style="display: none;">Confirm</button>
+                 <button id="alert-cancel-btn" class="btn btn-secondary" style="display: none;" onclick="closeModal('alert-modal')">Cancel</button>
+             </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- Constants and Globals ---
+        const DB_NAME = 'ShopManagementDB';
+        const DB_VERSION = 2;
+        const STORES = {
+            CUSTOMERS: 'customers',
+            SUPPLIERS: 'suppliers',
+            TRANSACTIONS: 'transactions',
+            PRODUCTS: 'products',
+            SALES: 'sales',
+            SALE_ITEMS: 'saleItems',
+            PURCHASES: 'purchases',
+            PURCHASE_ITEMS: 'purchaseItems'
+        };
+
+        let db;
+        let currentViewedId = null;
+        let currentViewedType = null;
+        let currentLanguage = localStorage.getItem('khataLanguage') || 'en';
+        let currentReportData = null;
+
+        let saleItems = [];
+        let purchaseItems = [];
+        
+        // --- IndexedDB Initialization ---
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onerror = (event) => {
+                    console.error("Database error:", event.target.errorCode);
+                    customAlert(getLang("Error opening database..."), getLang("Database Error"));
+                    reject("Error opening database");
+                };
+                request.onsuccess = (event) => { db = event.target.result; console.log("Database opened successfully"); resolve(db); };
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result; console.log("Upgrading database..."); const transaction = event.target.transaction;
+                    Object.values(STORES).forEach(storeName => {
+                        if (!db.objectStoreNames.contains(storeName)) {
+                            const store = db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true });
+                            if (storeName === STORES.CUSTOMERS || storeName === STORES.SUPPLIERS || storeName === STORES.PRODUCTS) { store.createIndex('name', 'name', { unique: false }); }
+                            if (storeName === STORES.TRANSACTIONS) { store.createIndex('entityId_type', ['entityId', 'entityType'], { unique: false }); store.createIndex('date', 'date', { unique: false }); }
+                            if (storeName === STORES.SALE_ITEMS) { store.createIndex('saleId', 'saleId', { unique: false }); store.createIndex('productId', 'productId', { unique: false }); }
+                            if (storeName === STORES.PURCHASE_ITEMS) { store.createIndex('purchaseId', 'purchaseId', { unique: false }); store.createIndex('productId', 'productId', { unique: false }); }
+                        }
+                    });
+                    console.log("Database upgrade complete");
+                };
+            });
+        }
+
+        // --- Generic DB Operations (CRUD Helpers) ---
+        function getStore(storeName, mode, transaction = null) {
+            return transaction ? transaction.objectStore(storeName) : db.transaction(storeName, mode).objectStore(storeName);
+        }
+        function promise(request) {
+            return new Promise((resolve, reject) => {
+                request.onsuccess = event => resolve(event.target.result);
+                request.onerror = event => reject(event.target.error);
+            });
+        }
+        function addObject(storeName, object, transaction = null) { return promise(getStore(storeName, 'readwrite', transaction).add(object)); }
+        function getObject(storeName, key, transaction = null) { return promise(getStore(storeName, 'readonly', transaction).get(key)); }
+        function updateObject(storeName, object, transaction = null) { return promise(getStore(storeName, 'readwrite', transaction).put(object)); }
+        function deleteObject(storeName, key, transaction = null) { return promise(getStore(storeName, 'readwrite', transaction).delete(key)); }
+        function getAllObjects(storeName, indexName = null, query = null, transaction = null) { return promise((indexName ? getStore(storeName, 'readonly', transaction).index(indexName) : getStore(storeName, 'readonly', transaction)).getAll(query)); }
+
+        // --- UI Rendering & Formatting ---
+        function formatCurrency(amount) {
+            const num = parseFloat(amount);
+            if (isNaN(num)) return `Rs ---`;
+            return `Rs ${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+        function formatDate(dateString) {
+            if (!dateString) return '';
+             const date = new Date(dateString + 'T00:00:00');
+             if (isNaN(date.getTime())) return 'Invalid Date';
+            const options = { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Asia/Karachi' };
+            try { return date.toLocaleDateString('en-PK', options); }
+            catch (e) { return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }); }
+        }
+        function renderBalance(balance) {
+            const amount = parseFloat(balance);
+            if (isNaN(amount)) return `<span>Rs ---</span>`;
+            const formatted = formatCurrency(Math.abs(amount));
+            if (amount > 0.005) { return `<span class="balance-negative">${formatted} (${getLang('Lena Hai')})</span>`; }
+            else if (amount < -0.005) { return `<span class="balance-positive">${formatted} (${getLang('Dena Hai')})</span>`; }
+            else { return `<span>${formatCurrency(0)} (${getLang('Settled')})</span>`; }
+        }
+
+        // --- Core Business Logic: Entities (Customer, Supplier, Product) ---
+        async function saveEntity(type, data) {
+            const storeName = type === 'customer' ? STORES.CUSTOMERS : STORES.SUPPLIERS;
+            if (data.id) { const existing = await getObject(storeName, data.id); data.balance = existing.balance; await updateObject(storeName, data); }
+            else { data.balance = 0; delete data.id; await addObject(storeName, data); }
+            customAlert(getLang(`${type}_saved_successfully`), getLang('Success')); closeModal(`${type}-form-modal`);
+            await loadEntities(type); await updateDashboard();
+        }
+        async function editEntity(type, id) {
+            const storeName = type === 'customer' ? STORES.CUSTOMERS : STORES.SUPPLIERS;
+            const entity = await getObject(storeName, id);
+            document.getElementById(`${type}-id`).value = entity.id; document.getElementById(`${type}-name`).value = entity.name;
+            document.getElementById(`${type}-phone`).value = entity.phone || ''; document.getElementById(`${type}-address`).value = entity.address || '';
+            document.getElementById(`${type}-modal-title`).textContent = getLang(`Edit ${type}`); openModal(`${type}-form-modal`);
+        }
+        async function confirmDeleteEntity(type, id) {
+             customConfirm(getLang(`confirm_delete_${type}`),getLang("Confirm Deletion"), async () => {
+                    const storeName = type === 'customer' ? STORES.CUSTOMERS : STORES.SUPPLIERS;
+                    await deleteObject(storeName, id);
+                    customAlert(getLang(`${type}_deleted_successfully`), getLang("Deleted"));
+                    if (currentViewedId === id && currentViewedType === type) showListView(type);
+                    await loadEntities(type); await updateDashboard();
+                });
+        }
+        async function loadEntities(type, searchTerm = '') {
+            const storeName = type === 'customer' ? STORES.CUSTOMERS : STORES.SUPPLIERS;
+            const entities = await getAllObjects(storeName);
+            const tableBody = document.getElementById(`${type}-table-body`); tableBody.innerHTML = '';
+            const filtered = entities.filter(e => (e.name?.toLowerCase().includes(searchTerm.toLowerCase()) || e.phone?.includes(searchTerm)));
+            if (filtered.length === 0) { tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">${getLang(`no_${type}s_found`)}</td></tr>`; return; }
+            filtered.sort((a, b) => a.name.localeCompare(b.name));
+            filtered.forEach(entity => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `<td><a href="#" onclick="event.preventDefault(); showDetailsView('${type}', ${entity.id});">${entity.name}</a></td>
+                    <td class="hide-mobile">${entity.phone || '-'}</td><td>${renderBalance(entity.balance)}</td>
+                    <td class="no-print"><button class="btn btn-warning btn-icon" onclick="editEntity('${type}', ${entity.id})" title="${getLang('Edit')}">✏️</button>
+                    <button class="btn btn-danger btn-icon" onclick="confirmDeleteEntity('${type}', ${entity.id})" title="${getLang('Delete')}">🗑️</button></td>`;
+            });
+        }
+
+        // Product Logic
+        async function saveProduct(productData) {
+            if (productData.id) { const existing = await getObject(STORES.PRODUCTS, productData.id); productData.quantity = existing.quantity; await updateObject(STORES.PRODUCTS, productData); }
+            else { delete productData.id; await addObject(STORES.PRODUCTS, productData); }
+            customAlert(getLang('product_saved_successfully'), getLang('Success')); closeModal('product-form-modal');
+            await loadProducts(); await updateDashboard();
+        }
+        async function editProduct(id) {
+             const product = await getObject(STORES.PRODUCTS, id);
+             document.getElementById('product-id').value = product.id; document.getElementById('product-name').value = product.name;
+             document.getElementById('product-sale-price').value = product.salePrice; document.getElementById('product-purchase-price').value = product.purchasePrice;
+             document.getElementById('product-quantity').value = product.quantity; document.getElementById('product-quantity').disabled = true;
+             document.getElementById('product-low-stock').value = product.lowStockThreshold;
+             document.getElementById('product-modal-title').textContent = getLang('Edit Product'); openModal('product-form-modal');
+        }
+        async function confirmDeleteProduct(id) {
+            customConfirm(getLang('confirm_delete_product'),getLang('Confirm Deletion'), async () => {
+                    await deleteObject(STORES.PRODUCTS, id);
+                    customAlert(getLang('product_deleted_successfully'), getLang('Deleted'));
+                    await loadProducts(); await updateDashboard();
+                });
+        }
+        async function loadProducts(searchTerm = '') {
+            const products = await getAllObjects(STORES.PRODUCTS);
+            const tableBody = document.getElementById('product-table-body'); tableBody.innerHTML = '';
+            const filtered = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+            if (filtered.length === 0) { tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">${getLang('no_products_found')}</td></tr>`; return; }
+            filtered.sort((a,b) => a.name.localeCompare(b.name));
+            filtered.forEach(p => {
+                let status = `<span class="stock-ok">${getLang('In Stock')}</span>`;
+                if (p.quantity <= 0) { status = `<span class="stock-out">${getLang('Out of Stock')}</span>`; }
+                else if (p.quantity <= p.lowStockThreshold) { status = `<span class="stock-low">${getLang('Low Stock')}</span>`; }
+                const row = tableBody.insertRow();
+                row.className = p.quantity <= 0 ? 'stock-out-row' : (p.quantity <= p.lowStockThreshold ? 'stock-low-row' : '');
+                row.innerHTML = `<td>${p.name}</td><td>${formatCurrency(p.salePrice)}</td>
+                    <td class="hide-mobile">${formatCurrency(p.purchasePrice)}</td><td>${p.quantity}</td><td>${status}</td>
+                    <td class="no-print"><button class="btn btn-warning btn-icon" onclick="editProduct(${p.id})">✏️</button>
+                    <button class="btn btn-danger btn-icon" onclick="confirmDeleteProduct(${p.id})">🗑️</button></td>`;
+            });
+        }
+
+        // --- Core Business Logic: Transactions & Balances ---
+        async function addTransaction(data, transaction) {
+             await addObject(STORES.TRANSACTIONS, data, transaction);
+             await updateEntityBalance(data.entityId, data.entityType, transaction);
+        }
+        async function updateEntityBalance(entityId, entityType, transaction) {
+            const allTransactions = await getAllObjects(STORES.TRANSACTIONS, 'entityId_type', IDBKeyRange.only([entityId, entityType]), transaction);
+            const totalBalance = allTransactions.reduce((bal, tx) => bal + (tx.type === 'debit' ? tx.amount : -tx.amount), 0);
+            const storeName = entityType === 'customer' ? STORES.CUSTOMERS : STORES.SUPPLIERS;
+            const entity = await getObject(storeName, entityId, transaction);
+            if (entity) { entity.balance = totalBalance; await updateObject(storeName, entity, transaction); }
+        }
+        async function getTransactionsForEntity(entityId, entityType) {
+            const transactions = await getAllObjects(STORES.TRANSACTIONS, 'entityId_type', IDBKeyRange.only([entityId, entityType]));
+            transactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.id - b.id);
+            let runningBalance = 0;
+            return transactions.map(tx => {
+                const amount = parseFloat(tx.amount);
+                runningBalance += (tx.type === 'debit' ? amount : -amount);
+                return { ...tx, balanceAfter: runningBalance };
+            });
+        }
+
+        // --- UI Navigation & View Management ---
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.querySelector(`.nav-tab[data-page="${pageId}"]`).classList.add('active');
+            const pageActions = {
+                'dashboard-page': updateDashboard, 'customers-page': () => loadEntities('customer'),
+                'suppliers-page': () => loadEntities('supplier'), 'inventory-page': loadProducts,
+                'sales-page': loadSales, 'purchases-page': loadPurchases, 'reports-page': handleReportTypeChange
+            };
+            if(pageActions[pageId]) pageActions[pageId]();
+        }
+        function showListView(type) {
+            document.getElementById(`${type}-details-view`).style.display = 'none'; document.getElementById(`${type}-list-view`).style.display = 'block';
+            currentViewedId = null; currentViewedType = null; loadEntities(type);
+        }
+        async function showDetailsView(type, id) {
+             currentViewedId = id; currentViewedType = type;
+             const storeName = type === 'customer' ? STORES.CUSTOMERS : STORES.SUPPLIERS;
+             const entity = await getObject(storeName, id);
+             if (!entity) { customAlert(getLang(`${type}_not_found`), getLang("Error")); showListView(type); return; }
+             document.getElementById(`details-${type}-name`).textContent = entity.name;
+             document.getElementById(`${type}-info`).innerHTML = `
+                <p><strong>${getLang('Phone')}:</strong> ${entity.phone || '-'} | <strong>${getLang('Address')}:</strong> ${entity.address || '-'}</p>
+                <p><strong>${getLang('Current Balance')}:</strong> <span id="details-current-balance-${type}-header">${renderBalance(entity.balance)}</span></p>`;
+             await loadTransactionsForView(type, id);
+             document.getElementById(`${type}-list-view`).style.display = 'none'; document.getElementById(`${type}-details-view`).style.display = 'block';
+        }
+        async function loadTransactionsForView(type, id) {
+            const transactions = (await getTransactionsForEntity(id, type)).reverse();
+            const table = document.getElementById(`transaction-table-${type}`);
+            const balanceSummary = document.getElementById(`details-current-balance-${type}`);
+            const entity = await getObject(type === 'customer' ? STORES.CUSTOMERS : STORES.SUPPLIERS, id);
+            table.innerHTML = `<thead><tr><th>${getLang("Date")}</th><th>${getLang("Description")}</th><th>${getLang("Debit")}</th><th>${getLang("Credit")}</th><th>${getLang("Balance")}</th></tr></thead>
+                <tbody>${transactions.map(tx => `<tr><td>${formatDate(tx.date)}</td><td>${tx.description || '-'}</td>
+                    <td>${tx.type === 'debit' ? formatCurrency(tx.amount) : '-'}</td><td>${tx.type === 'credit' ? formatCurrency(tx.amount) : '-'}</td>
+                    <td>${renderBalance(tx.balanceAfter)}</td></tr>`).join('')}</tbody>`;
+             if (transactions.length === 0) { table.querySelector('tbody').innerHTML = `<tr><td colspan="5" style="text-align:center;">${getLang('no_transactions_found')}</td></tr>`; }
+             balanceSummary.innerHTML = renderBalance(entity.balance);
+             document.getElementById(`details-current-balance-${type}-header`).innerHTML = renderBalance(entity.balance);
+        }
+
+        // --- Event Listener Setup ---
+        function setupEventListeners() {
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.addEventListener('click', () => switchPage(tab.dataset.page)));
+            document.getElementById('add-customer-btn').addEventListener('click', () => {
+                document.getElementById('customer-form').reset(); document.getElementById('customer-id').value = '';
+                document.getElementById('customer-modal-title').textContent = getLang('Add New Customer'); openModal('customer-form-modal');
+            });
+            document.getElementById('customer-form').addEventListener('submit', (e) => {
+                e.preventDefault(); saveEntity('customer', { id: parseInt(document.getElementById('customer-id').value) || null, name: document.getElementById('customer-name').value.trim(), phone: document.getElementById('customer-phone').value.trim(), address: document.getElementById('customer-address').value.trim(), });
+            });
+            document.getElementById('customer-search').addEventListener('input', (e) => loadEntities('customer', e.target.value));
+            document.getElementById('back-to-list-btn-customer').addEventListener('click', () => showListView('customer'));
+            document.getElementById('add-manual-transaction-btn-customer').addEventListener('click', () => openManualTransactionModal('customer', currentViewedId));
+
+            document.getElementById('add-supplier-btn').addEventListener('click', () => {
+                document.getElementById('supplier-form').reset(); document.getElementById('supplier-id').value = '';
+                document.getElementById('supplier-modal-title').textContent = getLang('Add New Supplier'); openModal('supplier-form-modal');
+            });
+            document.getElementById('supplier-form').addEventListener('submit', (e) => {
+                e.preventDefault(); saveEntity('supplier', { id: parseInt(document.getElementById('supplier-id').value) || null, name: document.getElementById('supplier-name').value.trim(), phone: document.getElementById('supplier-phone').value.trim(), address: document.getElementById('supplier-address').value.trim(), });
+            });
+            document.getElementById('supplier-search').addEventListener('input', (e) => loadEntities('supplier', e.target.value));
+            document.getElementById('back-to-list-btn-supplier').addEventListener('click', () => showListView('supplier'));
+            document.getElementById('add-manual-transaction-btn-supplier').addEventListener('click', () => openManualTransactionModal('supplier', currentViewedId));
+
+            document.getElementById('add-product-btn').addEventListener('click', () => {
+                document.getElementById('product-form').reset(); document.getElementById('product-id').value = '';
+                document.getElementById('product-quantity').disabled = false;
+                document.getElementById('product-modal-title').textContent = getLang('Add New Product'); openModal('product-form-modal');
+            });
+            document.getElementById('product-form').addEventListener('submit', (e) => {
+                e.preventDefault(); saveProduct({ id: parseInt(document.getElementById('product-id').value) || null, name: document.getElementById('product-name').value.trim(), salePrice: parseFloat(document.getElementById('product-sale-price').value), purchasePrice: parseFloat(document.getElementById('product-purchase-price').value), quantity: parseInt(document.getElementById('product-quantity').value), lowStockThreshold: parseInt(document.getElementById('product-low-stock').value) });
+            });
+            document.getElementById('product-search').addEventListener('input', (e) => loadProducts(e.target.value));
+
+            document.getElementById('transaction-form').addEventListener('submit', async e => {
+                e.preventDefault(); const transaction = db.transaction([STORES.TRANSACTIONS, STORES.CUSTOMERS, STORES.SUPPLIERS], 'readwrite');
+                const data = { entityId: parseInt(document.getElementById('transaction-entity-id').value), entityType: document.getElementById('transaction-entity-type').value, date: document.getElementById('transaction-date').value, type: document.getElementById('transaction-type').value, amount: parseFloat(document.getElementById('transaction-amount').value), description: document.getElementById('transaction-description').value.trim() };
+                await addTransaction(data, transaction);
+                await transaction.done;
+                customAlert(getLang('transaction_saved_successfully'), getLang('Success')); closeModal('transaction-form-modal');
+                await loadTransactionsForView(data.entityType, data.entityId);
+            });
+
+             document.getElementById('add-sale-btn').addEventListener('click', openSaleModal);
+             document.getElementById('sale-form').addEventListener('submit', completeSale);
+             document.getElementById('add-sale-item-btn').addEventListener('click', addSaleItem);
+             document.getElementById('sale-payment-status').addEventListener('change', (e) => { document.getElementById('sale-amount-paid-div').style.display = e.target.value === 'partially_paid' ? 'block' : 'none'; });
+             // New: Event listener for product select change
+             document.getElementById('sale-product-select').addEventListener('change', (e) => {
+                 const selectedProductId = parseInt(e.target.value);
+                 if (selectedProductId) {
+                     // Optionally, display product details or stock info next to quantity field
+                     // For now, no specific action, just ensures selection updates internally
+                 }
+             });
+
+             document.getElementById('add-purchase-btn').addEventListener('click', openPurchaseModal);
+             document.getElementById('purchase-form').addEventListener('submit', completePurchase);
+             document.getElementById('add-purchase-item-btn').addEventListener('click', addPurchaseItem);
+              document.getElementById('purchase-payment-status').addEventListener('change', (e) => { document.getElementById('purchase-amount-paid-div').style.display = e.target.value === 'partially_paid' ? 'block' : 'none'; });
+              // New: Event listener for product select change to fetch unit price
+             document.getElementById('purchase-product-select').addEventListener('change', async (e) => {
+                 const selectedProductId = parseInt(e.target.value);
+                 if (selectedProductId) {
+                     const product = await getObject(STORES.PRODUCTS, selectedProductId);
+                     document.getElementById('purchase-item-price').value = product.purchasePrice || 0;
+                 } else {
+                     document.getElementById('purchase-item-price').value = '';
+                 }
+             });
+
+
+             document.getElementById('backup-btn').addEventListener('click', backupData);
+             document.getElementById('restore-file').addEventListener('change', handleRestoreFile);
+             document.getElementById('language-switch').addEventListener('change', (e) => setLanguage(e.target.value));
+             document.getElementById('generate-report-btn').addEventListener('click', generateReport);
+             document.getElementById('print-report-btn').addEventListener('click', printReport);
+             document.getElementById('export-csv-btn').addEventListener('click', exportReportToCSV);
+             document.getElementById('report-type-select').addEventListener('change', handleReportTypeChange);
+        }
+
+        async function openManualTransactionModal(type, id) {
+            const storeName = type === 'customer' ? STORES.CUSTOMERS : STORES.SUPPLIERS;
+            const entity = await getObject(storeName, id);
+            document.getElementById('transaction-form').reset();
+            document.getElementById('transaction-entity-id').value = id;
+            document.getElementById('transaction-entity-type').value = type;
+            document.getElementById('transaction-modal-entity-name').textContent = entity.name;
+            document.getElementById('transaction-date').valueAsDate = new Date();
+            openModal('transaction-form-modal');
+        }
+
+        // --- MODAL, ALERT, CONFIRM, and LANGUAGE functions ---
+        function openModal(modalId) { document.getElementById(modalId).style.display = 'block'; }
+        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+        window.addEventListener('click', (event) => { if (event.target.classList.contains('modal')) { closeModal(event.target.id); } });
+
+        function customAlert(message, titleKey = "Alert") {
+            document.getElementById('alert-title').textContent = getLang(titleKey);
+            document.getElementById('alert-message').textContent = message;
+            document.getElementById('alert-confirm-btn').style.display = 'none';
+            document.getElementById('alert-cancel-btn').style.display = 'none';
+            document.getElementById('alert-ok-btn').style.display = 'inline-block';
+            document.getElementById('alert-ok-btn').textContent = getLang("OK");
+            openModal('alert-modal');
+        }
+
+        function customConfirm(message, titleKey = "Confirm", onConfirm, onCancel = null) {
+            document.getElementById('alert-title').textContent = getLang(titleKey);
+            document.getElementById('alert-message').textContent = message;
+            document.getElementById('alert-ok-btn').style.display = 'none';
+            document.getElementById('alert-confirm-btn').style.display = 'inline-block';
+            document.getElementById('alert-cancel-btn').style.display = 'inline-block';
+            document.getElementById('alert-confirm-btn').textContent = getLang("Confirm");
+            document.getElementById('alert-cancel-btn').textContent = getLang("Cancel");
+            const confirmBtn = document.getElementById('alert-confirm-btn');
+            confirmBtn.onclick = () => { closeModal('alert-modal'); if (onConfirm) onConfirm(); };
+             document.getElementById('alert-cancel-btn').onclick = () => { closeModal('alert-modal'); if (onCancel) onCancel(); };
+            openModal('alert-modal');
+        }
+
+        const translations = {
+            en: {"Shop Management System":"Shop Management System","Dashboard":"Dashboard","Sales":"Sales","Purchases":"Purchases","Customers":"Customers","Suppliers":"Suppliers","Inventory":"Inventory","Reports":"Reports","Total Customers":"Total Customers","Receivables (Lena Hai)":"Receivables (Lena Hai)","Payables (Dena Hai)":"Payables (Dena Hai)","Low Stock Items":"Low Stock Items","Total Inventory Value":"Total Inventory Value","Backup & Restore":"Backup & Restore","Backup Data (JSON)":"Backup Data (JSON)","Restore Data (JSON)":"Restore Data (JSON)","Sales History":"Sales History","New Sale":"New Sale","Date":"Date","Customer":"Customer","Amount":"Amount","Status":"Status","Actions":"Actions","Purchase History":"Purchase History","New Purchase":"New Purchase","Supplier":"Supplier","Add New Customer":"Add New Customer","Search Customers...":"Search Customers...","Name":"Name","Phone":"Phone","Balance":"Balance","no_customers_found":"No customers found.","Edit":"Edit","Delete":"Delete","Customer Details":"Customer Details","Back to List":"Back to List","Address":"Address","Current Balance:":"Current Balance:","Transactions":"Transactions","Add Manual Transaction":"Add Manual Transaction","no_transactions_found":"No transactions found.","Add New Supplier":"Add New Supplier","Search Suppliers...":"Search Suppliers...","no_suppliers_found":"No suppliers found.","Supplier Details":"Supplier Details","Product Inventory":"Product Inventory","Add New Product":"Add New Product","Search Products...":"Search Products...","Product Name":"Product Name","Sale Price":"Sale Price","Purchase Price":"Purchase Price","Stock":"Stock","no_products_found":"No products found.","Report Type":"Report Type","Sales Report":"Sales Report","Purchase Report":"Purchase Report","Profit & Loss Report":"Profit & Loss Report","Inventory Report":"Inventory Report","Customer Ledger":"Customer Ledger","Supplier Ledger":"Supplier Ledger","Start Date":"Start Date","End Date":"End Date","Select Entity":"Select Entity","Generate Report":"Generate Report","Print / PDF":"Print / PDF","Export to Excel (CSV)":"Export to Excel (CSV)","Select a report type and date range, then click 'Generate Report'.":"Select a report type and date range, then click 'Generate Report'.","Phone (Optional)":"Phone (Optional)","Address (Optional)":"Address (Optional)","Save Customer":"Save Customer","customer_saved_successfully":"Customer saved successfully.","confirm_delete_customer":"Are you sure you want to delete this customer? Their transaction history will remain for reporting.","customer_deleted_successfully":"Customer deleted successfully.","customer_not_found":"Customer not found.","Save Supplier":"Save Supplier","supplier_saved_successfully":"Supplier saved successfully.","confirm_delete_supplier":"Are you sure you want to delete this supplier? Their transaction history will remain for reporting.","supplier_deleted_successfully":"Supplier deleted successfully.","supplier_not_found":"Supplier not found.","Sale Price (Rs)":"Sale Price (Rs)","Purchase Price (Rs)":"Purchase Price (Rs)","Initial Stock Quantity":"Initial Stock Quantity","Low Stock Alert Level":"Low Stock Alert Level","Save Product":"Save Product","product_saved_successfully":"Product saved successfully.","confirm_delete_product":"Are you sure you want to delete this product?","product_deleted_successfully":"Product deleted successfully.","Edit Product":"Edit Product","In Stock":"In Stock","Out of Stock":"Out of Stock","Low Stock":"Low Stock","Add Manual Transaction for":"Add Manual Transaction for","Transaction Type":"Transaction Type","Debit (Payment Made / Sale)":"Debit (Payment Made / Sale)","Credit (Payment Received)":"Credit (Payment Received)","Amount (Rs)":"Amount (Rs)","Description":"Description","Save Transaction":"Save Transaction","transaction_saved_successfully":"Transaction saved successfully.","New Sale / Invoice":"New Sale / Invoice","Customer (Optional)":"Customer (Optional)","Add Products":"Add Products","Product":"Product","Quantity":"Quantity","Add Item":"Add Item","Qty":"Qty","Price":"Price","Total":"Total","Total Amount:":"Total Amount:","Payment Status":"Payment Status","Paid (Cash Sale)":"Paid (Cash Sale)","Credit (Add to Khata)":"Credit (Add to Khata)","Partially Paid":"Partially Paid","Amount Paid":"Amount Paid","Complete Sale":"Complete Sale","Please add items to the sale.":"Please add items to the sale.","Selected customer is required for credit sales.":"Selected customer is required for credit sales.","Sale completed successfully.":"Sale completed successfully.","New Purchase":"New Purchase","Unit Price":"Unit Price","Paid":"Paid","Complete Purchase":"Complete Purchase","Please add items to the purchase.":"Please add items to the purchase.","Purchase completed successfully.":"Purchase completed successfully.","Alert":"Alert","OK":"OK","Confirm":"Confirm","Success":"Success","Error":"Error","Deleted":"Deleted","Lena Hai":"Receivable","Dena Hai":"Payable","Settled":"Settled","Language":"Language","Error opening database...":"Error opening database. Please check browser permissions and disable private mode.","Database Error":"Database Error", "Item Total": "Item Total", "Associated Entity:": "Associated Entity:", "Sale Details": "Sale Details", "Purchase Details": "Purchase Details", "Items": "Items"},
+            ur: {"Shop Management System":"شاپ مینجمنٹ سسٹم","Dashboard":"ڈیش بورڈ","Sales":"فروخت","Purchases":"خریداری","Customers":"صارفین","Suppliers":"سپلائرز","Inventory":"انوینٹری","Reports":"رپورٹس","Total Customers":"کل صارفین","Receivables (Lena Hai)":"واجبات (لینا ہے)","Payables (Dena Hai)":"واجب الادا (دینا ہے)","Low Stock Items":"کم اسٹاک آئٹمز","Total Inventory Value":"کل انوینٹری مالیت","Backup & Restore":"بیک اپ اور بحال کریں","Backup Data (JSON)":"ڈیٹا بیک اپ (JSON)","Restore Data (JSON)":"ڈیٹا بحال کریں (JSON)","Sales History":"فروخت کی سرگزشت","New Sale":"نئی فروخت","Date":"تاریخ","Customer":"صارف","Amount":"رقم","Status":"حیثیت","Actions":"کاروائیاں","Purchase History":"خریداری کی سرگزشت","New Purchase":"نئی خریداری","Supplier":"سپلائر","Add New Customer":"نیا صارف شامل کریں","Search Customers...":"صارفین تلاش کریں...","Name":"نام","Phone":"فون","Balance":"بیلنس","no_customers_found":"کوئی صارف نہیں ملا۔","Edit":"ترمیم","Delete":"حذف کریں","Customer Details":"صارف کی تفصیلات","Back to List":"فہرست پر واپس","Address":"پتہ","Current Balance:":"موجودہ بیلنس:","Transactions":"لین دین","Add Manual Transaction":"دستی لین دین شامل کریں","no_transactions_found":"کوئی لین دین نہیں ملا۔","Add New Supplier":"نیا سپلائر شامل کریں","Search Suppliers...":"سپلائرز تلاش کریں...","no_suppliers_found":"کوئی سپلائر نہیں ملا۔","Supplier Details":"سپلائر کی تفصیلات","Product Inventory":"مصنوعات کی انوینٹری","Add New Product":"نئی پروڈکٹ شامل کریں","Search Products...":"پروڈکٹس تلاش کریں...","Product Name":"پروڈکٹ کا نام","Sale Price":"فروخت کی قیمت","Purchase Price":"خریداری کی قیمت","Stock":"اسٹاک","no_products_found":"کوئی پروڈکٹ نہیں ملی۔","Report Type":"رپورٹ کی قسم","Sales Report":"سیلز رپورٹ","Purchase Report":"پرچیز رپورٹ","Profit & Loss Report":"نفع و نقصان کی رپورٹ","Inventory Report":"انوینٹری رپورٹ","Customer Ledger":"کسٹمر لیجر","Supplier Ledger":"سپلائر لیجر","Start Date":"شروعاتی تاریخ","End Date":"اختتامی تاریخ","Select Entity":"اینٹیٹی منتخب کریں","Generate Report":"رپورٹ بنائیں","Print / PDF":"پرنٹ / پی ڈی ایف","Export to Excel (CSV)":"ایکسل میں ایکسپورٹ","Select a report type and date range, then click 'Generate Report'.":"رپورٹ کی قسم اور تاریخ کی حد منتخب کریں، پھر 'رپورٹ بنائیں' پر کلک کریں۔","Phone (Optional)":"فون (اختیاری)","Address (Optional)":"پتہ (اختیاری)","Save Customer":"صارف محفوظ کریں","customer_saved_successfully":"صارف کامیابی سے محفوظ ہو گیا۔","confirm_delete_customer":"کیا آپ واقعی اس صارف کو حذف کرنا چاہتے ہیں؟ ان کی لین دین کی تاریخ رپورٹنگ کے لیے باقی رہے گی۔","customer_deleted_successfully":"صارف کامیابی سے حذف ہو گیا۔","customer_not_found":"صارف نہیں ملا۔","Save Supplier":"سپلائر محفوظ کریں","supplier_saved_successfully":"سپلائر کامیابی سے محفوظ ہو گیا۔","confirm_delete_supplier":"کیا آپ واقعی اس سپلائر کو حذف کرنا چاہتے ہیں؟ ان کی لین دین کی تاریخ رپورٹنگ کے لیے باقی رہے گی۔","supplier_deleted_successfully":"سپلائر کامیابی سے حذف ہو گیا۔","supplier_not_found":"سپلائر نہیں ملا۔","Sale Price (Rs)":"فروخت کی قیمت (روپے)","Purchase Price (Rs)":"خریداری کی قیمت (روپے)","Initial Stock Quantity":"ابتدائی اسٹاک مقدار","Low Stock Alert Level":"کم اسٹاک الرٹ لیول","Save Product":"پروڈکٹ محفوظ کریں","product_saved_successfully":"پروڈکٹ کامیابی سے محفوظ ہو گئی۔","confirm_delete_product":"کیا آپ واقعی اس پروڈکٹ کو حذف کرنا چاہتے ہیں؟","product_deleted_successfully":"پروڈکٹ کامیابی سے حذف ہو گئی۔","Edit Product":"پروڈکٹ میں ترمیم کریں","In Stock":"اسٹاک میں ہے","Out of Stock":"اسٹاک ختم","Low Stock":"کم اسٹاک","Add Manual Transaction for":"کے لیے دستی لین دین شامل کریں","Transaction Type":"لین دین کی قسم","Debit (Payment Made / Sale)":"ڈیبٹ (ادائیگی کی / فروخت)","Credit (Payment Received)":"کریڈٹ (ادائیگی وصول کی)","Amount (Rs)":"رقم (روپے)","Description":"تفصیل","Save Transaction":"لین دین محفوظ کریں","transaction_saved_successfully":"لین دین کامیابی سے محفوظ ہو گیا۔","New Sale / Invoice":"نئی فروخت / انوائس","Customer (Optional)":"صارف (اختیاری)","Add Products":"مصنوعات شامل کریں","Product":"پروڈکٹ","Quantity":"مقدار","Add Item":"آئٹم شامل کریں","Qty":"مقدار","Price":"قیمت","Total":"کل","Total Amount:":"کل رقم:","Payment Status":"ادائیگی کی حیثیت","Paid (Cash Sale)":"ادا شدہ (نقد فروخت)","Credit (Add to Khata)":"ادھار (کھاتہ میں شامل کریں)","Partially Paid":"جزوی طور پر ادا شدہ","Amount Paid":"ادا شدہ رقم","Complete Sale":"فروخت مکمل کریں","Please add items to the sale.":"براہ کرم فروخت میں آئٹمز شامل کریں۔","Selected customer is required for credit sales.":"ادھار فروخت کے لیے صارف کا انتخاب ضروری ہے۔","Sale completed successfully.":"فروخت کامیابی سے مکمل ہوئی۔","New Purchase":"نئی خریداری","Unit Price":"فی یونٹ قیمت","Paid":"ادا شدہ","Complete Purchase":"خریداری مکمل کریں","Please add items to the purchase.":"براہ کرم خریداری میں آئٹمز شامل کریں۔","Purchase completed successfully.":"خریداری کامیابی سے مکمل ہوئی۔","Alert":"انتباہ","OK":"ٹھیک ہے","Confirm":"تصدیق کریں","Success":"کامیابی","Error":"خرابی","Deleted":"حذف کر دیا گیا۔","Lena Hai":"لینا ہے","Dena Hai":"دینا ہے","Settled":"حساب برابر","Language":"زبان","Error opening database...":"ڈیٹا بیس کھولنے میں خرابی۔ براہ کرم براؤزر کی اجازت کو چیک کریں اور نجی موڈ کو غیر فعال کریں۔","Database Error":"ڈیٹا بیس کی خرابی", "Item Total": "آئٹم کل", "Associated Entity:": "متعلقہ اینٹیٹی:", "Sale Details": "فروخت کی تفصیلات", "Purchase Details": "خریداری کی تفصیلات", "Items": "آئٹمز"}
+        };
+
+        function getLang(key) {
+            return translations[currentLanguage]?.[key] || translations['en']?.[key] || key;
+        }
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('khataLanguage', lang);
+            document.documentElement.lang = lang;
+            document.documentElement.dir = lang === 'ur' ? 'rtl' : 'ltr';
+
+            document.querySelectorAll('[data-en]').forEach(el => {
+                const key = el.dataset.en;
+                if (el.matches('input[placeholder], textarea[placeholder]')) el.placeholder = getLang(key);
+                else if (el.tagName === 'OPTION') {
+                    const optKey = el.dataset.en || el.value;
+                    el.textContent = getLang(optKey);
+                }
+                else el.textContent = getLang(key);
+            });
+            const activePage = document.querySelector('.page.active')?.id || 'dashboard-page';
+            switchPage(activePage);
+        }
+
+        async function updateDashboard() {
+            const customers = await getAllObjects(STORES.CUSTOMERS);
+            const suppliers = await getAllObjects(STORES.SUPPLIERS);
+            const products = await getAllObjects(STORES.PRODUCTS);
+
+            document.getElementById('total-customers').textContent = customers.length;
+
+            let totalReceivables = customers.reduce((sum, c) => sum + (c.balance > 0 ? c.balance : 0), 0);
+            let totalPayables = suppliers.reduce((sum, s) => sum + (s.balance < 0 ? Math.abs(s.balance) : 0), 0);
+
+            document.getElementById('total-receivables').textContent = formatCurrency(totalReceivables);
+            document.getElementById('total-payables').textContent = formatCurrency(totalPayables);
+
+            const lowStockCount = products.filter(p => p.quantity > 0 && p.quantity <= p.lowStockThreshold).length;
+            document.getElementById('low-stock-items').textContent = lowStockCount;
+
+            const inventoryValue = products.reduce((sum, p) => sum + (p.purchasePrice * p.quantity), 0);
+            document.getElementById('inventory-value').textContent = formatCurrency(inventoryValue);
+        }
+
+        // --- SALE & PURCHASE LOGIC ---
+        // Sale Functions
+        async function openSaleModal() {
+            saleItems = [];
+            document.getElementById('sale-form').reset();
+            const customerSelect = document.getElementById('sale-customer');
+            customerSelect.innerHTML = `<option value="">${getLang('Paid (Cash Sale)')}</option>`;
+            const customers = await getAllObjects(STORES.CUSTOMERS);
+            customers.sort((a,b) => a.name.localeCompare(b.name)).forEach(c => customerSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`);
+            
+            const productSelect = document.getElementById('sale-product-select');
+            productSelect.innerHTML = `<option value="">Select a Product</option>`;
+            const products = await getAllObjects(STORES.PRODUCTS);
+            products.filter(p => p.quantity > 0).sort((a,b) => a.name.localeCompare(b.name)).forEach(p => productSelect.innerHTML += `<option value="${p.id}">${p.name} (Stock: ${p.quantity})</option>`);
+            
+            document.getElementById('sale-date').valueAsDate = new Date();
+            document.getElementById('sale-amount-paid-div').style.display = 'none';
+            renderSaleItems();
+            openModal('sale-form-modal');
+        }
+
+        async function addSaleItem() {
+            const productId = parseInt(document.getElementById('sale-product-select').value);
+            if (!productId) { customAlert('Please select a product.'); return; }
+            const product = await getObject(STORES.PRODUCTS, productId);
+            const qty = parseInt(document.getElementById('sale-item-qty').value);
+            if (!qty || qty <= 0) { customAlert('Invalid quantity.'); return; }
+            
+            const existingItem = saleItems.find(item => item.productId === product.id);
+            const currentStock = product.quantity;
+            const quantityInCart = existingItem ? existingItem.quantity : 0;
+            if (quantityInCart + qty > currentStock) {
+                customAlert(`Not enough stock. Only ${currentStock - quantityInCart} more available.`); return;
+            }
+
+            if(existingItem) {
+                existingItem.quantity += qty;
+            } else {
+                 saleItems.push({ productId: product.id, name: product.name, quantity: qty, price: product.salePrice });
+            }
+            renderSaleItems();
+            document.getElementById('sale-product-select').value = '';
+            document.getElementById('sale-item-qty').value = 1;
+        }
+
+        function renderSaleItems() {
+            const body = document.getElementById('sale-items-table-body');
+            let total = saleItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+            body.innerHTML = saleItems.map((item, index) => {
+                return `<tr>
+                    <td>${item.name}</td><td>${item.quantity}</td><td>${formatCurrency(item.price)}</td><td>${formatCurrency(item.quantity * item.price)}</td>
+                    <td><button type="button" class="btn btn-danger btn-icon" onclick="removeSaleItem(${index})">X</button></td>
+                </tr>`;
+            }).join('');
+            document.getElementById('sale-total-amount').textContent = formatCurrency(total);
+        }
+
+        function removeSaleItem(index) {
+            saleItems.splice(index, 1);
+            renderSaleItems();
+        }
+
+        async function completeSale(e) {
+            e.preventDefault();
+            if (saleItems.length === 0) { customAlert(getLang("Please add items to the sale.")); return; }
+            const customerId = parseInt(document.getElementById('sale-customer').value) || null;
+            const paymentStatus = document.getElementById('sale-payment-status').value;
+            const amountPaid = parseFloat(document.getElementById('sale-amount-paid').value) || 0;
+            const totalAmount = saleItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+            
+            if (paymentStatus === 'credit' && !customerId) { customAlert(getLang("Selected customer is required for credit sales.")); return; }
+            if (paymentStatus === 'partially_paid' && !customerId) { customAlert(getLang("Selected customer is required for partial sales.")); return; }
+            if (paymentStatus === 'partially_paid' && amountPaid >= totalAmount) { customAlert("Amount paid cannot be equal to or greater than total for a partial payment."); return;}
+            if (paymentStatus === 'partially_paid' && amountPaid <= 0) { customAlert("Amount paid must be greater than zero for a partial payment."); return;}
+
+            const allStoreNames = Object.values(STORES);
+            const transaction = db.transaction(allStoreNames, 'readwrite');
+            try {
+                const saleData = { customerId, date: document.getElementById('sale-date').value, totalAmount, paymentStatus, amountPaid };
+                const saleId = await addObject(STORES.SALES, saleData, transaction);
+                
+                for (const item of saleItems) {
+                    await addObject(STORES.SALE_ITEMS, { saleId, productId: item.productId, quantity: item.quantity, unitPrice: item.price }, transaction);
+                    const product = await getObject(STORES.PRODUCTS, item.productId, transaction);
+                    product.quantity -= item.quantity;
+                    await updateObject(STORES.PRODUCTS, product, transaction);
+                }
+                
+                let creditAmount = 0;
+                if (paymentStatus === 'credit') { creditAmount = totalAmount; }
+                else if (paymentStatus === 'partially_paid') { creditAmount = totalAmount - amountPaid; }
+                
+                if (creditAmount > 0) {
+                    await addObject(STORES.TRANSACTIONS, { entityId: customerId, entityType: 'customer', date: document.getElementById('sale-date').value, type: 'debit', amount: creditAmount, description: `Sale Invoice #${saleId}` }, transaction);
+                    await updateEntityBalance(customerId, 'customer', transaction);
+                }
+
+                await promise(transaction.done); // Wait for the whole transaction to complete
+                customAlert(getLang("Sale completed successfully."), getLang("Success"));
+                closeModal('sale-form-modal');
+                await loadSales(); await updateDashboard(); await loadProducts(); // Refresh related data
+            } catch(err) {
+                transaction.abort(); console.error(err); customAlert(`Sale failed: ${err.message}`, 'Error');
+            }
+        }
+
+        async function loadSales() {
+             const sales = await getAllObjects(STORES.SALES);
+             sales.sort((a,b) => new Date(b.date) - new Date(a.date));
+             const body = document.getElementById('sales-table-body');
+             body.innerHTML = '';
+             for(const sale of sales) {
+                 let customerName = getLang('Paid (Cash Sale)');
+                 if(sale.customerId) {
+                     const customer = await getObject(STORES.CUSTOMERS, sale.customerId);
+                     customerName = customer ? customer.name : 'Deleted Customer';
+                 }
+                 let statusText = getLang(sale.paymentStatus);
+                 if (sale.paymentStatus === 'partially_paid') {
+                     statusText += ` (${formatCurrency(sale.amountPaid)} Paid)`;
+                 }
+                 body.insertRow().innerHTML = `
+                    <td>${formatDate(sale.date)}</td> <td>${customerName}</td> <td>${formatCurrency(sale.totalAmount)}</td>
+                    <td>${statusText}</td>
+                    <td class="no-print"><button class="btn btn-info btn-icon" onclick="showSaleDetails(${sale.id})">📄</button></td>`;
+             }
+        }
+
+        async function showSaleDetails(saleId) {
+            const sale = await getObject(STORES.SALES, saleId);
+            if (!sale) { customAlert("Sale not found.", "Error"); return; }
+
+            const customer = sale.customerId ? await getObject(STORES.CUSTOMERS, sale.customerId) : null;
+            const saleItems = await getAllObjects(STORES.SALE_ITEMS, 'saleId', sale.id);
+            const products = (await getAllObjects(STORES.PRODUCTS)).reduce((map, p) => (map[p.id] = p, map), {});
+
+            document.getElementById('transaction-details-title').textContent = getLang('Sale Details');
+            document.getElementById('detail-date').textContent = formatDate(sale.date);
+            document.getElementById('detail-entity').textContent = customer ? customer.name : getLang('Cash Sale');
+            document.getElementById('detail-total-amount').textContent = formatCurrency(sale.totalAmount);
+            document.getElementById('detail-payment-status').textContent = getLang(sale.paymentStatus);
+
+            const amountPaidRow = document.getElementById('detail-amount-paid-row');
+            if (sale.paymentStatus === 'partially_paid') {
+                amountPaidRow.style.display = 'block';
+                document.getElementById('detail-amount-paid').textContent = formatCurrency(sale.amountPaid);
+            } else {
+                amountPaidRow.style.display = 'none';
+            }
+
+            const itemsTableBody = document.getElementById('detail-items-table-body');
+            itemsTableBody.innerHTML = saleItems.map(item => `
+                <tr>
+                    <td>${products[item.productId]?.name || 'Deleted Product'}</td>
+                    <td>${item.quantity}</td>
+                    <td>${formatCurrency(item.unitPrice)}</td>
+                    <td>${formatCurrency(item.quantity * item.unitPrice)}</td>
+                </tr>
+            `).join('');
+
+            openModal('transaction-details-modal');
+        }
+
+        // Purchase Functions
+        async function openPurchaseModal() {
+            purchaseItems = [];
+            document.getElementById('purchase-form').reset();
+            const supplierSelect = document.getElementById('purchase-supplier');
+            supplierSelect.innerHTML = `<option value="">Select a Supplier</option>`;
+            const suppliers = await getAllObjects(STORES.SUPPLIERS);
+            suppliers.sort((a,b) => a.name.localeCompare(b.name)).forEach(s => supplierSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`);
+            
+            const productSelect = document.getElementById('purchase-product-select');
+            productSelect.innerHTML = `<option value="">Select a Product</option>`;
+            const products = await getAllObjects(STORES.PRODUCTS);
+            products.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => productSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`);
+
+            document.getElementById('purchase-date').valueAsDate = new Date();
+            document.getElementById('purchase-amount-paid-div').style.display = 'none';
+            renderPurchaseItems();
+            openModal('purchase-form-modal');
+        }
+
+        async function addPurchaseItem() {
+            const productId = parseInt(document.getElementById('purchase-product-select').value);
+            if (!productId) { customAlert('Please select a product.'); return; }
+            const product = await getObject(STORES.PRODUCTS, productId);
+
+            const qty = parseInt(document.getElementById('purchase-item-qty').value);
+            let price = parseFloat(document.getElementById('purchase-item-price').value);
+            
+            if (!qty || qty <= 0) { customAlert('Invalid quantity.'); return; }
+            if (isNaN(price) || price < 0) { // If price is not set, use product's last purchase price
+                price = product.purchasePrice || 0; // Default to 0 if no purchase price
+                document.getElementById('purchase-item-price').value = price; // Update field
+            }
+
+            const existingItem = purchaseItems.find(item => item.productId === product.id);
+            if(existingItem) existingItem.quantity += qty;
+            else purchaseItems.push({ productId: product.id, name: product.name, quantity: qty, price });
+            
+            renderPurchaseItems();
+            document.getElementById('purchase-product-select').value = '';
+            document.getElementById('purchase-item-qty').value = 1;
+            document.getElementById('purchase-item-price').value = ''; // Clear for next item
+        }
+
+        function renderPurchaseItems() {
+             const body = document.getElementById('purchase-items-table-body');
+            let total = purchaseItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+            body.innerHTML = purchaseItems.map((item, index) => {
+                return `<tr>
+                    <td>${item.name}</td><td>${item.quantity}</td><td>${formatCurrency(item.price)}</td><td>${formatCurrency(item.quantity * item.price)}</td>
+                    <td><button type="button" class="btn btn-danger btn-icon" onclick="removePurchaseItem(${index})">X</button></td>
+                </tr>`;
+            }).join('');
+            document.getElementById('purchase-total-amount').textContent = formatCurrency(total);
+        }
+
+        function removePurchaseItem(index) {
+             purchaseItems.splice(index, 1);
+            renderPurchaseItems();
+        }
+
+        async function completePurchase(e) {
+            e.preventDefault();
+            if (purchaseItems.length === 0) { customAlert(getLang("Please add items to the purchase.")); return; }
+            const supplierId = parseInt(document.getElementById('purchase-supplier').value);
+            if(!supplierId) { customAlert("Please select a supplier."); return; }
+            const paymentStatus = document.getElementById('purchase-payment-status').value;
+            const amountPaid = parseFloat(document.getElementById('purchase-amount-paid').value) || 0;
+            const totalAmount = purchaseItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+
+            if (paymentStatus === 'partially_paid' && amountPaid >= totalAmount) { customAlert("Amount paid cannot be equal to or greater than total for a partial payment."); return;}
+            if (paymentStatus === 'partially_paid' && amountPaid <= 0) { customAlert("Amount paid must be greater than zero for a partial payment."); return;}
+
+            const allStoreNames = Object.values(STORES);
+            const transaction = db.transaction(allStoreNames, 'readwrite');
+             try {
+                const purchaseData = { supplierId, date: document.getElementById('purchase-date').value, totalAmount, paymentStatus, amountPaid };
+                const purchaseId = await addObject(STORES.PURCHASES, purchaseData, transaction);
+                
+                for (const item of purchaseItems) {
+                    await addObject(STORES.PURCHASE_ITEMS, { purchaseId, productId: item.productId, quantity: item.quantity, unitPrice: item.price }, transaction);
+                    const product = await getObject(STORES.PRODUCTS, item.productId, transaction);
+                    product.quantity += item.quantity;
+                    product.purchasePrice = item.price; // Update product's default purchase price
+                    await updateObject(STORES.PRODUCTS, product, transaction);
+                }
+
+                let creditAmount = 0; // Amount we owe the supplier
+                if (paymentStatus === 'credit') { creditAmount = totalAmount; }
+                else if (paymentStatus === 'partially_paid') { creditAmount = totalAmount - amountPaid; }
+
+                if (creditAmount > 0) {
+                    await addObject(STORES.TRANSACTIONS, { entityId: supplierId, entityType: 'supplier', date: document.getElementById('purchase-date').value, type: 'credit', amount: creditAmount, description: `Purchase #${purchaseId}`}, transaction);
+                    await updateEntityBalance(supplierId, 'supplier', transaction);
+                }
+                
+                await promise(transaction.done); // Wait for the whole transaction to complete
+                customAlert(getLang("Purchase completed successfully."), getLang("Success"));
+                closeModal('purchase-form-modal');
+                await loadPurchases(); await updateDashboard(); await loadProducts(); // Refresh related data
+            } catch(err) {
+                transaction.abort(); console.error(err); customAlert(`Purchase failed: ${err.message}`, 'Error');
+            }
+        }
+
+        async function loadPurchases() {
+             const purchases = await getAllObjects(STORES.PURCHASES);
+             purchases.sort((a,b) => new Date(b.date) - new Date(a.date));
+             const body = document.getElementById('purchases-table-body');
+             body.innerHTML = '';
+             for(const purchase of purchases) {
+                 const supplier = await getObject(STORES.SUPPLIERS, purchase.supplierId);
+                 const supplierName = supplier ? supplier.name : 'Deleted Supplier';
+                 let statusText = getLang(purchase.paymentStatus);
+                 if (purchase.paymentStatus === 'partially_paid') {
+                     statusText += ` (${formatCurrency(purchase.amountPaid)} Paid)`;
+                 }
+                 body.insertRow().innerHTML = `
+                    <td>${formatDate(purchase.date)}</td><td>${supplierName}</td><td>${formatCurrency(purchase.totalAmount)}</td>
+                    <td>${statusText}</td>
+                    <td class="no-print"><button class="btn btn-info btn-icon" onclick="showPurchaseDetails(${purchase.id})">📄</button></td>`;
+             }
+        }
+
+        async function showPurchaseDetails(purchaseId) {
+            const purchase = await getObject(STORES.PURCHASES, purchaseId);
+            if (!purchase) { customAlert("Purchase not found.", "Error"); return; }
+
+            const supplier = await getObject(STORES.SUPPLIERS, purchase.supplierId);
+            const purchaseItems = await getAllObjects(STORES.PURCHASE_ITEMS, 'purchaseId', purchase.id);
+            const products = (await getAllObjects(STORES.PRODUCTS)).reduce((map, p) => (map[p.id] = p, map), {});
+
+            document.getElementById('transaction-details-title').textContent = getLang('Purchase Details');
+            document.getElementById('detail-date').textContent = formatDate(purchase.date);
+            document.getElementById('detail-entity').textContent = supplier ? supplier.name : 'Deleted Supplier';
+            document.getElementById('detail-total-amount').textContent = formatCurrency(purchase.totalAmount);
+            document.getElementById('detail-payment-status').textContent = getLang(purchase.paymentStatus);
+
+            const amountPaidRow = document.getElementById('detail-amount-paid-row');
+            if (purchase.paymentStatus === 'partially_paid') {
+                amountPaidRow.style.display = 'block';
+                document.getElementById('detail-amount-paid').textContent = formatCurrency(purchase.amountPaid);
+            } else {
+                amountPaidRow.style.display = 'none';
+            }
+
+            const itemsTableBody = document.getElementById('detail-items-table-body');
+            itemsTableBody.innerHTML = purchaseItems.map(item => `
+                <tr>
+                    <td>${products[item.productId]?.name || 'Deleted Product'}</td>
+                    <td>${item.quantity}</td>
+                    <td>${formatCurrency(item.unitPrice)}</td>
+                    <td>${formatCurrency(item.quantity * item.unitPrice)}</td>
+                </tr>
+            `).join('');
+
+            openModal('transaction-details-modal');
+        }
+
+
+        // --- Backup & Restore ---
+        async function backupData() {
+            customAlert(getLang("Generating backup..."), "In Progress");
+            try {
+                const backup = { version: DB_VERSION, backupDate: new Date().toISOString() };
+                for (const storeName of Object.values(STORES)) {
+                    backup[storeName] = await getAllObjects(storeName);
+                }
+
+                const jsonString = JSON.stringify(backup, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `ShopBackup_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                closeModal('alert-modal');
+                customAlert('Backup successful!', 'Success');
+            } catch (error) {
+                 closeModal('alert-modal'); customAlert(`Backup failed: ${error.message}`, 'Error');
+            }
+        }
+
+        function handleRestoreFile(event) {
+             const file = event.target.files[0];
+             if (!file) return;
+             const reader = new FileReader();
+             reader.onload = (e) => {
+                try {
+                    const backupData = JSON.parse(e.target.result);
+                    if (!backupData.version || !backupData.customers) throw new Error("Invalid backup file format.");
+                    customConfirm("This will overwrite ALL existing data. Are you sure?", "Confirm Restore",
+                        () => restoreData(backupData),
+                        () => event.target.value = ''
+                    );
+                } catch(err) { customAlert(`Error reading file: ${err.message}`, 'Error'); }
+             };
+             reader.readAsText(file);
+        }
+
+        async function restoreData(backupData) {
+            customAlert("Restoring... please wait.", "In Progress");
+            const transaction = db.transaction(Object.values(STORES), 'readwrite');
+            try {
+                for (const storeName of Object.values(STORES)) {
+                    await promise(transaction.objectStore(storeName).clear());
+                    if (backupData[storeName]) {
+                        for (const obj of backupData[storeName]) {
+                            await promise(transaction.objectStore(storeName).add(obj));
+                        }
+                    }
+                }
+                await promise(transaction.done);
+                closeModal('alert-modal');
+                customAlert("Restore complete! The page will now reload.", "Success");
+                setTimeout(() => window.location.reload(), 1500);
+            } catch(error) {
+                transaction.abort(); closeModal('alert-modal'); customAlert(`Restore failed: ${error.message}`, 'Error');
+            }
+        }
+
+        // --- Reports Module ---
+        async function handleReportTypeChange() {
+            const reportType = document.getElementById('report-type-select').value;
+            const entitySelectorDiv = document.getElementById('report-entity-selector-div');
+            const entitySelect = document.getElementById('report-entity-select');
+            
+            if (reportType === 'customer_ledger' || reportType === 'supplier_ledger') {
+                const entityType = reportType.split('_')[0]; // 'customer' or 'supplier'
+                const storeName = entityType === 'customer' ? STORES.CUSTOMERS : STORES.SUPPLIERS;
+                const entities = await getAllObjects(storeName);
+                entitySelect.innerHTML = `<option value="">Select a ${entityType}</option>`;
+                entities.sort((a, b) => a.name.localeCompare(b.name)).forEach(e => {
+                    entitySelect.innerHTML += `<option value="${e.id}">${e.name}</option>`;
+                });
+                entitySelectorDiv.style.display = 'block';
+            } else {
+                entitySelectorDiv.style.display = 'none';
+            }
+        }
+
+        async function generateReport() {
+            const reportType = document.getElementById('report-type-select').value;
+            const startDate = document.getElementById('report-start-date').value;
+            const endDate = document.getElementById('report-end-date').value;
+            const outputDiv = document.getElementById('report-output');
+            outputDiv.innerHTML = '<em>Generating...</em>';
+            
+            let reportData;
+            try {
+                switch(reportType) {
+                    case 'sales': reportData = await generateSalesReport(startDate, endDate); break;
+                    case 'purchases': reportData = await generatePurchaseReport(startDate, endDate); break;
+                    case 'profit_loss': reportData = await generateProfitLossReport(startDate, endDate); break;
+                    case 'inventory': reportData = await generateInventoryReport(); break;
+                    case 'customer_ledger': 
+                    case 'supplier_ledger': 
+                        const entityId = parseInt(document.getElementById('report-entity-select').value);
+                        if (!entityId) { throw new Error('Please select an entity.'); }
+                        reportData = await generateEntityLedger(reportType.split('_')[0], entityId, startDate, endDate); 
+                        break;
+                    default: throw new Error("Unknown report type.");
+                }
+                
+                displayReport(reportData);
+                currentReportData = reportData; // Save for export/print
+                document.getElementById('print-report-btn').disabled = false;
+                document.getElementById('export-csv-btn').disabled = false;
+
+            } catch(err) {
+                outputDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+                document.getElementById('print-report-btn').disabled = true;
+                document.getElementById('export-csv-btn').disabled = true;
+            }
+        }
+
+        function displayReport(data) {
+            const outputDiv = document.getElementById('report-output');
+            let tableHTML = `<h3 data-en="${data.title}">${getLang(data.title)}</h3>`;
+            if (data.period) {
+                tableHTML += `<p style="text-align:center;">${data.period}</p>`;
+            }
+            tableHTML += `<table class="data-table"><thead><tr>${data.headers.map(h => `<th>${getLang(h)}</th>`).join('')}</tr></thead><tbody>`;
+            tableHTML += data.rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('');
+            tableHTML += `</tbody></table>`;
+            if(data.summary) {
+                tableHTML += `<div style="text-align:right; margin-top:15px; font-weight:bold;">${data.summary}</div>`;
+            }
+            outputDiv.innerHTML = tableHTML;
+        }
+
+        function printReport() {
+            if (!currentReportData) return;
+            document.getElementById('printable-report-title').textContent = getLang(currentReportData.title);
+            document.getElementById('printable-report-period').textContent = currentReportData.period || '';
+            const tableClone = document.getElementById('report-output').querySelector('.data-table').cloneNode(true);
+            const summaryClone = document.getElementById('report-output').querySelector('div[style*="text-align:right"]')?.cloneNode(true);
+            
+            const printableTableDiv = document.getElementById('printable-report-table');
+            printableTableDiv.innerHTML = '';
+            printableTableDiv.appendChild(tableClone);
+            
+            const printableSummaryDiv = document.getElementById('printable-report-summary');
+            printableSummaryDiv.innerHTML = '';
+            if (summaryClone) printableSummaryDiv.appendChild(summaryClone);
+
+            const mainAppContainer = document.querySelector('.container');
+            mainAppContainer.style.display = 'none';
+            document.getElementById('printable-report-content').style.display = 'block';
+            window.print();
+            mainAppContainer.style.display = 'flex';
+            document.getElementById('printable-report-content').style.display = 'none';
+        }
+
+        function exportReportToCSV() {
+            if (!currentReportData) return;
+            const { headers, rows, title } = currentReportData;
+            let csvContent = '\uFEFF'; // BOM for Excel
+            csvContent += headers.map(h => `"${getLang(h).replace(/"/g, '""')}"`).join(',') + '\r\n';
+            rows.forEach(row => {
+                const cleanRow = row.map(cell => `"${String(cell).replace(/<[^>]*>/g, '').replace(/"/g, '""')}"`);
+                csvContent += cleanRow.join(',') + '\r\n';
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            const filename = `${title.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`;
+            link.setAttribute("download", filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        async function generateSalesReport(startDate, endDate) {
+            let sales = await getAllObjects(STORES.SALES);
+            if(startDate) sales = sales.filter(s => s.date >= startDate);
+            if(endDate) sales = sales.filter(s => s.date <= endDate);
+            sales.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+            const customers = (await getAllObjects(STORES.CUSTOMERS)).reduce((map, c) => (map[c.id] = c.name, map), {});
+            let total = 0;
+            const rows = sales.map(s => {
+                total += s.totalAmount;
+                return [ formatDate(s.date), s.customerId ? customers[s.customerId] || 'Deleted' : getLang('Paid (Cash Sale)'),
+                    formatCurrency(s.totalAmount), getLang(s.paymentStatus) ];
+            });
+            return { title: 'Sales Report', period: `From: ${startDate || 'Start'} To: ${endDate || 'Today'}`,
+                headers: ['Date', 'Customer', 'Amount', 'Status'], rows: rows, summary: `<strong>Total Sales:</strong> ${formatCurrency(total)}` };
+        }
+
+        async function generatePurchaseReport(startDate, endDate) {
+            let purchases = await getAllObjects(STORES.PURCHASES);
+            if(startDate) purchases = purchases.filter(p => p.date >= startDate);
+            if(endDate) purchases = purchases.filter(p => p.date <= endDate);
+            purchases.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+            const suppliers = (await getAllObjects(STORES.SUPPLIERS)).reduce((map, s) => (map[s.id] = s.name, map), {});
+            let total = 0;
+            const rows = purchases.map(p => {
+                total += p.totalAmount;
+                return [ formatDate(p.date), suppliers[p.supplierId] || 'Deleted', formatCurrency(p.totalAmount), getLang(p.paymentStatus) ];
+            });
+            return { title: 'Purchase Report', period: `From: ${startDate || 'Start'} To: ${endDate || 'Today'}`,
+                headers: ['Date', 'Supplier', 'Amount', 'Status'], rows: rows, summary: `<strong>Total Purchases:</strong> ${formatCurrency(total)}` };
+        }
+        
+        async function generateProfitLossReport(startDate, endDate) {
+            let sales = await getAllObjects(STORES.SALES);
+            if(startDate) sales = sales.filter(s => s.date >= startDate);
+            if(endDate) sales = sales.filter(s => s.date <= endDate);
+
+            let totalRevenue = 0, totalCost = 0;
+            const rows = [];
+            const products = (await getAllObjects(STORES.PRODUCTS)).reduce((map, p) => (map[p.id] = p, map), {});
+
+            for (const sale of sales) {
+                const saleItems = await getAllObjects(STORES.SALE_ITEMS, 'saleId', sale.id);
+                for(const item of saleItems) {
+                    const product = products[item.productId];
+                    const cost = (product ? product.purchasePrice : 0) * item.quantity;
+                    const revenue = item.unitPrice * item.quantity;
+                    const profit = revenue - cost;
+                    totalRevenue += revenue; totalCost += cost;
+                    rows.push([ formatDate(sale.date), product ? product.name : 'Deleted Product', item.quantity,
+                        formatCurrency(revenue), formatCurrency(cost), formatCurrency(profit) ]);
+                }
+            }
+            return { title: 'Profit & Loss Report', period: `From: ${startDate || 'Start'} To: ${endDate || 'Today'}`,
+                headers: ['Date', 'Product', 'Qty Sold', 'Revenue', 'Cost', 'Profit'], rows: rows,
+                summary: `<strong>Total Revenue:</strong> ${formatCurrency(totalRevenue)} | <strong>Total Cost:</strong> ${formatCurrency(totalCost)} | <strong>Total Profit:</strong> ${formatCurrency(totalRevenue - totalCost)}` };
+        }
+
+        async function generateInventoryReport() {
+            const products = await getAllObjects(STORES.PRODUCTS);
+            let totalValue = 0;
+            const rows = products.sort((a,b) => a.name.localeCompare(b.name)).map(p => {
+                const value = p.purchasePrice * p.quantity; totalValue += value;
+                let status = getLang('In Stock');
+                if (p.quantity <= 0) status = getLang('Out of Stock');
+                else if (p.quantity <= p.lowStockThreshold) status = getLang('Low Stock');
+                return [p.name, p.quantity, formatCurrency(p.purchasePrice), formatCurrency(p.salePrice), formatCurrency(value), status];
+            });
+            return { title: 'Inventory Report', headers: ['Product Name', 'Stock', 'Purchase Price', 'Sale Price', 'Stock Value', 'Status'],
+                rows: rows, summary: `<strong>Total Inventory Value:</strong> ${formatCurrency(totalValue)}` }
+        }
+
+        async function generateEntityLedger(type, entityId, startDate, endDate) {
+            const storeName = type === 'customer' ? STORES.CUSTOMERS : STORES.SUPPLIERS;
+            const entity = await getObject(storeName, entityId);
+            let allTransactions = await getTransactionsForEntity(entityId, type);
+            let openingBalance = 0;
+
+            if(startDate) {
+                const transactionsBeforeStartDate = allTransactions.filter(t => new Date(t.date) < new Date(startDate));
+                openingBalance = transactionsBeforeStartDate.reduce((bal, tx) => bal + (tx.type === 'debit' ? tx.amount : -tx.amount), 0);
+            }
+            
+            const periodTransactions = allTransactions.filter(t => 
+                (!startDate || new Date(t.date) >= new Date(startDate)) && 
+                (!endDate || new Date(t.date) <= new Date(endDate))
+            );
+            
+            let currentBalance = openingBalance;
+            const rows = periodTransactions.map(tx => {
+                currentBalance += (tx.type === 'debit' ? tx.amount : -tx.amount);
+                return [formatDate(tx.date), tx.description, tx.type === 'debit' ? formatCurrency(tx.amount) : '-', tx.type === 'credit' ? formatCurrency(tx.amount) : '-', renderBalance(currentBalance)];
+            });
+            
+            rows.unshift(['-', getLang('Opening Balance'), '-', '-', renderBalance(openingBalance)]);
+
+            return { title: `${getLang(type === 'customer' ? 'Customer' : 'Supplier')} Ledger: ${entity.name}`,
+                period: `From: ${startDate || 'Start'} To: ${endDate || 'Today'}`,
+                headers: ['Date', 'Description', 'Debit', 'Credit', 'Balance'], rows: rows,
+                summary: `<strong>Closing Balance:</strong> ${renderBalance(entity.balance)}` }
+        }
+
+
+        // --- App Initialization ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await initDB();
+                setupEventListeners();
+                setLanguage(currentLanguage);
+                switchPage('dashboard-page');
+                console.log("Application initialized successfully.");
+            } catch (error) {
+                console.error("CRITICAL: Initialization failed:", error);
+                 document.body.innerHTML = `<div style="padding: 20px; text-align: center; color: red;"><h1>Initialization Failed</h1><p>Could not start the application. Please ensure your browser supports IndexedDB and is not in private mode.</p><p><i>Error: ${error.message}</i></p></div>`;
+            }
+        });
+    </script>
+</body>
+</html>
