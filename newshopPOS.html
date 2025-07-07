@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -64,9 +65,20 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .product-card.stock-ok { background-color: var(--stock-ok); }
-        .product-card.stock-low { background-color: var(--stock-low); font-weight: bold; }
-        .product-card.stock-out { background-color: var(--stock-out); opacity: 0.6; pointer-events: none; }
+        .product-card.stock-ok {
+            background-color: var(--stock-ok);
+        }
+
+        .product-card.stock-low {
+            background-color: var(--stock-low);
+            font-weight: bold;
+        }
+
+        .product-card.stock-out {
+            background-color: var(--stock-out);
+            opacity: 0.6;
+            pointer-events: none;
+        }
 
         .product-card h3 {
             margin: 0 0 5px 0;
@@ -74,8 +86,15 @@
             color: var(--primary-color);
         }
 
-        .product-card .price { font-size: 1.2em; font-weight: bold; margin-bottom: 5px; }
-        .product-card .stock { font-size: 0.9em; }
+        .product-card .price {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .product-card .stock {
+            font-size: 0.9em;
+        }
 
         .product-card .actions {
             display: flex;
@@ -103,7 +122,9 @@
             font-weight: bold;
         }
 
-        .product-card .sell-btn:hover { background-color: #004d00; }
+        .product-card .sell-btn:hover {
+            background-color: #004d00;
+        }
 
         #history-panel {
             flex: 1;
@@ -125,13 +146,17 @@
             flex-grow: 1;
             overflow-y: auto;
         }
-        
+
         .history-item {
             padding: 8px;
             border-bottom: 1px solid #eee;
             font-size: 0.9em;
         }
-        .history-item:last-child { border-bottom: none; }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
         .history-item .actions button {
             padding: 3px 6px;
             font-size: 0.8em;
@@ -139,8 +164,17 @@
             cursor: pointer;
         }
 
-        .btn-danger { background-color: var(--danger-color); color: white; border: none; }
-        .btn-warning { background-color: var(--warning-color); color: #333; border: none; }
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: #333;
+            border: none;
+        }
 
         #toast-notification {
             position: fixed;
@@ -154,12 +188,26 @@
             z-index: 9999;
             opacity: 0;
             transition: opacity 0.5s, top 0.5s;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
-        #toast-notification.show { opacity: 1; top: 20px; }
-        #toast-notification.success { background-color: var(--success-color); }
-        #toast-notification.error { background-color: var(--danger-color); }
-        #toast-notification.warning { background-color: var(--warning-color); color: #333; }
+
+        #toast-notification.show {
+            opacity: 1;
+            top: 20px;
+        }
+
+        #toast-notification.success {
+            background-color: var(--success-color);
+        }
+
+        #toast-notification.error {
+            background-color: var(--danger-color);
+        }
+
+        #toast-notification.warning {
+            background-color: var(--warning-color);
+            color: #333;
+        }
 
         .context-menu {
             display: none;
@@ -173,6 +221,7 @@
             max-height: 300px;
             overflow-y: auto;
         }
+
         .context-menu a {
             display: block;
             padding: 8px 12px;
@@ -180,9 +229,13 @@
             color: var(--text-color);
             cursor: pointer;
         }
-        .context-menu a:hover { background-color: var(--secondary-color); }
+
+        .context-menu a:hover {
+            background-color: var(--secondary-color);
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div id="product-grid"></div>
@@ -195,74 +248,74 @@
     <div id="toast-notification"></div>
     <div id="customer-context-menu" class="context-menu"></div>
 
-<script>
-    const DB_NAME = 'CompleteShopDB';
-    const DB_VERSION = 4;
-    const STORES = {
-        CUSTOMERS: 'customers', SUPPLIERS: 'suppliers', TRANSACTIONS: 'transactions', PRODUCTS: 'products', STOCK_ADJUSTMENTS: 'stockAdjustments', SALES: 'sales', SALE_ITEMS: 'saleItems', PURCHASES: 'purchases', PURCHASE_ITEMS: 'purchaseItems', INCOME: 'income', EXPENSES: 'expenses', CATEGORIES: 'categories', SETTINGS: 'settings'
-    };
+    <script>
+        const DB_NAME = 'CompleteShopDB';
+        const DB_VERSION = 4;
+        const STORES = {
+            CUSTOMERS: 'customers', SUPPLIERS: 'suppliers', TRANSACTIONS: 'transactions', PRODUCTS: 'products', STOCK_ADJUSTMENTS: 'stockAdjustments', SALES: 'sales', SALE_ITEMS: 'saleItems', PURCHASES: 'purchases', PURCHASE_ITEMS: 'purchaseItems', INCOME: 'income', EXPENSES: 'expenses', CATEGORIES: 'categories', SETTINGS: 'settings'
+        };
 
-    let db;
-    let allCustomers = [];
+        let db;
+        let allCustomers = [];
 
-    // --- Robust Database Helpers ---
-    function initDB() {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(DB_NAME, DB_VERSION);
-            request.onerror = () => reject("Error opening database");
-            request.onsuccess = () => { db = request.result; resolve(db); };
-        });
-    }
 
-    function _createPromise(request) {
-        return new Promise((resolve, reject) => {
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        });
-    }
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onerror = () => reject("Error opening database");
+                request.onsuccess = () => { db = request.result; resolve(db); };
+            });
+        }
 
-    function getObject(storeName, key, tx) { return _createPromise(tx.objectStore(storeName).get(key)); }
-    function getAllObjects(storeName, tx) { return _createPromise(tx.objectStore(storeName).getAll()); }
-    function addObject(storeName, data, tx) { return _createPromise(tx.objectStore(storeName).add(data)); }
-    function updateObject(storeName, data, tx) { return _createPromise(tx.objectStore(storeName).put(data)); }
-    function deleteObject(storeName, key, tx) { return _createPromise(tx.objectStore(storeName).delete(key)); }
-    function getFromIndex(storeName, indexName, query, tx) { return _createPromise(tx.objectStore(storeName).index(indexName).getAll(query)); }
+        function _createPromise(request) {
+            return new Promise((resolve, reject) => {
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
 
-    // --- UI Helpers ---
-    function formatCurrency(amount) {
-        return `Rs ${parseFloat(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    }
-    function formatDate(dateString) {
-        return new Date(dateString).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
-    }
+        function getObject(storeName, key, tx) { return _createPromise(tx.objectStore(storeName).get(key)); }
+        function getAllObjects(storeName, tx) { return _createPromise(tx.objectStore(storeName).getAll()); }
+        function addObject(storeName, data, tx) { return _createPromise(tx.objectStore(storeName).add(data)); }
+        function updateObject(storeName, data, tx) { return _createPromise(tx.objectStore(storeName).put(data)); }
+        function deleteObject(storeName, key, tx) { return _createPromise(tx.objectStore(storeName).delete(key)); }
+        function getFromIndex(storeName, indexName, query, tx) { return _createPromise(tx.objectStore(storeName).index(indexName).getAll(query)); }
 
-    let toastTimer;
-    function showToast(message, type = 'success') {
-        const toast = document.getElementById('toast-notification');
-        toast.textContent = message;
-        toast.className = `show ${type}`;
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => {
-            toast.className = toast.className.replace('show', '');
-        }, 2000);
-    }
 
-    // --- Core Application Logic ---
-    async function loadProducts() {
-        const grid = document.getElementById('product-grid');
-        grid.innerHTML = 'Loading products...';
-        try {
-            const tx = db.transaction(STORES.PRODUCTS, 'readonly');
-            const products = await getAllObjects(STORES.PRODUCTS, tx);
-            grid.innerHTML = '';
-            if (!products.length) { grid.innerHTML = 'No products found. Add products in main app.'; return; }
-            
-            products.sort((a, b) => a.name.localeCompare(b.name)).forEach(p => {
-                let stockClass = p.quantity <= 0 ? 'stock-out' : (p.quantity <= p.lowStockThreshold ? 'stock-low' : 'stock-ok');
-                const card = document.createElement('div');
-                card.className = `product-card ${stockClass}`;
-                card.dataset.productId = p.id;
-                card.innerHTML = `
+        function formatCurrency(amount) {
+            return `Rs ${parseFloat(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+        }
+
+        let toastTimer;
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast-notification');
+            toast.textContent = message;
+            toast.className = `show ${type}`;
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.className = toast.className.replace('show', '');
+            }, 2000);
+        }
+
+
+        async function loadProducts() {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = 'Loading products...';
+            try {
+                const tx = db.transaction(STORES.PRODUCTS, 'readonly');
+                const products = await getAllObjects(STORES.PRODUCTS, tx);
+                grid.innerHTML = '';
+                if (!products.length) { grid.innerHTML = 'No products found. Add products in main app.'; return; }
+
+                products.sort((a, b) => a.name.localeCompare(b.name)).forEach(p => {
+                    let stockClass = p.quantity <= 0 ? 'stock-out' : (p.quantity <= p.lowStockThreshold ? 'stock-low' : 'stock-ok');
+                    const card = document.createElement('div');
+                    card.className = `product-card ${stockClass}`;
+                    card.dataset.productId = p.id;
+                    card.innerHTML = `
                     <div>
                         <h3>${p.name}</h3>
                         <div class="price">${formatCurrency(p.salePrice)}</div>
@@ -273,154 +326,155 @@
                         <button class="sell-btn">Sell</button>
                     </div>
                 `;
-                grid.appendChild(card);
-                card.querySelector('.sell-btn').addEventListener('click', e => { e.stopPropagation(); sellItem(p.id, null); });
-                card.addEventListener('contextmenu', e => { e.preventDefault(); showCustomerMenu(e, p.id); });
-            });
-        } catch (error) { grid.innerHTML = 'Error loading products.'; console.error(error); }
-    }
+                    grid.appendChild(card);
+                    card.querySelector('.sell-btn').addEventListener('click', e => { e.stopPropagation(); sellItem(p.id, null); });
+                    card.addEventListener('contextmenu', e => { e.preventDefault(); showCustomerMenu(e, p.id); });
+                });
+            } catch (error) { grid.innerHTML = 'Error loading products.'; console.error(error); }
+        }
 
-    async function loadHistory() {
-        const list = document.getElementById('history-list');
-        list.innerHTML = '';
-        try {
-            const tx = db.transaction([STORES.SALES, STORES.CUSTOMERS, STORES.SALE_ITEMS, STORES.PRODUCTS], 'readonly');
-            const sales = (await getAllObjects(STORES.SALES, tx)).sort((a,b) => b.id - a.id).slice(0, 120);
-            if (!sales.length) { list.innerHTML = 'No recent transactions.'; return; }
+        async function loadHistory() {
+            const list = document.getElementById('history-list');
+            list.innerHTML = '';
+            try {
+                const tx = db.transaction([STORES.SALES, STORES.CUSTOMERS, STORES.SALE_ITEMS, STORES.PRODUCTS], 'readonly');
+                const sales = (await getAllObjects(STORES.SALES, tx)).sort((a, b) => b.id - a.id).slice(0, 120);
+                if (!sales.length) { list.innerHTML = 'No recent transactions.'; return; }
 
-            const customers = (await getAllObjects(STORES.CUSTOMERS, tx)).reduce((map, c) => (map[c.id] = c.name, map), {});
-            const saleItems = await getAllObjects(STORES.SALE_ITEMS, tx);
-            const products = (await getAllObjects(STORES.PRODUCTS, tx)).reduce((map, p) => (map[p.id] = p.name, map), {});
+                const customers = (await getAllObjects(STORES.CUSTOMERS, tx)).reduce((map, c) => (map[c.id] = c.name, map), {});
+                const saleItems = await getAllObjects(STORES.SALE_ITEMS, tx);
+                const products = (await getAllObjects(STORES.PRODUCTS, tx)).reduce((map, p) => (map[p.id] = p.name, map), {});
 
-            list.innerHTML = sales.map(sale => {
-                const customerName = sale.customerId ? (customers[sale.customerId] || 'Deleted') : 'Cash Sale';
-                const itemsSold = saleItems.filter(i => i.saleId === sale.id)
-                    .map(i => `${i.quantity}x ${products[i.productId] || 'Deleted'}`).join(', ');
-                return `<div class="history-item">
+                list.innerHTML = sales.map(sale => {
+                    const customerName = sale.customerId ? (customers[sale.customerId] || 'Deleted') : 'Cash Sale';
+                    const itemsSold = saleItems.filter(i => i.saleId === sale.id)
+                        .map(i => `${i.quantity}x ${products[i.productId] || 'Deleted'}`).join(', ');
+                    return `<div class="history-item">
                             <div><strong>${customerName}</strong> - ${formatCurrency(sale.totalAmount)} (${sale.paymentStatus})</div>
                             <small>${itemsSold || 'Items not found'} at ${formatDate(sale.date)}</small>
                             <div class="actions"><button class="btn-danger" onclick="confirmDeleteSale(${sale.id})">Delete</button></div>
                         </div>`;
-            }).join('');
-        } catch (error) { list.innerHTML = 'Error loading history.'; console.error(error); }
-    }
-
-    function showCustomerMenu(e, productId) {
-        const menu = document.getElementById('customer-context-menu');
-        menu.innerHTML = !allCustomers.length ? '<a>No customers found</a>' : allCustomers.map(c => 
-            `<a href="#" data-customer-id="${c.id}">${c.name}</a>`
-        ).join('');
-        
-        menu.style.top = `${e.pageY}px`;
-        menu.style.left = `${e.pageX}px`;
-        menu.style.display = 'block';
-
-        const clickHandler = (ev) => {
-            if (ev.target.matches('a[data-customer-id]')) {
-                ev.preventDefault();
-                sellItem(productId, parseInt(ev.target.dataset.customerId));
-            }
-            menu.style.display = 'none';
-            window.removeEventListener('click', clickHandler);
-        };
-        setTimeout(() => window.addEventListener('click', clickHandler), 0);
-    }
-
-    async function sellItem(productId, customerId) {
-        const quantity = parseInt(document.getElementById(`qty-${productId}`).value, 10);
-        if (!quantity || quantity <= 0) { showToast("Invalid quantity.", "error"); return; }
-
-        const tx = db.transaction(Object.values(STORES), 'readwrite');
-        tx.onerror = (e) => { console.error("Transaction Error:", e.target.error); showToast("Transaction failed! See console.", "error"); };
-
-        try {
-            const product = await getObject(STORES.PRODUCTS, productId, tx);
-            if (product.quantity < quantity) { showToast(`Not enough stock. Only ${product.quantity} left.`, "warning"); return; }
-
-            const totalAmount = product.salePrice * quantity;
-            const saleData = { 
-                customerId, 
-                date: new Date().toISOString(), 
-                totalAmount, 
-                paymentStatus: 'paid', // Always paid in this interface
-                amountPaid: totalAmount // Always fully paid
-            };
-            const saleId = await addObject(STORES.SALES, saleData, tx);
-            
-            await addObject(STORES.SALE_ITEMS, { saleId, productId, quantity, unitPrice: product.salePrice }, tx);
-            product.quantity -= quantity;
-            await updateObject(STORES.PRODUCTS, product, tx);
-            
-            const incomeCategory = await getFromIndex(STORES.CATEGORIES, 'name_type', ['Sales', 'income'], tx).then(res => res[0]);
-            if (incomeCategory) await addObject(STORES.INCOME, { date: saleData.date, amount: totalAmount, categoryId: incomeCategory.id, description: `Sale Invoice #${saleId}` }, tx);
-            
-            if (customerId) {
-                // For customer history, add a debit and an immediate credit so balance doesn't change
-                await addObject(STORES.TRANSACTIONS, { entityId: customerId, entityType: 'customer', date: saleData.date, type: 'debit', amount: totalAmount, description: `Sale Invoice #${saleId}` }, tx);
-                await addObject(STORES.TRANSACTIONS, { entityId: customerId, entityType: 'customer', date: saleData.date, type: 'credit', amount: totalAmount, description: `Payment for Invoice #${saleId}` }, tx);
-                // DO NOT update customer.balance, as it's a net-zero transaction
-            }
-            
-            await new Promise(resolve => tx.oncomplete = resolve);
-            
-            const customerName = customerId ? allCustomers.find(c => c.id === customerId).name : 'Cash';
-            showToast(`Sold ${quantity}x ${product.name} to ${customerName}`, "success");
-            loadProducts();
-            loadHistory();
-        } catch (error) { console.error("Sale failed inside try...catch:", error); }
-    }
-
-    async function confirmDeleteSale(saleId) {
-        if (!confirm('Are you sure? This will restore stock and reverse all related entries.')) return;
-
-        const tx = db.transaction(Object.values(STORES), 'readwrite');
-        tx.onerror = (e) => { console.error("Deletion Error:", e.target.error); showToast("Deletion failed! See console.", "error"); };
-        
-        try {
-            const sale = await getObject(STORES.SALES, saleId, tx);
-            if (!sale) throw new Error("Sale not found");
-
-            const saleItems = await getFromIndex(STORES.SALE_ITEMS, 'saleId', saleId, tx);
-            for (const item of saleItems) {
-                const product = await getObject(STORES.PRODUCTS, item.productId, tx);
-                if (product) { product.quantity += item.quantity; await updateObject(STORES.PRODUCTS, product, tx); }
-                await deleteObject(STORES.SALE_ITEMS, item.id, tx);
-            }
-            
-            const allIncome = await getAllObjects(STORES.INCOME, tx);
-            const incomeToDelete = allIncome.find(i => i.description === `Sale Invoice #${saleId}`);
-            if (incomeToDelete) await deleteObject(STORES.INCOME, incomeToDelete.id, tx);
-            
-            if (sale.customerId) {
-                const allKhata = await getAllObjects(STORES.TRANSACTIONS, tx);
-                // Find and delete BOTH the debit and credit transactions
-                const khataToDelete = allKhata.filter(t => t.description.includes(`Invoice #${saleId}`) && t.entityId === sale.customerId);
-                for(const entry of khataToDelete){
-                    await deleteObject(STORES.TRANSACTIONS, entry.id, tx);
-                }
-                // DO NOT update customer balance, as the original transaction had a net-zero effect.
-            }
-            
-            await deleteObject(STORES.SALES, saleId, tx);
-            await new Promise(resolve => tx.oncomplete = resolve);
-
-            showToast("Transaction deleted successfully.", "success");
-            loadProducts();
-            loadHistory();
-        } catch (error) { console.error("Deletion failed inside try...catch:", error); }
-    }
-
-    document.addEventListener('DOMContentLoaded', async () => {
-        try {
-            await initDB();
-            const tx = db.transaction(STORES.CUSTOMERS, 'readonly');
-            allCustomers = (await getAllObjects(STORES.CUSTOMERS, tx)).sort((a,b) => a.name.localeCompare(b.name));
-            await loadProducts();
-            await loadHistory();
-        } catch (err) {
-            document.body.innerHTML = `<h1>Error Initializing</h1><p>Could not connect to the database. Make sure you have used the main application first to set it up.</p><p><i>${err}</i></p>`;
+                }).join('');
+            } catch (error) { list.innerHTML = 'Error loading history.'; console.error(error); }
         }
-    });
-</script>
+
+        function showCustomerMenu(e, productId) {
+            const menu = document.getElementById('customer-context-menu');
+            menu.innerHTML = !allCustomers.length ? '<a>No customers found</a>' : allCustomers.map(c =>
+                `<a href="#" data-customer-id="${c.id}">${c.name}</a>`
+            ).join('');
+
+            menu.style.top = `${e.pageY}px`;
+            menu.style.left = `${e.pageX}px`;
+            menu.style.display = 'block';
+
+            const clickHandler = (ev) => {
+                if (ev.target.matches('a[data-customer-id]')) {
+                    ev.preventDefault();
+                    sellItem(productId, parseInt(ev.target.dataset.customerId));
+                }
+                menu.style.display = 'none';
+                window.removeEventListener('click', clickHandler);
+            };
+            setTimeout(() => window.addEventListener('click', clickHandler), 0);
+        }
+
+        async function sellItem(productId, customerId) {
+            const quantity = parseInt(document.getElementById(`qty-${productId}`).value, 10);
+            if (!quantity || quantity <= 0) { showToast("Invalid quantity.", "error"); return; }
+
+            const tx = db.transaction(Object.values(STORES), 'readwrite');
+            tx.onerror = (e) => { console.error("Transaction Error:", e.target.error); showToast("Transaction failed! See console.", "error"); };
+
+            try {
+                const product = await getObject(STORES.PRODUCTS, productId, tx);
+                if (product.quantity < quantity) { showToast(`Not enough stock. Only ${product.quantity} left.`, "warning"); return; }
+
+                const totalAmount = product.salePrice * quantity;
+                const saleData = {
+                    customerId,
+                    date: new Date().toISOString(),
+                    totalAmount,
+                    paymentStatus: 'paid',
+                    amountPaid: totalAmount
+                };
+                const saleId = await addObject(STORES.SALES, saleData, tx);
+
+                await addObject(STORES.SALE_ITEMS, { saleId, productId, quantity, unitPrice: product.salePrice }, tx);
+                product.quantity -= quantity;
+                await updateObject(STORES.PRODUCTS, product, tx);
+
+                const incomeCategory = await getFromIndex(STORES.CATEGORIES, 'name_type', ['Sales', 'income'], tx).then(res => res[0]);
+                if (incomeCategory) await addObject(STORES.INCOME, { date: saleData.date, amount: totalAmount, categoryId: incomeCategory.id, description: `Sale Invoice #${saleId}` }, tx);
+
+                if (customerId) {
+
+                    await addObject(STORES.TRANSACTIONS, { entityId: customerId, entityType: 'customer', date: saleData.date, type: 'debit', amount: totalAmount, description: `Sale Invoice #${saleId}` }, tx);
+                    await addObject(STORES.TRANSACTIONS, { entityId: customerId, entityType: 'customer', date: saleData.date, type: 'credit', amount: totalAmount, description: `Payment for Invoice #${saleId}` }, tx);
+
+                }
+
+                await new Promise(resolve => tx.oncomplete = resolve);
+
+                const customerName = customerId ? allCustomers.find(c => c.id === customerId).name : 'Cash';
+                showToast(`Sold ${quantity}x ${product.name} to ${customerName}`, "success");
+                loadProducts();
+                loadHistory();
+            } catch (error) { console.error("Sale failed inside try...catch:", error); }
+        }
+
+        async function confirmDeleteSale(saleId) {
+            if (!confirm('Are you sure? This will restore stock and reverse all related entries.')) return;
+
+            const tx = db.transaction(Object.values(STORES), 'readwrite');
+            tx.onerror = (e) => { console.error("Deletion Error:", e.target.error); showToast("Deletion failed! See console.", "error"); };
+
+            try {
+                const sale = await getObject(STORES.SALES, saleId, tx);
+                if (!sale) throw new Error("Sale not found");
+
+                const saleItems = await getFromIndex(STORES.SALE_ITEMS, 'saleId', saleId, tx);
+                for (const item of saleItems) {
+                    const product = await getObject(STORES.PRODUCTS, item.productId, tx);
+                    if (product) { product.quantity += item.quantity; await updateObject(STORES.PRODUCTS, product, tx); }
+                    await deleteObject(STORES.SALE_ITEMS, item.id, tx);
+                }
+
+                const allIncome = await getAllObjects(STORES.INCOME, tx);
+                const incomeToDelete = allIncome.find(i => i.description === `Sale Invoice #${saleId}`);
+                if (incomeToDelete) await deleteObject(STORES.INCOME, incomeToDelete.id, tx);
+
+                if (sale.customerId) {
+                    const allKhata = await getAllObjects(STORES.TRANSACTIONS, tx);
+
+                    const khataToDelete = allKhata.filter(t => t.description.includes(`Invoice #${saleId}`) && t.entityId === sale.customerId);
+                    for (const entry of khataToDelete) {
+                        await deleteObject(STORES.TRANSACTIONS, entry.id, tx);
+                    }
+
+                }
+
+                await deleteObject(STORES.SALES, saleId, tx);
+                await new Promise(resolve => tx.oncomplete = resolve);
+
+                showToast("Transaction deleted successfully.", "success");
+                loadProducts();
+                loadHistory();
+            } catch (error) { console.error("Deletion failed inside try...catch:", error); }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await initDB();
+                const tx = db.transaction(STORES.CUSTOMERS, 'readonly');
+                allCustomers = (await getAllObjects(STORES.CUSTOMERS, tx)).sort((a, b) => a.name.localeCompare(b.name));
+                await loadProducts();
+                await loadHistory();
+            } catch (err) {
+                document.body.innerHTML = `<h1>Error Initializing</h1><p>Could not connect to the database. Make sure you have used the main application first to set it up.</p><p><i>${err}</i></p>`;
+            }
+        });
+    </script>
 </body>
+
 </html>

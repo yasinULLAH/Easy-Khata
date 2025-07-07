@@ -697,39 +697,44 @@
         .urdu-font-force {
             font-family: 'Noto Nastaliq Urdu', serif !important;
         }
-        /* --- POS Iframe Modal --- */
-.pos-iframe-modal {
-    display: none;
-    position: fixed;
-    z-index: 2000; /* Higher than other modals */
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    justify-content: center;
-    align-items: center;
-}
-.pos-iframe-modal iframe {
-    width: 95%;
-    height: 95%;
-    border: none;
-    border-radius: 8px;
-    background-color: #fff;
-}
-.pos-iframe-close {
-    position: absolute;
-    top: 1px;
-    right: 4px;
-    color: #ff0000;
-    font-size: 2.5em;
-    font-weight: bold;
-    cursor: pointer;
-    line-height: 1;
-}
-.pos-iframe-close:hover {
-    color: #ccc;
-}
+
+
+        .pos-iframe-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pos-iframe-modal iframe {
+            width: 95%;
+            height: 95%;
+            border: none;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+
+        .pos-iframe-close {
+            position: absolute;
+            top: 1px;
+            right: 4px;
+            color: #ff0000;
+            font-size: 2.5em;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .pos-iframe-close:hover {
+            color: #ccc;
+        }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -808,7 +813,8 @@
                 <div class="section-header">
                     <h2 data-en="Sales History" data-ur="فروخت کی سرگزشت">Sales History</h2>
                     <div>
-                         <button id="launch-pos-btn" class="btn btn-info no-print" data-en="Quick POS" data-ur="فوری POS">Quick POS</button>
+                        <button id="launch-pos-btn" class="btn btn-info no-print" data-en="Quick POS"
+                            data-ur="فوری POS">Quick POS</button>
                         <button id="add-sale-btn" class="btn btn-primary no-print" data-en="New Sale"
                             data-ur="نئی فروخت">New Sale</button>
                     </div>
@@ -2020,76 +2026,76 @@
                 transaction.abort();
             }
         }
-// REPLACE your existing openPosIframe and closePosIframe functions with these:
 
-function openPosIframe() {
-    const iframe = document.getElementById('pos-iframe');
-    const modal = document.getElementById('pos-iframe-modal');
-    
-    iframe.src = 'newshopPOS.html'; // Set src to load the POS app
-    modal.style.display = 'flex';
 
-    // Request to enter browser fullscreen on the modal container
-    if (modal.requestFullscreen) {
-        modal.requestFullscreen();
-    } else if (modal.webkitRequestFullscreen) { /* Safari */
-        modal.webkitRequestFullscreen();
-    } else if (modal.msRequestFullscreen) { /* IE11 */
-        modal.msRequestFullscreen();
-    }
-}
+        function openPosIframe() {
+            const iframe = document.getElementById('pos-iframe');
+            const modal = document.getElementById('pos-iframe-modal');
 
-function closePosIframe() {
-    const iframe = document.getElementById('pos-iframe');
-    const modal = document.getElementById('pos-iframe-modal');
-    
-    // Hide the modal and clear the iframe to stop its scripts
-    modal.style.display = 'none';
-    iframe.src = '';
+            iframe.src = 'newshopPOS.html';
+            modal.style.display = 'flex';
 
-    // Refresh data in the main app to reflect any changes made in the POS
-    const activePageId = document.querySelector('.page.active')?.id;
-    switch (activePageId) {
-        case 'dashboard-page':
-            updateDashboard();
-            break;
-        case 'sales-page':
-            loadSales();
-            loadHistory(); // Assuming you have a function to reload history if needed
-            break;
-        case 'inventory-page':
-            loadProducts();
-            break;
-        case 'customers-page':
-            if (currentViewedId) {
-                showDetailsView('customer', currentViewedId);
-            } else {
-                loadEntities('customer');
+
+            if (modal.requestFullscreen) {
+                modal.requestFullscreen();
+            } else if (modal.webkitRequestFullscreen) {
+                modal.webkitRequestFullscreen();
+            } else if (modal.msRequestFullscreen) {
+                modal.msRequestFullscreen();
             }
-            break;
-    }
-}
+        }
 
-function setupEventListeners() {
+        function closePosIframe() {
+            const iframe = document.getElementById('pos-iframe');
+            const modal = document.getElementById('pos-iframe-modal');
+
+
+            modal.style.display = 'none';
+            iframe.src = '';
+
+
+            const activePageId = document.querySelector('.page.active')?.id;
+            switch (activePageId) {
+                case 'dashboard-page':
+                    updateDashboard();
+                    break;
+                case 'sales-page':
+                    loadSales();
+                    loadHistory();
+                    break;
+                case 'inventory-page':
+                    loadProducts();
+                    break;
+                case 'customers-page':
+                    if (currentViewedId) {
+                        showDetailsView('customer', currentViewedId);
+                    } else {
+                        loadEntities('customer');
+                    }
+                    break;
+            }
+        }
+
+        function setupEventListeners() {
             document.getElementById('launch-pos-btn').addEventListener('click', openPosIframe);
             document.getElementById('pos-iframe-close-btn').addEventListener('click', () => {
-    if (document.exitFullscreen) {
-        document.exitFullscreen();
-    } else if (document.webkitExitFullscreen) { /* Safari */
-        document.webkitExitFullscreen();
-    } else if (document.msExitFullscreen) { /* IE11 */
-        document.msExitFullscreen();
-    }
-});
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+            });
 
-// NOW, ADD THIS NEW LISTENER anywhere inside the same function:
-// This handles cleanup when fullscreen is exited via the 'Esc' key or the close button.
-document.addEventListener('fullscreenchange', () => {
-    // If document.fullscreenElement is null, it means we've exited fullscreen mode.
-    if (!document.fullscreenElement) {
-        closePosIframe(); // Call the cleanup function
-    }
-});
+
+
+            document.addEventListener('fullscreenchange', () => {
+
+                if (!document.fullscreenElement) {
+                    closePosIframe();
+                }
+            });
             document.querySelectorAll('.nav-tab').forEach(tab => tab.addEventListener('click', () => switchPage(tab.dataset.page)));
             document.getElementById('add-customer-btn').addEventListener('click', () => {
                 document.getElementById('customer-form').reset(); document.getElementById('customer-id').value = '';
@@ -2326,7 +2332,7 @@ document.addEventListener('fullscreenchange', () => {
                             totalIncome += entry.amount;
                             amountCell = `<span class="balance-negative">+${entry.displayAmount}</span>`;
                         }
-                    } else { // Expense
+                    } else {
                         if (entry.categoryId === purchaseReturnCatId) {
                             totalExpenses -= entry.amount;
                             amountCell = `<span class="balance-negative">-${entry.displayAmount}</span>`;
@@ -2482,7 +2488,7 @@ document.addEventListener('fullscreenchange', () => {
             const inventoryValue = products.reduce((sum, p) => sum + (p.purchasePrice * p.quantity), 0);
             document.getElementById('inventory-value').textContent = formatCurrency(inventoryValue);
 
-            // Dashboard Period Income/Expenses with Returns logic
+
             const startDate = document.getElementById('dashboard-start-date').value;
             const endDate = document.getElementById('dashboard-end-date').value;
             let allIncome = await getAllObjects(STORES.INCOME);
@@ -3643,9 +3649,9 @@ document.addEventListener('fullscreenchange', () => {
     </script>
 
     <div id="pos-iframe-modal" class="pos-iframe-modal">
-    <span id="pos-iframe-close-btn" class="pos-iframe-close">×</span>
-    <iframe id="pos-iframe" src=""></iframe>
-</div>
+        <span id="pos-iframe-close-btn" class="pos-iframe-close">×</span>
+        <iframe id="pos-iframe" src=""></iframe>
+    </div>
 </body>
 
 </html>
