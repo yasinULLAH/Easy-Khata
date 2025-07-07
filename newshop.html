@@ -116,7 +116,10 @@
             padding: 10px 5px 5px 5px;
             margin-bottom: 10px;
             width: 100%;
+            /*
             font-family: var(--font-handwritten);
+            */
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
             font-size: 1.1em;
             line-height: 1.8; /* Simulate lines */
             background-image: linear-gradient(to bottom, transparent 95%, var(--ledger-line-color) 95%);
@@ -736,7 +739,7 @@
                     <button id="add-income-category-btn" class="btn btn-primary" data-en="Add Income Category" data-ur="آمدنی کی قسم شامل کریں">Add Income Category</button>
                 </div>
                 <div style="overflow-x: auto;">
-                    <table class="data-table" id="income-categories-table"><thead><tr><th>${getLang('Category Name')}</th><th>${getLang('Actions')}</th></tr></thead><tbody id="income-categories-table-body"></tbody></table>
+                    <table class="data-table" id="income-categories-table"><thead><tr><th>Category Name</th><th>Actions</th></tr></thead><tbody id="income-categories-table-body"></tbody></table>
                 </div>
 
                 <h3 data-en="Expense Categories" data-ur="اخراجات کی اقسام">Expense Categories</h3>
@@ -745,7 +748,7 @@
                     <button id="add-expense-category-btn" class="btn btn-primary" data-en="Add Expense Category" data-ur="اخراجات کی قسم شامل کریں">Add Expense Category</button>
                 </div>
                  <div style="overflow-x: auto;">
-                    <table class="data-table" id="expense-categories-table"><thead><tr><th>${getLang('Category Name')}</th><th>${getLang('Actions')}</th></tr></thead><tbody id="expense-categories-table-body"></tbody></table>
+                    <table class="data-table" id="expense-categories-table"><thead><tr><th>Category Name</th><th>Actions</th></tr></thead><tbody id="expense-categories-table-body"></tbody></table>
                 </div>
             </div>
              <div id="backup-restore-section" class="section no-print">
